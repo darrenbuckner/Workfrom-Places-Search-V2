@@ -8,6 +8,13 @@ import VirtualList from './VirtualList';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 
+const WorkfromLogo = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#000000"/>
+    <path d="M8 12L13 22L16 17L19 22L24 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 const WorkfromPlacesApp = () => {
   const [location, setLocation] = useState(null);
   const [cityName, setCityName] = useState('');
@@ -338,7 +345,7 @@ const WorkfromPlacesApp = () => {
   const Footer = useCallback(() => (
     <footer className="mt-12 py-6 bg-gray-100">
       <div className="container mx-auto text-center text-gray-600">
-        <p>&copy; 2024 Workfrom Places Search. All rights reserved.</p>
+        <p>&copy; 2024 Workfrom.</p>
         <p className="mt-2">
           <a href="#" className="text-blue-500 hover:underline">Terms of Service</a>
           {' | '}
@@ -354,7 +361,10 @@ const WorkfromPlacesApp = () => {
     <div className="flex flex-col min-h-screen">
       <div className="container mx-auto p-4 max-w-2xl flex-grow">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Workfrom Places Search</h1>
+          <div className="flex items-center">
+            <WorkfromLogo />
+            <h1 className="text-2xl font-bold ml-2">Workfrom Places Search</h1>
+          </div>
           <a
             href="https://workfrom.co/add"
             target="_blank"
