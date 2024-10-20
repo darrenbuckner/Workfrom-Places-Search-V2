@@ -16,20 +16,26 @@ const WorkfromPlacesApp = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [searchPhase, setSearchPhase] = useState('initial'); // 'initial', 'locating', 'loading', 'complete'
+  const [searchPhase, setSearchPhase] = useState('initial');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [fullImg, setFullImg] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
-  // Remove the showPasswords state
-  // const [showPasswords, setShowPasswords] = useState({});
   const [totalPlaces, setTotalPlaces] = useState(0);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+  const [viewMode, setViewMode] = useState('list');
   const itemsPerPage = 10;
   const listRef = useRef(null);
+
+  useEffect(() => {
+    const savedLocation = localStorage.getItem('savedLocation');
+    if (savedLocation) {
+      setLocation(JSON.parse(savedLocation));
+      setHasSearched(true);
+    }
+  }, []);
 
   const getLocation = () => {
     return new Promise((resolve, reject) => {
@@ -40,16 +46,27 @@ const WorkfromPlacesApp = () => {
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          resolve({
+          const newLocation = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
-          });
+          };
+          localStorage.setItem('savedLocation', JSON.stringify(newLocation));
+          resolve(newLocation);
         },
         () => {
           reject(new Error('Unable to retrieve your location'));
         }
       );
     });
+  };
+
+  const clearLocation = () => {
+    setLocation(null);
+    setCityName('');
+    setPlaces([]);
+    setHasSearched(false);
+    setError('');
+    localStorage.removeItem('savedLocation');
   };
 
   const MessageBanner = ({ message, type = 'info' }) => {
@@ -71,14 +88,6 @@ const WorkfromPlacesApp = () => {
         <p>{message}</p>
       </div>
     );
-  };
-
-  const clearLocation = () => {
-    setLocation(null);
-    setCityName('');
-    setPlaces([]);
-    setHasSearched(false);
-    setError('');
   };
 
   const mapNoiseLevel = (noise) => {
