@@ -22,7 +22,8 @@ const WorkfromPlacesApp = () => {
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [fullImg, setFullImg] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
-  const [showPasswords, setShowPasswords] = useState({});
+  // Remove the showPasswords state
+  // const [showPasswords, setShowPasswords] = useState({});
   const [totalPlaces, setTotalPlaces] = useState(0);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
@@ -273,12 +274,13 @@ const WorkfromPlacesApp = () => {
     </footer>
   ); 
 
-  const togglePasswordVisibility = (placeId) => {
-    setShowPasswords(prev => ({
-      ...prev,
-      [placeId]: !prev[placeId]
-    }));
-  };
+  // Remove the togglePasswordVisibility function
+  // const togglePasswordVisibility = (placeId) => {
+  //   setShowPasswords(prev => ({
+  //     ...prev,
+  //     [placeId]: !prev[placeId]
+  //   }));
+  // };
 
   const paginatedPlaces = places.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -468,22 +470,10 @@ const WorkfromPlacesApp = () => {
                                   <span className="mr-1">WiFi Speed:</span>
                                   <strong className="text-green-600">{Math.round(place.download)} Mbps</strong>
                                 </p>
-                                {place.password && (
-                                  <div className="flex items-center mt-1">
-                                    <p className="text-sm mr-2 truncate max-w-[calc(100%-24px)]">
-                                      WiFi Login: {showPasswords[place.ID] ? place.password : '••••••••'}
-                                    </p>
-                                    <button 
-                                      onClick={() => togglePasswordVisibility(place.ID)}
-                                      className="text-blue-500 hover:text-blue-700 flex-shrink-0"
-                                    >
-                                      {showPasswords[place.ID] ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    </button>
-                                  </div>
-                                )}
+                                {/* Remove the password display section */}
                               </div>
                             )}
-                            <p className="text-sm">Noise Level: {place.mappedNoise}</p>
+                            <p className="text-sm">Background Noise: {place.mappedNoise}</p>
                           </div>
                         </div>
                         <div className="flex flex-wrap justify-between gap-2">
