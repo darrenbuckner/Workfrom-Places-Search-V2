@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { X, Image as ImageIcon, Loader, Navigation, AlertTriangle, Copy, ChevronDown, ChevronUp, Eye, EyeOff, Star, Plus, List, Map, User, AlertCircle } from 'lucide-react';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
 import NearbyPlacesMap from './NearbyPlacesMap';
 import PhotoModal from './PhotoModal';
+import LazyImage from './LazyImage';
+import VirtualList from './VirtualList';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 
@@ -19,6 +21,7 @@ const WorkfromPlacesApp = () => {
   const [searchPhase, setSearchPhase] = useState('initial');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const listRef = useRef(null);  // Add this line to define listRef
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [fullImg, setFullImg] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
@@ -26,8 +29,8 @@ const WorkfromPlacesApp = () => {
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [viewMode, setViewMode] = useState('list');
+  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
   const itemsPerPage = 10;
-  const listRef = useRef(null);
 
   useEffect(() => {
     const savedLocation = localStorage.getItem('savedLocation');
@@ -37,7 +40,7 @@ const WorkfromPlacesApp = () => {
     }
   }, []);
 
-  const getLocation = () => {
+  const getLocation = useCallback(() => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         reject(new Error('Geolocation is not supported by your browser'));
@@ -58,39 +61,18 @@ const WorkfromPlacesApp = () => {
         }
       );
     });
-  };
+  }, []);
 
-  const clearLocation = () => {
+  const clearLocation = useCallback(() => {
     setLocation(null);
     setCityName('');
     setPlaces([]);
     setHasSearched(false);
     setError('');
     localStorage.removeItem('savedLocation');
-  };
+  }, []);
 
-  const MessageBanner = ({ message, type = 'info' }) => {
-    const bgColor = {
-      info: 'bg-blue-100 border-blue-500 text-blue-700',
-      error: 'bg-red-100 border-red-500 text-red-700',
-      warning: 'bg-yellow-100 border-yellow-500 text-yellow-700',
-    }[type] || 'bg-gray-100 border-gray-500 text-gray-700';
-
-    const iconMap = {
-      info: <AlertCircle size={24} className="mr-2" />,
-      error: <AlertTriangle size={24} className="mr-2" />,
-      warning: <AlertCircle size={24} className="mr-2" />,
-    };
-
-    return (
-      <div className={`${bgColor} border-l-4 p-4 mb-4 rounded flex items-center`}>
-        {iconMap[type]}
-        <p>{message}</p>
-      </div>
-    );
-  };
-
-  const mapNoiseLevel = (noise) => {
+  const mapNoiseLevel = useCallback((noise) => {
     if (typeof noise === 'string') {
       const lowerNoise = noise.toLowerCase();
       if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'below average';
@@ -102,13 +84,9 @@ const WorkfromPlacesApp = () => {
       if (noise > 2) return 'above average';
     }
     return 'unknown';
-  };
+  }, []);
 
-  const addNewPlace = () => {
-    alert("This feature will be implemented in the future. It will take you to a page where you can add a new place to the database.");
-  };
-
-  const searchPlaces = async () => {
+  const searchPlaces = useCallback(async () => {
     setSearchPhase('locating');
     setError('');
     setHasSearched(true);
@@ -166,17 +144,9 @@ const WorkfromPlacesApp = () => {
     } finally {
       setSearchPhase('complete');
     }
-  };
+  }, [location, radius, fastWifi, quietSpace, getLocation, mapNoiseLevel]);
 
-  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
-
-  const stripHtml = (html) => {
-    const tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || "";
-  };
-
-  const fetchPlacePhotos = async (placeId) => {
+  const fetchPlacePhotos = useCallback(async (placeId) => {
     setIsPhotoLoading(true);
     try {
       const apiUrl = `${API_BASE_URL}/places/${placeId}?appid=${process.env.REACT_APP_API_KEY}`;
@@ -213,25 +183,137 @@ const WorkfromPlacesApp = () => {
     } finally {
       setIsPhotoLoading(false);
     }
-  };
+  }, []);
 
-  const openPhotoModal = (place) => {
+  const openPhotoModal = useCallback((place) => {
     setSelectedPlace(place);
     setShowPhotoModal(true);
     fetchPlacePhotos(place.ID);
-  };
+  }, [fetchPlacePhotos]);
 
-  useEffect(() => {
-    if (listRef.current) {
-      listRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [currentPage]);
+  const getGoogleMapsUrl = useCallback((address) => {
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+  }, []);
 
-  const AdSlot = () => (
-    <WorkfromVirtualAd />
-  );
+  const copyAddressToClipboard = useCallback((address) => {
+    navigator.clipboard.writeText(address).then(() => {
+      alert('Address copied to clipboard!');
+    }, (err) => {
+      console.error('Could not copy text: ', err);
+    });
+  }, []);
 
-  const Pagination = () => (
+  const reportPlace = useCallback((placeId) => {
+    console.log(`Reported place with ID: ${placeId}`);
+    alert("Thank you for your report. This feature will be implemented in the future.");
+  }, []);
+
+  const stripHtml = useCallback((html) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  }, []);
+
+  const renderPlaceItem = useCallback((place, index) => (
+    <React.Fragment key={place.ID}>
+      {index % 7 === 5 && <WorkfromVirtualAd />}
+      <div className={`border p-4 rounded shadow-sm hover:shadow-md transition-shadow relative ${place.owner_promoted_flag === "1" ? 'border-yellow-400 bg-yellow-50' : ''}`}>
+        {place.owner_promoted_flag === "1" && (
+          <div className="absolute top-0 right-0 bg-red-400 text-white px-2 py-1 rounded-bl text-xs flex items-center">
+            <Star size={12} className="mr-1" />
+            Promoted
+          </div>
+        )}
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-start space-x-4">
+            <div 
+              className="w-24 h-24 bg-gray-200 rounded flex-shrink-0 flex items-center justify-center cursor-pointer"
+              onClick={() => openPhotoModal(place)}
+            >
+              <LazyImage
+                src={place.thumbnail_img}
+                alt={place.title}
+                placeholder="https://placehold.co/100x100/e5e7eb/e5e7eb?text=Loading...&font=raleway"
+                className="w-full h-full object-cover rounded"
+              />
+            </div>
+            <div className="flex-grow min-w-0">
+              <h2 className="text-xl font-semibold mb-1 truncate" title={place.title}>
+                {place.title}
+              </h2>
+              <p className="text-sm mb-1">Distance: {place.distance} miles</p>
+              {place.download && (
+                <div className="mb-1">
+                  <p className="text-sm flex items-center">
+                    <span className="mr-1">WiFi Speed:</span>
+                    <strong className="text-green-600">{Math.round(place.download)} Mbps</strong>
+                  </p>
+                </div>
+              )}
+              <p className="text-sm">Background Noise: {place.mappedNoise}</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-between gap-2">
+            <a
+              href={getGoogleMapsUrl(`${place.street}, ${place.city}, ${place.postal}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:text-blue-700 text-sm flex items-center"
+            >
+              <Navigation size={16} className="mr-1 flex-shrink-0" />
+              <span className="hidden sm:inline">Get Directions</span>
+              <span className="sm:hidden">Directions</span>
+            </a>
+            <button
+              onClick={() => copyAddressToClipboard(`${place.street}, ${place.city}, ${place.postal}`)}
+              className="text-blue-500 hover:text-blue-700 text-sm flex items-center"
+            >
+              <Copy size={16} className="mr-1 flex-shrink-0" />
+              <span className="hidden sm:inline">Copy Address</span>
+              <span className="sm:hidden">Copy</span>
+            </button>
+            <button
+              onClick={() => reportPlace(place.ID)}
+              className="text-yellow-500 hover:text-yellow-700 text-sm flex items-center"
+            >
+              <AlertTriangle size={16} className="mr-1 flex-shrink-0" />
+              <span className="hidden sm:inline">Report</span>
+              <span className="sm:hidden">Report</span>
+            </button>
+            {place.os && (
+              <div className="text-gray-600 text-sm flex items-center">
+                <User size={16} className="mr-1 flex-shrink-0" />
+                <span>{place.os}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </React.Fragment>
+  ), [openPhotoModal, getGoogleMapsUrl, copyAddressToClipboard, reportPlace]);
+
+  const MessageBanner = useCallback(({ message, type = 'info' }) => {
+    const bgColor = {
+      info: 'bg-blue-100 border-blue-500 text-blue-700',
+      error: 'bg-red-100 border-red-500 text-red-700',
+      warning: 'bg-yellow-100 border-yellow-500 text-yellow-700',
+    }[type] || 'bg-gray-100 border-gray-500 text-gray-700';
+
+    const iconMap = {
+      info: <AlertCircle size={24} className="mr-2" />,
+      error: <AlertTriangle size={24} className="mr-2" />,
+      warning: <AlertCircle size={24} className="mr-2" />,
+    };
+
+    return (
+      <div className={`${bgColor} border-l-4 p-4 mb-4 rounded flex items-center`}>
+        {iconMap[type]}
+        <p>{message}</p>
+      </div>
+    );
+  }, []);
+
+  const Pagination = useCallback(() => (
     <div className="flex justify-center mt-4 space-x-2">
       <button
         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -251,26 +333,9 @@ const WorkfromPlacesApp = () => {
         Next
       </button>
     </div>
-  );
+  ), [currentPage, totalPages]);
 
-  const getGoogleMapsUrl = (address) => {
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-  };
-
-  const copyAddressToClipboard = (address) => {
-    navigator.clipboard.writeText(address).then(() => {
-      alert('Address copied to clipboard!');
-    }, (err) => {
-      console.error('Could not copy text: ', err);
-    });
-  };
-
-  const reportPlace = (placeId) => {
-    console.log(`Reported place with ID: ${placeId}`);
-    alert("Thank you for your report. This feature will be implemented in the future.");
-  };
-
-  const Footer = () => (
+  const Footer = useCallback(() => (
     <footer className="mt-12 py-6 bg-gray-100">
       <div className="container mx-auto text-center text-gray-600">
         <p>&copy; 2024 Workfrom Places Search. All rights reserved.</p>
@@ -281,15 +346,7 @@ const WorkfromPlacesApp = () => {
         </p>
       </div>
     </footer>
-  ); 
-
-  // Remove the togglePasswordVisibility function
-  // const togglePasswordVisibility = (placeId) => {
-  //   setShowPasswords(prev => ({
-  //     ...prev,
-  //     [placeId]: !prev[placeId]
-  //   }));
-  // };
+  ), []);
 
   const paginatedPlaces = places.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -405,8 +462,8 @@ const WorkfromPlacesApp = () => {
               className="bg-blue-500 text-white p-2 px-6 py-3 rounded hover:bg-blue-600 transition-colors"
               disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
             >
-              {searchPhase === 'locating' && 'Determining your location...'}
-              {searchPhase === 'loading' && 'Locating places nearby...'}
+              {searchPhase === 'locating' && 'Finding your location...'}
+              {searchPhase === 'loading' && 'Locating nearby places...'}
               {(searchPhase === 'initial' || searchPhase === 'complete') && 'Search'}
             </button>
             <div className="flex space-x-2">
@@ -437,10 +494,12 @@ const WorkfromPlacesApp = () => {
             />
             
             {viewMode === 'list' ? (
-              <div ref={listRef} className="space-y-3">
+              <div ref={listRef} className="space-y-6">
                 {paginatedPlaces.map((place, index) => (
                   <React.Fragment key={place.ID}>
-                    {index % 7 === 5 && <WorkfromVirtualAd />}
+                    {index > 0 && index % 5 === 0 && (
+                      <WorkfromVirtualAd />
+                    )}
                     <div className={`border p-4 rounded shadow-sm hover:shadow-md transition-shadow relative ${place.owner_promoted_flag === "1" ? 'border-yellow-400 bg-yellow-50' : ''}`}>
                       {place.owner_promoted_flag === "1" && (
                         <div className="absolute top-0 right-0 bg-red-400 text-white px-2 py-1 rounded-bl text-xs flex items-center">
@@ -479,7 +538,6 @@ const WorkfromPlacesApp = () => {
                                   <span className="mr-1">WiFi Speed:</span>
                                   <strong className="text-green-600">{Math.round(place.download)} Mbps</strong>
                                 </p>
-                                {/* Remove the password display section */}
                               </div>
                             )}
                             <p className="text-sm">Background Noise: {place.mappedNoise}</p>
