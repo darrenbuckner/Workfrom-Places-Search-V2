@@ -6,27 +6,6 @@ import PhotoModal from './PhotoModal';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 
-const MessageBanner = ({ message, type = 'info' }) => {
-  const bgColor = {
-    info: 'bg-blue-100 border-blue-500 text-blue-700',
-    error: 'bg-red-100 border-red-500 text-red-700',
-    warning: 'bg-yellow-100 border-yellow-500 text-yellow-700',
-  }[type] || 'bg-gray-100 border-gray-500 text-gray-700';
-
-  const iconMap = {
-    info: <AlertCircle size={24} className="mr-2" />,
-    error: <AlertTriangle size={24} className="mr-2" />,
-    warning: <AlertCircle size={24} className="mr-2" />,
-  };
-
-  return (
-    <div className={`${bgColor} border-l-4 p-4 mb-4 rounded flex items-center`}>
-      {iconMap[type]}
-      <p>{message}</p>
-    </div>
-  );
-};
-
 const WorkfromPlacesApp = () => {
   const [location, setLocation] = useState(null);
   const [cityName, setCityName] = useState('');
@@ -72,13 +51,25 @@ const WorkfromPlacesApp = () => {
     });
   };
 
-  const getCityName = async (lat, lon) => {
-    const mockCities = [
-      'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix',
-      'Philadelphia', 'San Antonio', 'San Diego', 'Dallas', 'San Jose'
-    ];
-    const index = Math.floor((Math.abs(lat * lon) * 10) % mockCities.length);
-    return mockCities[index];
+  const MessageBanner = ({ message, type = 'info' }) => {
+    const bgColor = {
+      info: 'bg-blue-100 border-blue-500 text-blue-700',
+      error: 'bg-red-100 border-red-500 text-red-700',
+      warning: 'bg-yellow-100 border-yellow-500 text-yellow-700',
+    }[type] || 'bg-gray-100 border-gray-500 text-gray-700';
+
+    const iconMap = {
+      info: <AlertCircle size={24} className="mr-2" />,
+      error: <AlertTriangle size={24} className="mr-2" />,
+      warning: <AlertCircle size={24} className="mr-2" />,
+    };
+
+    return (
+      <div className={`${bgColor} border-l-4 p-4 mb-4 rounded flex items-center`}>
+        {iconMap[type]}
+        <p>{message}</p>
+      </div>
+    );
   };
 
   const clearLocation = () => {
@@ -221,16 +212,6 @@ const WorkfromPlacesApp = () => {
   };
 
   useEffect(() => {
-    const updateCityName = async () => {
-      if (location) {
-        const city = await getCityName(location.latitude, location.longitude);
-        setCityName(city);
-      }
-    };
-    updateCityName();
-  }, [location]);
-
-  useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollIntoView({ behavior: 'smooth' });
     }
@@ -347,9 +328,9 @@ const WorkfromPlacesApp = () => {
         )}
         
         <div className="bg-gray-100 p-4 rounded-lg shadow-sm mb-6">
-          {cityName ? (
+          {location ? (
             <div className="mb-3">
-              <p>Your location: {cityName}&nbsp;
+              <p>Your location has been saved.&nbsp;
                 <a
                   href="#"
                   onClick={(e) => { e.preventDefault(); clearLocation(); }}
