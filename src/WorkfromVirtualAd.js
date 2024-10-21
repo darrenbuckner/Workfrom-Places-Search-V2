@@ -22,13 +22,13 @@ const WorkfromVirtualAd = () => {
             <div className="bg-[#1441ff] bg-opacity-20 p-2 rounded-full mr-3">
               <Zap size={18} className="text-[#ffffff]" />
             </div>
-            <span className="font-light">Boosted Productivity</span>
+            <span className="font-light">Boosts Productivity</span>
           </div>
           <div className="flex items-center text-sm">
             <div className="bg-[#1441ff] bg-opacity-20 p-2 rounded-full mr-3">
               <Globe size={18} className="text-[#ffffff]" />
             </div>
-            <span className="font-light">Access From Anywhere</span>
+            <span className="font-light">Everyone Can Join</span>
           </div>
         </div>
         <a 

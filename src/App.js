@@ -53,6 +53,14 @@ const WorkfromPlacesApp = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (listRef.current && viewMode === 'list') {
+      const yOffset = -50; // Offset by 50px from the top
+      const y = listRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, [currentPage, viewMode]);
+
   const getLocation = useCallback(() => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
