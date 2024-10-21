@@ -233,6 +233,8 @@ const WorkfromPlacesApp = () => {
     return tmp.textContent || tmp.innerText || "";
   }, []);
 
+
+  // MAY BE ABLE TO REMOVE THIS FUNCTIONALITY IN FAVOR OF THE CALLBACK APPROACH
   const renderPlaceItem = useCallback((place, index) => (
     <React.Fragment key={place.ID}>
       {index % 7 === 5 && <WorkfromVirtualAd />}
@@ -257,7 +259,11 @@ const WorkfromPlacesApp = () => {
               />
             </div>
             <div className="flex-grow min-w-0">
-              <h2 className="text-xl font-semibold mb-1 truncate" title={place.title}>
+              <h2 
+                className="text-xl font-semibold mb-1 truncate cursor-pointer hover:text-blue-600 transition-colors" 
+                title={place.title}
+                onClick={() => openPhotoModal(place)}
+              >
                 {place.title}
               </h2>
               <p className="text-sm mb-1">Distance: {place.distance} miles</p>
@@ -550,7 +556,11 @@ const WorkfromPlacesApp = () => {
                             )}
                           </div>
                           <div className="flex-grow min-w-0">
-                            <h2 className="text-xl font-semibold mb-1 truncate" title={place.title}>
+                            <h2 
+                              className="text-xl font-semibold mb-1 truncate cursor-pointer hover:text-blue-600 transition-colors" 
+                              title={place.title}
+                              onClick={() => openPhotoModal(place)}
+                            >
                               {place.title}
                             </h2>
                             <p className="text-sm mb-1">Distance: {place.distance} miles</p>
