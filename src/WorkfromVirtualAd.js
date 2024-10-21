@@ -6,29 +6,29 @@ const WorkfromVirtualAd = () => {
     <div className="bg-[#160040] rounded-lg shadow-xl overflow-hidden text-white">
       <div className="p-6">
         <h3 className="text-2xl font-bold mb-2 text-[#ffffff]">
-          Workfrom Virtual Rooms
+          What Are Virtual Co-Working Rooms?
         </h3>
         <p className="text-gray-300 mb-6 font-light">
-          Create your ideal virtual co-working spaces. Customizable, flexible, and ready to match your creativity.
+          Communities and teams use them to stay connected and productive when working remotely.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="flex items-center text-sm">
             <div className="bg-[#1441ff] bg-opacity-20 p-2 rounded-full mr-3">
               <Users size={18} className="text-[#ffffff]" />
             </div>
-            <span className="font-light">Community-Centric Design</span>
+            <span className="font-light">Community-First</span>
           </div>
           <div className="flex items-center text-sm">
             <div className="bg-[#1441ff] bg-opacity-20 p-2 rounded-full mr-3">
               <Zap size={18} className="text-[#ffffff]" />
             </div>
-            <span className="font-light">Boosts Productivity</span>
+            <span className="font-light">Adds Social Productivity</span>
           </div>
           <div className="flex items-center text-sm">
             <div className="bg-[#1441ff] bg-opacity-20 p-2 rounded-full mr-3">
               <Globe size={18} className="text-[#ffffff]" />
             </div>
-            <span className="font-light">Everyone Can Join</span>
+            <span className="font-light">100% Virtual and Easy-To-Use</span>
           </div>
         </div>
         <a 
