@@ -9,7 +9,7 @@ const WorkfromVirtualAd = () => {
           Workfrom Virtual Rooms
         </h3>
         <p className="text-gray-300 mb-6 font-light">
-          Create your ideal virtual co-working spaces. Customizable, flexible, and built to match your creativity.
+          Create your ideal virtual co-working spaces. Customizable, flexible, and ready to match your creativity.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div className="flex items-center text-sm">
