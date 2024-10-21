@@ -11,12 +11,10 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom
 const WorkfromLogo = () => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-12 h-12">
-      <circle cx="50" cy="50" r="45" fill="#160040" />
-      <circle cx="50" cy="50" r="20" fill="white" />
-      <rect x="45" y="30" width="10" height="40" fill="#160040" />
-      <rect x="30" y="45" width="40" height="10" fill="#160040" />
-      <circle cx="75" cy="75" r="15" fill="#F5A623" />
-      <path d="M75 70 L80 80 L70 80 Z" fill="white" />
+      <circle cx="50" cy="50" r="48" fill="#160040" />
+      <path d="M50 75 L75 40 A35 35 0 0 0 25 40 Z" fill="#F5A623" />
+      <path d="M50 75 L67 50 A24 24 0 0 0 33 50 Z" fill="#FFFFFF" />
+      <circle cx="50" cy="75" r="6" fill="#F5A623" />
     </svg>
   );
 };
