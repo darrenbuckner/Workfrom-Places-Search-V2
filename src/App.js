@@ -8,12 +8,18 @@ import VirtualList from './VirtualList';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 
-const WorkfromLogo = () => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="16" cy="16" r="16" fill="#000000"/>
-    <path d="M8 12L13 22L16 17L19 22L24 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+const WorkfromLogo = () => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-12 h-12">
+      <circle cx="50" cy="50" r="45" fill="#000" />
+      <circle cx="50" cy="50" r="20" fill="white" />
+      <rect x="45" y="30" width="10" height="40" fill="#000" />
+      <rect x="30" y="45" width="40" height="10" fill="#000" />
+      <circle cx="75" cy="75" r="15" fill="#F5A623" />
+      <path d="M75 70 L80 80 L70 80 Z" fill="white" />
+    </svg>
+  );
+};
 
 const WorkfromPlacesApp = () => {
   const [location, setLocation] = useState(null);
