@@ -218,10 +218,10 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                   <div className="p-4">
                     <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
                       <Quote size={20} className="mr-2 text-blue-500" />
-                      About this place
+                      A Closer Look
                     </h3>
                     <div className="prose prose-sm max-w-none">
-                      <p className="text-gray-600 leading-relaxed">
+                      <p className="text-gray-600 italic font-medium leading-relaxed">
                         {sanitizedDescription}
                       </p>
                     </div>

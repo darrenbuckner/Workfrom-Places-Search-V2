@@ -492,6 +492,12 @@ const WorkfromPlacesApp = () => {
                           </div>
                         </div>
                         <div className="flex flex-wrap justify-between gap-2">
+                          {place.os && (
+                            <div className="text-gray-600 text-sm flex items-center">
+                              <User size={16} className="mr-1 flex-shrink-0" />
+                              <span>{place.os}</span>
+                            </div>
+                          )}
                           <a
                             href={getGoogleMapsUrl(`${place.street}, ${place.city}, ${place.postal}`)}
                             target="_blank"
@@ -518,12 +524,6 @@ const WorkfromPlacesApp = () => {
                             <span className="hidden sm:inline">Report</span>
                             <span className="sm:hidden">Report</span>
                           </button>
-                          {place.os && (
-                            <div className="text-gray-600 text-sm flex items-center">
-                              <User size={16} className="mr-1 flex-shrink-0" />
-                              <span>{place.os}</span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
