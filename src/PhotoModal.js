@@ -77,7 +77,7 @@ const Amenity = ({ icon: Icon, name, value, detail = null }) => {
       
       {showTooltip && (
         <div className="absolute z-50 bottom-full left-0 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded shadow-lg whitespace-nowrap">
-          {value ? `Available: ${detail || 'Yes'}` : `Not Available`}
+          {value ? `Available: ${detail || 'Yes'}` : `Not Available or Unknown`}
           <div className="absolute bottom-0 left-6 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
         </div>
       )}
@@ -111,7 +111,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
       case 'little':
         return 'Few (<25% of seats)';
       default:
-        console.log('Unexpected power value:', power);
         return power;
     }
   };
@@ -133,6 +132,20 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     }
     return false;
   };
+
+  // Check if outdoor seating is available (checking for any value in outside field)
+  const hasOutdoorSeating = Boolean(
+    selectedPlace?.outdoor_seating === '1' || 
+    selectedPlace?.outside || 
+    selectedPlace?.outside === 0 || 
+    selectedPlace?.outside === "0"
+  );
+
+  // Check if coffee is available (any non-empty value in coffee field or coffee-related type)
+  const hasCoffee = Boolean(
+    selectedPlace?.coffee ||
+    selectedPlace?.type?.toLowerCase().includes('coffee')
+  );
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
@@ -238,7 +251,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 <Amenity 
                   icon={Coffee} 
                   name="Coffee" 
-                  value={selectedPlace?.type || selectedPlace?.coffee === '1'} 
+                  value={hasCoffee} 
+                  detail={hasCoffee ? "Yes" : null}
                 />
                 <Amenity 
                   icon={Utensils} 
@@ -256,7 +270,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 <Amenity 
                   icon={Sun} 
                   name="Outdoor Seating" 
-                  value={selectedPlace?.outdoor_seating === '1'} 
+                  value={hasOutdoorSeating}
+                  detail={hasOutdoorSeating ? "Yes" : null}
                 />
               </AmenityCategory>
 
