@@ -30,7 +30,16 @@ const CustomAlert = ({ children }) => (
       </div>
       <div className="ml-3">
         <p className="text-sm text-gray-600">
-          {children}
+          Some information may be incomplete. Help the community by{' '}
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              alert("Thank you for your willingess to help! This feature will be implemented in the future.");
+            }}
+            className="text-blue-500 hover:text-blue-700 text-sm"
+          >
+            updating this location's details
+          </button>.
         </p>
       </div>
     </div>
@@ -89,24 +98,19 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   };
 
   const getPowerAvailability = (power) => {
-    // If power is falsy (null, undefined, empty string) or 'None'
     if (!power || power === 'None') return false;
-
-    // Convert to string and lowercase for consistent comparison
     const powerValue = String(power).toLowerCase();
-
     switch (powerValue) {
       case 'range3':
       case 'good':
         return 'Many (>50% of seats)';
       case 'range2':
         return 'Several (25-50% of seats)';
-      case '': // Handle empty string
+      case '':
       case 'range1':
       case 'little':
         return 'Few (<25% of seats)';
       default:
-        // If we get an unexpected value, return it for debugging
         console.log('Unexpected power value:', power);
         return power;
     }
@@ -207,7 +211,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
               )}
             </div>
 
-            {/* Right Column - Update the Power Outlets Amenity */}
+            {/* Right Column */}
             <div className="space-y-6">
               <AmenityCategory title="Essential Amenities">
                 <Amenity 
@@ -230,7 +234,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 />
               </AmenityCategory>
 
-              {/* Food & Drinks */}
               <AmenityCategory title="Food & Drinks">
                 <Amenity 
                   icon={Coffee} 
@@ -249,7 +252,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 />
               </AmenityCategory>
 
-              {/* Additional Features */}
               <AmenityCategory title="Additional Features">
                 <Amenity 
                   icon={Sun} 
@@ -258,7 +260,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 />
               </AmenityCategory>
 
-              {/* Get Directions Button */}
               <a
                 href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
                   `${selectedPlace?.street}, ${selectedPlace?.city}`
@@ -276,9 +277,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
 
         {/* Alert for Missing Information */}
         {(!selectedPlace?.download || !selectedPlace?.power || !selectedPlace?.noise_level) && (
-          <CustomAlert>
-            Some information may be incomplete. Help the community by <a href="" className="text-blue-500 hover:text-blue-700 text-sm">updating this location's details</a>.
-          </CustomAlert>
+          <CustomAlert />
         )}
       </div>
     </div>
