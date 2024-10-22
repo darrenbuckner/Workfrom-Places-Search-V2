@@ -94,13 +94,13 @@ const WorkfromPlacesApp = () => {
   const mapNoiseLevel = useCallback((noise) => {
     if (typeof noise === 'string') {
       const lowerNoise = noise.toLowerCase();
-      if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'below average';
-      if (lowerNoise.includes('moderate') || lowerNoise.includes('average')) return 'average';
-      if (lowerNoise.includes('noisy') || lowerNoise.includes('high')) return 'above average';
+      if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'Mellow';
+      if (lowerNoise.includes('moderate') || lowerNoise.includes('average')) return 'Average';
+      if (lowerNoise.includes('noisy') || lowerNoise.includes('high')) return 'Lively';
     } else if (typeof noise === 'number') {
-      if (noise <= 1) return 'below average';
-      if (noise <= 2) return 'average';
-      if (noise > 2) return 'above average';
+      if (noise <= 1) return 'Mellow';
+      if (noise <= 2) return 'Average';
+      if (noise > 2) return 'Lively';
     }
     return 'unknown';
   }, []);
@@ -374,7 +374,7 @@ const WorkfromPlacesApp = () => {
                 onChange={(e) => setQuietSpace(e.target.checked)}
                 className="mr-2"
               />
-              <label htmlFor="quietSpace">Lower Background Noise</label>
+              <label htmlFor="quietSpace">Low Noise</label>
             </div>
           </div>
           <div className="mb-3">
