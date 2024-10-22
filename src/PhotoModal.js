@@ -6,7 +6,7 @@ import {
   User, 
   Wifi, 
   Battery, 
-  VolumeX, 
+  Volume, 
   Coffee, 
   Utensils, 
   Wine, 
@@ -254,7 +254,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                   detail={getPowerAvailability(selectedPlace?.power)}
                 />
                 <Amenity 
-                  icon={VolumeX} 
+                  icon={Volume} 
                   name="Noise Level" 
                   value={selectedPlace?.noise_level || selectedPlace?.noise}
                   detail={getNoiseLevel(selectedPlace?.noise_level || selectedPlace?.noise)}
