@@ -147,6 +147,20 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     selectedPlace?.type?.toLowerCase().includes('coffee')
   );
 
+  // Check if food is available (any non-empty value in food field)
+  const hasFood = Boolean(
+    selectedPlace?.food || 
+    selectedPlace?.food === 0 || 
+    selectedPlace?.food === "0"
+  );
+
+  // Check if alcohol is available (any non-empty value in alcohol field)
+  const hasAlcohol = Boolean(
+    selectedPlace?.alcohol || 
+    selectedPlace?.alcohol === 0 || 
+    selectedPlace?.alcohol === "0"
+  );
+
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
       <div 
@@ -257,12 +271,14 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 <Amenity 
                   icon={Utensils} 
                   name="Food" 
-                  value={selectedPlace?.food === '1'} 
+                  value={hasFood}
+                  detail={hasFood ? "Yes" : null}
                 />
                 <Amenity 
                   icon={Wine} 
                   name="Alcohol" 
-                  value={selectedPlace?.alcohol === '1'} 
+                  value={hasAlcohol}
+                  detail={hasAlcohol ? "Yes" : null}
                 />
               </AmenityCategory>
 
