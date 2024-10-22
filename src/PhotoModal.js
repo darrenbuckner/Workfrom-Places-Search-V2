@@ -84,6 +84,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     if (speed >= 50) return 'Very Fast (50+ Mbps)';
     if (speed >= 20) return 'Fast (20-50 Mbps)';
     if (speed >= 10) return 'Good (10-20 Mbps)';
+    if (speed <= 10) return 'Sluggish (0-10 Mbps)';
     return `${Math.round(speed)} Mbps`;
   };
 
