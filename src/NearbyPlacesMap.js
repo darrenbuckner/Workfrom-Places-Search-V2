@@ -29,6 +29,16 @@ const NearbyPlacesMap = ({ places, userLocation }) => {
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
   };
 
+  const mapNoiseLevel = (noise) => {
+    if (typeof noise === 'string') {
+      const lowerNoise = noise.toLowerCase();
+      if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'Moderate';
+      if (lowerNoise.includes('moderate') || lowerNoise.includes('average')) return 'Average';
+      if (lowerNoise.includes('noisy') || lowerNoise.includes('high')) return 'Lively';
+    }
+    return 'Average';
+  };
+
   return (
     <MapContainer center={defaultPosition} zoom={13} style={{ height: '500px', width: '100%' }}>
       <TileLayer
@@ -52,7 +62,7 @@ const NearbyPlacesMap = ({ places, userLocation }) => {
               {place.download && (
                 <p>WiFi Speed: {Math.round(place.download)} Mbps</p>
               )}
-              <p>Background Noise: {place.mappedNoise}</p>
+              <p>Noise Level: {place.mappedNoise}</p>
               <a
                 href={getGoogleMapsUrl(`${place.street}, ${place.city}, ${place.postal}`)}
                 target="_blank"

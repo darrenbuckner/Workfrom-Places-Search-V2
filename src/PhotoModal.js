@@ -125,7 +125,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     if (!noise) return false;
     if (typeof noise === 'string') {
       const lowerNoise = noise.toLowerCase();
-      if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'Mellow';
+      if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'Moderate';
       if (lowerNoise.includes('moderate') || lowerNoise.includes('average')) return 'Average';
       if (lowerNoise.includes('noisy') || lowerNoise.includes('high')) return 'Lively';
       return noise;
