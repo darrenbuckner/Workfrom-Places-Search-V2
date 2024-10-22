@@ -78,7 +78,7 @@ const Amenity = ({ icon: Icon, name, value, detail = null }) => {
 
 const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal }) => {
   const sanitizedDescription = selectedPlace?.description ? stripHtml(selectedPlace.description) : '';
-
+  
   const getWifiQuality = (speed) => {
     if (!speed) return false;
     if (speed >= 50) return 'Very Fast (50+ Mbps)';
@@ -88,13 +88,33 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   };
 
   const getPowerAvailability = (power) => {
+    // If power is falsy (null, undefined, empty string) or 'None'
     if (!power || power === 'None') return false;
-    switch (power) {
-      case 'range3': return 'Plenty (>50% of seats)';
-      case 'range2': return 'Good (25-50% of seats)';
-      case 'range1': return 'Limited (<25% of seats)';
-      default: return power;
+
+    // Convert to string and lowercase for consistent comparison
+    const powerValue = String(power).toLowerCase();
+
+    switch (powerValue) {
+      case 'range3':
+      case 'good':
+        return 'Many (>50% of seats)';
+      case 'range2':
+        return 'Several (25-50% of seats)';
+      case '': // Handle empty string
+      case 'range1':
+      case 'little':
+        return 'Few (<25% of seats)';
+      default:
+        // If we get an unexpected value, return it for debugging
+        console.log('Unexpected power value:', power);
+        return power;
     }
+  };
+
+  const isPowerAvailable = (power) => {
+    if (!power || power === 'None') return false;
+    const powerValue = String(power).toLowerCase();
+    return !['none', '', 'undefined', 'null'].includes(powerValue);
   };
 
   const getNoiseLevel = (noise) => {
@@ -186,9 +206,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
               )}
             </div>
 
-            {/* Right Column */}
+            {/* Right Column - Update the Power Outlets Amenity */}
             <div className="space-y-6">
-              {/* Essential Amenities */}
               <AmenityCategory title="Essential Amenities">
                 <Amenity 
                   icon={Wifi} 
@@ -199,7 +218,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 <Amenity 
                   icon={Battery} 
                   name="Power Outlets" 
-                  value={selectedPlace?.power && selectedPlace?.power !== 'None'}
+                  value={isPowerAvailable(selectedPlace?.power)}
                   detail={getPowerAvailability(selectedPlace?.power)}
                 />
                 <Amenity 
