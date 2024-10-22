@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
-import { X, Loader, ImageIcon, User, Wifi, Battery, VolumeX, Coffee, 
-  Utensils, Wine, Sun, Dog, Info, ExternalLink, Navigation, AlertCircle } from 'lucide-react';
+import { 
+  X, 
+  Loader, 
+  ImageIcon, 
+  User, 
+  Wifi, 
+  Battery, 
+  VolumeX, 
+  Coffee, 
+  Utensils, 
+  Wine, 
+  Sun, 
+  Navigation, 
+  AlertCircle,
+  Quote 
+} from 'lucide-react';
 
 const stripHtml = (html) => {
   const tmp = document.createElement("DIV");
@@ -64,26 +78,34 @@ const Amenity = ({ icon: Icon, name, value, detail = null }) => {
 
 const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal }) => {
   const sanitizedDescription = selectedPlace?.description ? stripHtml(selectedPlace.description) : '';
-  
+
   const getWifiQuality = (speed) => {
     if (!speed) return false;
     if (speed >= 50) return 'Very Fast (50+ Mbps)';
     if (speed >= 20) return 'Fast (20-50 Mbps)';
     if (speed >= 10) return 'Good (10-20 Mbps)';
-    return false;
+    return `${Math.round(speed)} Mbps`;
   };
 
   const getPowerAvailability = (power) => {
-    if (power === 'range3') return 'Plenty (>50% of seats)';
-    if (power === 'range2') return 'Good (25-50% of seats)';
-    if (power === 'range1') return 'Limited (<25% of seats)';
-    return false;
+    if (!power || power === 'None') return false;
+    switch (power) {
+      case 'range3': return 'Plenty (>50% of seats)';
+      case 'range2': return 'Good (25-50% of seats)';
+      case 'range1': return 'Limited (<25% of seats)';
+      default: return power;
+    }
   };
 
   const getNoiseLevel = (noise) => {
-    if (noise === 'below average') return 'Quiet';
-    if (noise === 'average') return 'Moderate';
-    if (noise === 'above average') return 'Lively';
+    if (!noise) return false;
+    if (typeof noise === 'string') {
+      const lowerNoise = noise.toLowerCase();
+      if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'Quiet';
+      if (lowerNoise.includes('moderate') || lowerNoise.includes('average')) return 'Moderate';
+      if (lowerNoise.includes('noisy') || lowerNoise.includes('high')) return 'Lively';
+      return noise;
+    }
     return false;
   };
 
@@ -112,8 +134,9 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-            {/* Left Column - Image */}
+            {/* Left Column */}
             <div className="space-y-6">
+              {/* Image */}
               <div className="relative rounded-lg overflow-hidden bg-gray-100 aspect-video">
                 {isPhotoLoading ? (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -139,45 +162,51 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
 
               {/* Description */}
               {sanitizedDescription && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-3 flex items-center">
-                    <Info size={18} className="mr-2 text-gray-400" />
-                    About this place
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed text-sm">
-                    {sanitizedDescription}
-                  </p>
+                <div className="border border-gray-200 rounded-lg">
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
+                      <Quote size={20} className="mr-2 text-blue-500" />
+                      About this place
+                    </h3>
+                    <div className="prose prose-sm max-w-none">
+                      <p className="text-gray-600 leading-relaxed">
+                        {sanitizedDescription}
+                      </p>
+                    </div>
+                  </div>
                   {selectedPlace?.os && (
-                    <div className="flex items-center mt-3 text-sm text-gray-500 border-t pt-3">
-                      <User size={14} className="mr-1" />
-                      <p>Added by {selectedPlace.os}</p>
+                    <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/50">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <User size={14} className="mr-2 text-gray-400" />
+                        <p>Added by {selectedPlace.os}</p>
+                      </div>
                     </div>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Right Column - Amenities */}
+            {/* Right Column */}
             <div className="space-y-6">
               {/* Essential Amenities */}
               <AmenityCategory title="Essential Amenities">
                 <Amenity 
                   icon={Wifi} 
                   name="WiFi" 
-                  value={getWifiQuality(selectedPlace?.download)}
+                  value={selectedPlace?.download}
                   detail={getWifiQuality(selectedPlace?.download)}
                 />
                 <Amenity 
                   icon={Battery} 
                   name="Power Outlets" 
-                  value={getPowerAvailability(selectedPlace?.power)}
+                  value={selectedPlace?.power && selectedPlace?.power !== 'None'}
                   detail={getPowerAvailability(selectedPlace?.power)}
                 />
                 <Amenity 
                   icon={VolumeX} 
                   name="Noise Level" 
-                  value={getNoiseLevel(selectedPlace?.mappedNoise)}
-                  detail={getNoiseLevel(selectedPlace?.mappedNoise)}
+                  value={selectedPlace?.noise_level || selectedPlace?.noise}
+                  detail={getNoiseLevel(selectedPlace?.noise_level || selectedPlace?.noise)}
                 />
               </AmenityCategory>
 
@@ -186,7 +215,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 <Amenity 
                   icon={Coffee} 
                   name="Coffee" 
-                  value={selectedPlace?.type?.toLowerCase().includes('coffee')} 
+                  value={selectedPlace?.type || selectedPlace?.coffee === '1'} 
                 />
                 <Amenity 
                   icon={Utensils} 
@@ -207,36 +236,28 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                   name="Outdoor Seating" 
                   value={selectedPlace?.outdoor_seating === '1'} 
                 />
-                <Amenity 
-                  icon={Dog} 
-                  name="Pet Friendly" 
-                  value={selectedPlace?.pet_friendly === '1'} 
-                />
               </AmenityCategory>
 
-              {/* Quick Actions */}
-              <div className="flex gap-3 mt-6">
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                    `${selectedPlace?.street}, ${selectedPlace?.city}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <Navigation size={18} className="mr-2" />
-                  Get Directions
-                </a>
-               
-              </div>
+              {/* Get Directions Button */}
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                  `${selectedPlace?.street}, ${selectedPlace?.city}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium w-full"
+              >
+                <Navigation size={18} className="mr-2" />
+                Get Directions
+              </a>
             </div>
           </div>
         </div>
 
-        {/* Custom Alert for Missing Information */}
-        {(!selectedPlace?.download || !selectedPlace?.power || !selectedPlace?.mappedNoise) && (
+        {/* Alert for Missing Information */}
+        {(!selectedPlace?.download || !selectedPlace?.power || !selectedPlace?.noise_level) && (
           <CustomAlert>
-            Some amenity information may be incomplete. Help the community by updating this location's details on Workfrom.
+            Some information may be incomplete. Help the community by <a href="" className="text-blue-500 hover:text-blue-700 text-sm">updating this location's details</a>.
           </CustomAlert>
         )}
       </div>

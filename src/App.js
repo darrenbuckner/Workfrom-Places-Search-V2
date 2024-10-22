@@ -233,90 +233,6 @@ const WorkfromPlacesApp = () => {
     return tmp.textContent || tmp.innerText || "";
   }, []);
 
-
-  // MAY BE ABLE TO REMOVE THIS FUNCTIONALITY IN FAVOR OF THE CALLBACK APPROACH
-  const renderPlaceItem = useCallback((place, index) => (
-    <React.Fragment key={place.ID}>
-      {index % 7 === 5 && <WorkfromVirtualAd />}
-      <div className={`border p-4 rounded shadow-sm hover:shadow-md transition-shadow relative ${place.owner_promoted_flag === "1" ? 'border-yellow-400 bg-yellow-50' : ''}`}>
-        {place.owner_promoted_flag === "1" && (
-          <div className="absolute top-0 right-0 bg-red-400 text-white px-2 py-1 rounded-bl text-xs flex items-center">
-            <Star size={12} className="mr-1" />
-            Promoted
-          </div>
-        )}
-        <div className="flex flex-col space-y-4">
-          <div className="flex items-start space-x-4">
-            <div 
-              className="w-24 h-24 bg-gray-200 rounded flex-shrink-0 flex items-center justify-center cursor-pointer"
-              onClick={() => openPhotoModal(place)}
-            >
-              <LazyImage
-                src={place.thumbnail_img}
-                alt={place.title}
-                placeholder="https://placehold.co/100x100/e5e7eb/e5e7eb?text=Loading...&font=raleway"
-                className="w-full h-full object-cover rounded"
-              />
-            </div>
-            <div className="flex-grow min-w-0">
-              <h2 
-                className="text-xl font-semibold mb-1 truncate cursor-pointer hover:text-blue-600 transition-colors" 
-                title={place.title}
-                onClick={() => openPhotoModal(place)}
-              >
-                {place.title}
-              </h2>
-              <p className="text-sm mb-1">Distance: {place.distance} miles</p>
-              {place.download && (
-                <div className="mb-1">
-                  <p className="text-sm flex items-center">
-                    <span className="mr-1">WiFi Speed:</span>
-                    <strong className="text-green-600">{Math.round(place.download)} Mbps</strong>
-                  </p>
-                </div>
-              )}
-              <p className="text-sm">Background Noise: {place.mappedNoise}</p>
-            </div>
-          </div>
-          <div className="flex flex-wrap justify-between gap-2">
-            <a
-              href={getGoogleMapsUrl(`${place.street}, ${place.city}, ${place.postal}`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:text-blue-700 text-sm flex items-center"
-            >
-              <Navigation size={16} className="mr-1 flex-shrink-0" />
-              <span className="hidden sm:inline">Get Directions</span>
-              <span className="sm:hidden">Directions</span>
-            </a>
-            <button
-              onClick={() => copyAddressToClipboard(`${place.street}, ${place.city}, ${place.postal}`)}
-              className="text-blue-500 hover:text-blue-700 text-sm flex items-center"
-            >
-              <Copy size={16} className="mr-1 flex-shrink-0" />
-              <span className="hidden sm:inline">Copy Address</span>
-              <span className="sm:hidden">Copy</span>
-            </button>
-            <button
-              onClick={() => reportPlace(place.ID)}
-              className="text-yellow-500 hover:text-yellow-700 text-sm flex items-center"
-            >
-              <AlertTriangle size={16} className="mr-1 flex-shrink-0" />
-              <span className="hidden sm:inline">Report</span>
-              <span className="sm:hidden">Report</span>
-            </button>
-            {place.os && (
-              <div className="text-gray-600 text-sm flex items-center">
-                <User size={16} className="mr-1 flex-shrink-0" />
-                <span>{place.os}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </React.Fragment>
-  ), [openPhotoModal, getGoogleMapsUrl, copyAddressToClipboard, reportPlace]);
-
   const MessageBanner = useCallback(({ message, type = 'info' }) => {
     const bgColor = {
       info: 'bg-blue-100 border-blue-500 text-blue-700',
@@ -572,7 +488,7 @@ const WorkfromPlacesApp = () => {
                                 </p>
                               </div>
                             )}
-                            <p className="text-sm">Background Noise: {place.mappedNoise}</p>
+                            <p className="text-sm">Noise Level: {place.mappedNoise}</p>
                           </div>
                         </div>
                         <div className="flex flex-wrap justify-between gap-2">
