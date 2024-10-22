@@ -38,7 +38,7 @@ const CustomAlert = ({ children }) => (
             }}
             className="text-blue-500 hover:text-blue-700 text-sm"
           >
-            updating this location's details
+            providing an update
           </button>.
         </p>
       </div>
