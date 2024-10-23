@@ -1,10 +1,32 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { X, Image as ImageIcon, Loader, Navigation, AlertTriangle, Copy, ChevronDown, ChevronUp, Eye, EyeOff, Star, Plus, List, Map, User, AlertCircle } from 'lucide-react';
+import { 
+  X, 
+  Image as ImageIcon, 
+  Loader, 
+  Navigation, 
+  AlertTriangle, 
+  Copy, 
+  ChevronDown, 
+  ChevronUp, 
+  Eye, 
+  EyeOff, 
+  Star, 
+  Plus, 
+  List, 
+  Map, 
+  User, 
+  AlertCircle,
+  ArrowUpRight,
+  ArrowDownRight
+} from 'lucide-react';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
 import NearbyPlacesMap from './NearbyPlacesMap';
 import PhotoModal from './PhotoModal';
 import LazyImage from './LazyImage';
 import VirtualList from './VirtualList';
+import WorkabilityScore from './WorkabilityScore';
+import WorkabilityControls from './WorkabilityControls';
+import { calculateWorkabilityScore } from './WorkabilityScore';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 
@@ -23,8 +45,6 @@ const WorkfromPlacesApp = () => {
   const [location, setLocation] = useState(null);
   const [cityName, setCityName] = useState('');
   const [radius, setRadius] = useState(2);
-  const [fastWifi, setFastWifi] = useState(false);
-  const [quietSpace, setQuietSpace] = useState(false);
   const [places, setPlaces] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,16 +52,16 @@ const WorkfromPlacesApp = () => {
   const [searchPhase, setSearchPhase] = useState('initial');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const listRef = useRef(null);  // Add this line to define listRef
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [fullImg, setFullImg] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [totalPlaces, setTotalPlaces] = useState(0);
-  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [viewMode, setViewMode] = useState('list');
   const [isPhotoLoading, setIsPhotoLoading] = useState(false);
+  const [sortBy, setSortBy] = useState('score_high');
   const itemsPerPage = 10;
+  const listRef = useRef(null);
 
   useEffect(() => {
     const savedLocation = localStorage.getItem('savedLocation');
@@ -53,7 +73,7 @@ const WorkfromPlacesApp = () => {
 
   useEffect(() => {
     if (listRef.current && viewMode === 'list') {
-      const yOffset = -50; // Offset by 50px from the top
+      const yOffset = -50;
       const y = listRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
@@ -92,18 +112,35 @@ const WorkfromPlacesApp = () => {
   }, []);
 
   const mapNoiseLevel = useCallback((noise) => {
+    if (!noise) return 'Unknown';
     if (typeof noise === 'string') {
       const lowerNoise = noise.toLowerCase();
-      if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'Moderate';
+      if (lowerNoise.includes('quiet') || lowerNoise.includes('low')) return 'Below average';
       if (lowerNoise.includes('moderate') || lowerNoise.includes('average')) return 'Average';
-      if (lowerNoise.includes('noisy') || lowerNoise.includes('high')) return 'Lively';
-    } else if (typeof noise === 'number') {
-      if (noise <= 1) return 'below average';
-      if (noise <= 2) return 'average';
-      if (noise > 2) return 'above average';
+      if (lowerNoise.includes('noisy') || lowerNoise.includes('high')) return 'Above average';
+      return noise;
     }
-    return 'unknown';
+    return 'Unknown';
   }, []);
+
+  const processPlaces = useCallback((rawPlaces) => {
+    let processed = rawPlaces.map(place => ({
+      ...place,
+      mappedNoise: mapNoiseLevel(place.noise_level || place.noise),
+      workabilityScore: calculateWorkabilityScore(place).score
+    }));
+
+    // Always sort by score (default high to low), unless explicitly set to 'none'
+    if (sortBy !== 'none') {
+      processed.sort((a, b) => 
+        sortBy === 'score_high' 
+          ? b.workabilityScore - a.workabilityScore 
+          : a.workabilityScore - b.workabilityScore
+      );
+    }
+
+    return processed;
+  }, [mapNoiseLevel, sortBy]);
 
   const searchPlaces = useCallback(async () => {
     setSearchPhase('locating');
@@ -126,29 +163,14 @@ const WorkfromPlacesApp = () => {
       const data = await response.json();
 
       if (data.meta.code === 200 && Array.isArray(data.response)) {
-        let filteredPlaces = data.response;
+        // Process places with workability score
+        let processedPlaces = processPlaces(data.response);
         
-        if (fastWifi) {
-          filteredPlaces = filteredPlaces.filter(place => place.download >= 10);
-        }
+        setPlaces(processedPlaces);
+        setTotalPlaces(processedPlaces.length);
+        setTotalPages(Math.ceil(processedPlaces.length / itemsPerPage));
 
-        if (quietSpace) {
-          filteredPlaces = filteredPlaces.filter(place => {
-            const noiseLevel = mapNoiseLevel(place.noise_level || place.noise);
-            return noiseLevel === 'Moderate';
-          });
-        }
-
-        filteredPlaces = filteredPlaces.map(place => ({
-          ...place,
-          mappedNoise: mapNoiseLevel(place.noise_level || place.noise)
-        }));
-
-        setPlaces(filteredPlaces);
-        setTotalPlaces(filteredPlaces.length);
-        setTotalPages(Math.ceil(filteredPlaces.length / itemsPerPage));
-
-        if (filteredPlaces.length === 0) {
+        if (processedPlaces.length === 0) {
           setError('No places found matching your criteria. Try adjusting your filters or increasing the radius.');
         }
       } else {
@@ -163,7 +185,7 @@ const WorkfromPlacesApp = () => {
     } finally {
       setSearchPhase('complete');
     }
-  }, [location, radius, fastWifi, quietSpace, getLocation, mapNoiseLevel]);
+  }, [location, radius, getLocation, processPlaces]);
 
   const fetchPlacePhotos = useCallback(async (placeId) => {
     setIsPhotoLoading(true);
@@ -355,51 +377,14 @@ const WorkfromPlacesApp = () => {
           ) : (
             <p className="mb-3">Click search to use your current location</p>
           )}
-          <div className="flex flex-wrap items-center gap-3 mb-3">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="fastWifi"
-                checked={fastWifi}
-                onChange={(e) => setFastWifi(e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="fastWifi">Fast WiFi</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="quietSpace"
-                checked={quietSpace}
-                onChange={(e) => setQuietSpace(e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="quietSpace">Low Noise</label>
-            </div>
-          </div>
-          <div className="mb-3">
-            <button
-              onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}
-              className="text-blue-500 hover:underline flex items-center"
-            >
-              {showAdvancedOptions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              <span className="ml-1">Advanced Options</span>
-            </button>
-          </div>
-          {showAdvancedOptions && (
-            <div className="mb-3 flex items-center">
-              <label htmlFor="radius" className="mr-2 whitespace-nowrap">Search Radius:</label>
-              <input
-                type="number"
-                id="radius"
-                placeholder="Miles"
-                value={radius}
-                onChange={(e) => setRadius(e.target.value)}
-                className="border p-2 w-20 rounded"
-              />
-              <span className="ml-2">miles</span>
-            </div>
-          )}
+
+          <WorkabilityControls 
+            onSortChange={setSortBy}
+            currentSort={sortBy}
+            radius={radius}
+            setRadius={setRadius}
+          />
+          
           <div className="flex justify-between items-center mt-4">
             <button
               onClick={searchPlaces}
@@ -458,27 +443,27 @@ const WorkfromPlacesApp = () => {
                             onClick={() => openPhotoModal(place)}
                           >
                             {place.thumbnail_img ? (
-                              <img
+                              <LazyImage
                                 src={place.thumbnail_img}
                                 alt={place.title}
+                                placeholder="https://placehold.co/100x100/e5e7eb/e5e7eb?text=Loading...&font=raleway"
                                 className="w-full h-full object-cover rounded"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = "https://placehold.co/100x100/e5e7eb/e5e7eb?text=No image&font=raleway";
-                                }}
                               />
                             ) : (
                               <span className="text-gray-400 text-xs">No image</span>
                             )}
                           </div>
                           <div className="flex-grow min-w-0">
-                            <h2 
-                              className="text-xl font-semibold mb-1 truncate cursor-pointer hover:text-blue-600 transition-colors" 
-                              title={place.title}
-                              onClick={() => openPhotoModal(place)}
-                            >
-                              {place.title}
-                            </h2>
+                            <div className="flex justify-between items-start">
+                              <h2 
+                                className="text-xl font-semibold mb-1 truncate cursor-pointer hover:text-blue-600 transition-colors" 
+                                title={place.title}
+                                onClick={() => openPhotoModal(place)}
+                              >
+                                {place.title}
+                              </h2>
+                              <WorkabilityScore place={place} variant="compact" />
+                            </div>
                             <p className="text-sm mb-1">Distance: {place.distance} miles</p>
                             {place.download && (
                               <div className="mb-1">
@@ -488,7 +473,17 @@ const WorkfromPlacesApp = () => {
                                 </p>
                               </div>
                             )}
-                            <p className="text-sm">Noise Level: {place.mappedNoise}</p>
+                            <div className="flex items-center text-sm">
+                              <span className="mr-1">Background Noise:</span>
+                              <span className={`font-medium ${
+                                mapNoiseLevel(place.noise_level || place.noise) === 'Below average' ? 'text-green-600' :
+                                mapNoiseLevel(place.noise_level || place.noise) === 'Average' ? 'text-blue-600' :
+                                mapNoiseLevel(place.noise_level || place.noise) === 'Above average' ? 'text-yellow-600' :
+                                'text-gray-600'
+                              }`}>
+                                {mapNoiseLevel(place.noise_level || place.noise)}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <div className="flex flex-wrap justify-between gap-2">
