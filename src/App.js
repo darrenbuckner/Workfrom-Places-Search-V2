@@ -513,7 +513,7 @@ const WorkfromPlacesApp = () => {
                           </button>
                           <button
                             onClick={() => reportPlace(place.ID)}
-                            className="text-yellow-500 hover:text-yellow-700 text-sm flex items-center"
+                            className="text-gray-500 hover:text-yellow-700 text-sm flex items-center"
                           >
                             <AlertTriangle size={16} className="mr-1 flex-shrink-0" />
                             <span className="hidden sm:inline">Report</span>
