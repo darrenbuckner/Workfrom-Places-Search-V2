@@ -8,6 +8,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import WorkabilityScore from './WorkabilityScore';
+import { useScrollLock } from './useScrollLock';
 
 const stripHtml = (html) => {
   const tmp = document.createElement("DIV");
@@ -16,12 +17,15 @@ const stripHtml = (html) => {
 };
 
 const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal }) => {
+
+  useScrollLock(true);
+
   const sanitizedDescription = selectedPlace?.description ? stripHtml(selectedPlace.description) : '';
   
   return (
     <div className="fixed inset-0 bg-black/90 z-50 overflow-y-auto md:overflow-hidden">
       <div className="min-h-screen md:flex md:items-center md:justify-center">
-        <div className="md:flex md:w-[90vw] md:max-w-6xl md:h-[85vh] bg-[#1a1f2c] md:rounded-lg overflow-hidden relative">
+        <div className="md:flex md:w-[90vw] md:max-w-6xl md:h-[85vh] bg-[#1a1f2c] md:rounded-lg overflow-hidden relative border">
           {/* Close Button - Visible on Desktop */}
           <button 
             onClick={() => setShowPhotoModal(false)}
@@ -92,17 +96,19 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                     {selectedPlace?.city}
                   </p>
                 </div>
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                    `${selectedPlace?.street}, ${selectedPlace?.city}`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors w-full sm:w-auto justify-center"
-                >
-                  <Navigation size={14} className="mr-2" />
-                  Get Directions
-                </a>
+                <div className="flex flex-col sm:flex-row sm:justify-end">
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                      `${selectedPlace?.street}, ${selectedPlace?.city}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors w-full sm:w-auto sm:ml-auto justify-center"
+                  >
+                    <Navigation size={14} className="mr-2" />
+                    Get Directions
+                  </a>
+                </div>
               </div>
 
               {/* Workability Score */}

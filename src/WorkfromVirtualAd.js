@@ -3,7 +3,7 @@ import { Users, Zap, Globe, ArrowRight, Layout } from 'lucide-react';
 
 const WorkfromVirtualAd = () => {
   return (
-    <div className="bg-[#160040] border p-4 rounded shadow-sm hover:shadow-md transition-shadow shadow-xl overflow-hidden text-white">
+    <div className="bg-[#160040] border rounded shadow-sm hover:shadow-md transition-shadow shadow-xl overflow-hidden text-white">
       <div className="p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
