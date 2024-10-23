@@ -91,7 +91,7 @@ const PlaceCard = ({ place, onPhotoClick }) => {
                 place.mappedNoise === 'Below average' ? 'text-green-600' :
                 place.mappedNoise === 'Average' ? 'text-blue-600' :
                 place.mappedNoise === 'Above average' ? 'text-yellow-600' :
-                'text-gray-600'
+                'text-text-primary'
               }`}>
                 {place.mappedNoise}
               </span>
@@ -102,7 +102,7 @@ const PlaceCard = ({ place, onPhotoClick }) => {
         {/* Actions */}
         <div className="flex flex-wrap justify-between gap-2">
           {place.os && (
-            <div className="text-gray-600 text-sm flex items-center">
+            <div className="text-text-primary text-sm flex items-center">
               <User size={16} className="mr-1 flex-shrink-0" />
               <span>{place.os}</span>
             </div>

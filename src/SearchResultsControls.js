@@ -11,10 +11,10 @@ const SearchResultsControls = ({
   setViewMode 
 }) => {
   return (
-    <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+    <div className="sticky top-0 z-10 bg-bg-primary/95 backdrop-blur-sm border-b border-border-primary py-3 mb-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-4 w-full sm:w-auto">
-          <span className="text-gray-600">
+          <span className="text-text-primary">
             Found {totalPlaces} places within {radius} miles
           </span>
         </div>

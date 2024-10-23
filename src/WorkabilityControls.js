@@ -5,27 +5,24 @@ const WorkabilityControls = ({
   currentSort,
   radius,
   setRadius,
-  showSortControl = true,  // Controls whether to show sort toggle
-  onSearch  // New prop for search function
+  showSortControl = true,
+  onSearch
 }) => {
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     onSearch?.();
   };
 
-  // Handler for radius change
   const handleRadiusChange = (e) => {
     const value = Math.max(1, Math.min(999, Number(e.target.value)));
     setRadius(value);
   };
 
-  // If not showing sort control, only show radius input
   if (!showSortControl) {
     return (
       <form onSubmit={handleSubmit} className="flex items-center gap-4">
-        <div className="w-24"> {/* Reduced width container */}
-          <label htmlFor="radius" className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="w-32">
+          <label htmlFor="radius" className="block text-sm font-medium text-text-primary mb-1.5">
             Search Radius
           </label>
           <div className="relative">
@@ -37,10 +34,14 @@ const WorkabilityControls = ({
               maxLength="3"
               value={radius}
               onChange={handleRadiusChange}
-              className="w-full rounded border-gray-300 shadow-sm pr-8"
+              className="w-full px-3 rounded-md bg-[#2a3142] border border-border-primary text-white 
+                placeholder-text-tertiary focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/50 
+                pr-8 h-10 shadow-sm transition-colors [appearance:textfield] 
+                [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+                hover:border-accent-secondary"
               placeholder="2"
             />
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm pointer-events-none">
               mi
             </span>
           </div>
@@ -49,7 +50,6 @@ const WorkabilityControls = ({
     );
   }
 
-  // Show toggle for sort control
   return (
     <div className="flex items-center gap-2">
       <label className="inline-flex items-center cursor-pointer">
@@ -59,8 +59,37 @@ const WorkabilityControls = ({
           onChange={(e) => onSortChange(e.target.checked ? 'score_high' : 'none')}
           className="sr-only peer"
         />
-        <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-        <span className="ml-2 text-sm font-medium text-gray-700">
+        <div className="relative w-11 h-6 bg-bg-secondary border border-border-primary
+          peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent-primary/30 
+          rounded-full peer 
+          peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full 
+          peer-checked:after:border-white 
+          peer-checked:bg-accent-primary 
+          peer-checked:border-accent-primary
+          after:content-[''] 
+          after:absolute 
+          after:top-[2px] 
+          after:start-[2px] 
+          after:bg-text-tertiary
+          after:border-none
+          after:rounded-full 
+          after:h-5 
+          after:w-5 
+          after:transition-all
+          hover:border-accent-secondary
+          transition-colors">
+          <span className="flex items-center justify-center w-full h-full">
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-medium select-none">
+              <span className={`absolute left-1.5 transition-opacity ${currentSort === 'score_high' ? 'opacity-0' : 'opacity-100'} text-text-secondary`}>
+                OFF
+              </span>
+              <span className={`absolute right-1.5 transition-opacity ${currentSort === 'score_high' ? 'opacity-100' : 'opacity-0'} text-white`}>
+                ON
+              </span>
+            </span>
+          </span>
+        </div>
+        <span className="ml-2 text-sm font-medium text-text-primary">
           Sort by score
         </span>
       </label>

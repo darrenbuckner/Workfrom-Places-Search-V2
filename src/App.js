@@ -6,9 +6,12 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowDownCircle,
-  InfoIcon
+  InfoIcon,
+  Moon,
+  Sun
 } from 'lucide-react';
 
+import { ThemeProvider, ThemeToggle } from './ThemeProvider';
 import HowItWorksModal from './HowItWorksModal';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
 import NearbyPlacesMap from './NearbyPlacesMap';
@@ -94,20 +97,29 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => (
 );
 
 const Footer = () => (
-  <footer className="mt-12 py-6 bg-gray-100">
-    <div className="container mx-auto text-center text-gray-600">
-      <p>&copy; 2024 Workfrom.</p>
-      <p className="mt-2">
-        <a href="#" className="text-blue-500 hover:underline">Terms of Service</a>
-        {' | '}
-        <a href="#" className="text-blue-500 hover:underline">Privacy Policy</a>
-      </p>
+  <footer className="mt-12 py-6 bg-bg-secondary border-t border-border-primary">
+    <div className="container mx-auto px-4 text-center">
+      <p className="text-text-secondary">&copy; 2024 Workfrom.</p>
+      <div className="mt-2 space-x-4">
+        <a 
+          href="#" 
+          className="text-accent-primary hover:text-accent-secondary transition-colors text-sm"
+        >
+          Terms of Service
+        </a>
+        <span className="text-text-tertiary">|</span>
+        <a 
+          href="#" 
+          className="text-accent-primary hover:text-accent-secondary transition-colors text-sm"
+        >
+          Privacy Policy
+        </a>
+      </div>
     </div>
   </footer>
 );
 
-const WorkfromPlacesApp = () => {
-  // State management with custom hooks
+const WorkfromPlacesContent = () => {  // State management with custom hooks
   const [location, setLocation] = useState(null);
   const [radius, setRadius] = useState(2);
   const [places, setPlaces] = useState([]);
@@ -271,20 +283,21 @@ const WorkfromPlacesApp = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-bg-primary">
       <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
-        {/* Optimized Header */}
+        {/* Header with Theme Toggle */}
         <header className="flex justify-between items-center mb-4 gap-2">
-          <div className="flex items-center min-w-0"> {/* add min-w-0 to allow truncation */}
+          <div className="flex items-center min-w-0">
             <WorkfromLogo />
-            <h1 className="text-lg sm:text-2xl font-bold ml-2 truncate">
+            <h1 className="text-lg sm:text-2xl font-bold ml-2 truncate text-text-primary">
               Workfrom Places Search
             </h1>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0"> {/* add flex-shrink-0 to prevent shrinking */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <ThemeToggle />
             <button
               onClick={() => setShowHowItWorks(true)}
-              className="p-1.5 sm:p-2 rounded hover:bg-gray-100 transition-colors flex items-center text-gray-600 hover:text-gray-900"
+              className="p-1.5 sm:p-2 rounded hover:bg-bg-secondary transition-colors flex items-center text-text-tertiary hover:text-text-primary"
               title="How It Works"
             >
               <InfoIcon size={16} />
@@ -294,7 +307,7 @@ const WorkfromPlacesApp = () => {
               href="https://workfrom.co/add"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 sm:p-2 rounded hover:bg-gray-200 transition-colors flex items-center text-xs sm:text-sm whitespace-nowrap"
+              className="p-1.5 sm:p-2 rounded hover:bg-bg-secondary transition-colors flex items-center text-xs sm:text-sm whitespace-nowrap text-text-primary"
             >
               <Plus size={16} />
               <span className="hidden sm:inline ml-1">Add Place</span>
@@ -304,21 +317,21 @@ const WorkfromPlacesApp = () => {
         </header>
 
         {/* Search Controls */}
-        <div className="bg-gray-100 p-4 rounded-lg shadow-sm mb-6">
+        <div className="bg-bg-secondary border border-border-primary rounded-lg p-4 shadow-sm mb-6">
           {location ? (
             <div className="mb-3">
-              <p>
+              <p className="text-text-primary">
                 Your location has been saved.{' '}
                 <button
                   onClick={clearLocation}
-                  className="text-blue-500 hover:underline"
+                  className="text-accent-primary hover:text-accent-secondary transition-colors underline"
                 >
-                  (clear)
+                  Undo
                 </button>
               </p>
             </div>
           ) : (
-            <p className="mb-3">Click search to use your current location</p>
+            <p className="mb-3 text-text-primary">Click search to use your current location</p>
           )}
 
           <div className="flex items-end gap-4">
@@ -332,7 +345,7 @@ const WorkfromPlacesApp = () => {
             </div>
             <button
               onClick={searchPlaces}
-              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors h-[38px]"
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-accent-secondary transition-colors h-[38px]"
               disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
             >
               {searchPhase === 'locating' ? 'Finding your location...' :
@@ -405,4 +418,13 @@ const WorkfromPlacesApp = () => {
   );
 };
 
-export default WorkfromPlacesApp;
+// Main App component
+const App = () => {
+  return (
+    <ThemeProvider>
+      <WorkfromPlacesContent />
+    </ThemeProvider>
+  );
+};
+
+export default App;

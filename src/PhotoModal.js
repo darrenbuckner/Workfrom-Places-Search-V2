@@ -20,28 +20,27 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   
   return (
     <div className="fixed inset-0 bg-black/90 z-50 overflow-y-auto md:overflow-hidden">
-      {/* Modal Container */}
       <div className="min-h-screen md:flex md:items-center md:justify-center">
-        <div className="md:flex md:w-[90vw] md:max-w-6xl md:h-[85vh] bg-white md:rounded-lg overflow-hidden relative">
+        <div className="md:flex md:w-[90vw] md:max-w-6xl md:h-[85vh] bg-[#1a1f2c] md:rounded-lg overflow-hidden relative">
           {/* Close Button - Visible on Desktop */}
           <button 
             onClick={() => setShowPhotoModal(false)}
-            className="hidden md:flex absolute right-4 top-4 z-20 items-center justify-center w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+            className="hidden md:flex absolute right-4 top-4 z-20 items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
           >
             <X size={20} />
           </button>
 
           {/* Mobile Header - Hidden on Desktop */}
-          <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b z-10 md:hidden">
+          <div className="sticky top-0 bg-[#1a1f2c]/95 backdrop-blur-sm border-b border-white/10 z-10 md:hidden">
             <div className="flex items-center justify-between p-3">
               <button 
                 onClick={() => setShowPhotoModal(false)}
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                className="flex items-center text-blue-300 hover:text-blue-200"
               >
                 <ChevronLeft size={20} className="mr-1" />
                 <span className="text-sm font-medium">Back</span>
               </button>
-              <h2 className="text-base font-semibold text-center flex-1 mx-4 truncate">
+              <h2 className="text-base font-semibold text-center flex-1 mx-4 truncate text-white">
                 {selectedPlace?.title}
               </h2>
               <div className="w-8" />
@@ -53,7 +52,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
             <div className="relative aspect-[4/3] md:aspect-auto md:h-full w-full">
               {isPhotoLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Loader size={32} className="text-white animate-spin" />
+                  <Loader size={32} className="text-blue-400 animate-spin" />
                 </div>
               ) : fullImg ? (
                 <img
@@ -62,11 +61,11 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                   className="w-full h-full object-contain md:object-cover"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = "https://placehold.co/800x600/e5e7eb/e5e7eb?text=Image not available&font=raleway";
+                    e.target.src = "https://placehold.co/800x600/1a1f2c/blue?text=Image not available&font=raleway";
                   }}
                 />
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-white/50">
+                <div className="absolute inset-0 flex items-center justify-center text-blue-300/50">
                   <p className="text-sm">No image available</p>
                 </div>
               )}
@@ -75,21 +74,21 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
 
           {/* Right Column - Content */}
           <div className="md:w-2/5 md:h-full md:overflow-y-auto">
-            <div className="p-4 bg-white space-y-4">
+            <div className="p-4 bg-[#1a1f2c] space-y-4">
               {/* Title - Desktop Only */}
               <div className="hidden md:block">
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-xl font-semibold text-white">
                   {selectedPlace?.title}
                 </h2>
               </div>
 
-              {/* Location & Actions - Redesigned for better spacing */}
+              {/* Location & Actions */}
               <div className="space-y-3">
                 <div className="flex flex-col">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-blue-200">
                     {selectedPlace?.street}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-blue-200">
                     {selectedPlace?.city}
                   </p>
                 </div>
@@ -109,20 +108,20 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
               {/* Workability Score */}
               <WorkabilityScore place={selectedPlace} variant="full" />
 
-              {/* Description */}
+              {/* Description - Updated with dark theme */}
               {sanitizedDescription && (
-                <div className="border rounded-lg">
-                  <div className="p-3">
-                    <div className="flex items-center text-gray-800 mb-2">
-                      <Quote size={16} className="mr-1 text-blue-500" />
-                      <h3 className="text-sm font-medium">A Closer Look</h3>
+                <div className="bg-[#2a3142] rounded-lg border border-white/10">
+                  <div className="p-4">
+                    <div className="flex items-center mb-3">
+                      <Quote size={16} className="mr-2 text-blue-400" />
+                      <h3 className="text-sm font-medium text-blue-300">A Closer Look</h3>
                     </div>
-                    <p className="text-gray-600 italic">
+                    <p className="text-blue-100 leading-relaxed">
                       {sanitizedDescription}
                     </p>
                   </div>
                   {selectedPlace?.os && (
-                    <div className="border-t px-3 py-2 bg-gray-50 text-xs text-gray-500">
+                    <div className="border-t border-white/10 px-4 py-2.5 bg-[#232838] text-xs text-blue-300">
                       Added by {selectedPlace.os}
                     </div>
                   )}
