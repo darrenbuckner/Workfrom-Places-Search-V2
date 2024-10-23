@@ -86,7 +86,7 @@ const PlaceCard = ({ place, onPhotoClick }) => {
             )}
 
             <div className="flex items-center text-sm">
-              <span className="mr-1">Background Noise:</span>
+              <span className="mr-1">Noise Levels:</span>
               <span className={`font-medium ${
                 place.mappedNoise === 'Below average' ? 'text-green-600' :
                 place.mappedNoise === 'Average' ? 'text-blue-600' :
