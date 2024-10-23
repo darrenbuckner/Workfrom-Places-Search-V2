@@ -1,4 +1,3 @@
-// WorkabilityControls.js
 import React from 'react';
 
 const WorkabilityControls = ({ 
@@ -31,11 +30,13 @@ const WorkabilityControls = ({
           <input
             type="number"
             id="radius"
-            min="1"
+            min="0.1"
             max="50"
+            step="0.1"
             value={radius}
-            onChange={(e) => setRadius(Math.max(1, Math.min(50, Number(e.target.value))))}
-            className="w-full rounded border-gray-300 shadow-sm"
+            onChange={(e) => setRadius(Math.max(0.1, Math.min(50, Number(e.target.value))))}
+            onFocus={(e) => e.target.select()}
+            className="w-32 rounded border-gray-300 shadow-sm"
             placeholder="Miles"
           />
         </div>
