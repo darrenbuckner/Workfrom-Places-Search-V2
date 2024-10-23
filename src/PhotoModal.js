@@ -5,8 +5,7 @@ import {
   Navigation, 
   Quote,
   ExternalLink,
-  ChevronLeft,
-  AlertCircle
+  ChevronLeft
 } from 'lucide-react';
 import WorkabilityScore from './WorkabilityScore';
 
@@ -84,11 +83,14 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 </h2>
               </div>
 
-              {/* Location & Actions */}
-              <div className="flex justify-between items-start">
-                <div>
+              {/* Location & Actions - Redesigned for better spacing */}
+              <div className="space-y-3">
+                <div className="flex flex-col">
                   <p className="text-sm text-gray-600">
-                    {selectedPlace?.street}, {selectedPlace?.city}
+                    {selectedPlace?.street}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {selectedPlace?.city}
                   </p>
                 </div>
                 <a
@@ -97,10 +99,10 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center px-3 py-1.5 bg-blue-500 text-white text-sm rounded-full hover:bg-blue-600"
+                  className="inline-flex items-center px-4 py-2 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-colors w-full sm:w-auto justify-center"
                 >
-                  <Navigation size={14} className="mr-1" />
-                  Directions
+                  <Navigation size={14} className="mr-2" />
+                  Get Directions
                 </a>
               </div>
 
@@ -115,7 +117,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       <Quote size={16} className="mr-1 text-blue-500" />
                       <h3 className="text-sm font-medium">A Closer Look</h3>
                     </div>
-                    <p className="text-md text-gray-600 italic">
+                    <p className="text-gray-600 italic">
                       {sanitizedDescription}
                     </p>
                   </div>
@@ -126,27 +128,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                   )}
                 </div>
               )}
-
-              {/* Data Accuracy Callout */}
-              <div className="mt-6 border rounded-lg bg-blue-50 p-4">
-                <div className="flex items-start space-x-3">
-                  <AlertCircle size={20} className="text-blue-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-600 mb-2">
-                      Information about this location is community-maintained and may be incomplete or outdated.
-                    </p>
-                    <a
-                      href={`https://workfrom.co/places/${selectedPlace?.ID}/edit`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-blue-500 hover:text-blue-700 text-sm font-medium"
-                    >
-                      <ExternalLink size={14} className="mr-1" />
-                      Update this listing
-                    </a>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
