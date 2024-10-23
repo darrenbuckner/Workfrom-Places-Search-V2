@@ -301,7 +301,7 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
               title="How It Works"
             >
               <InfoIcon size={16} />
-              <span className="hidden sm:inline ml-1">How It Works</span>
+              <span className="hidden sm:inline ml-1 items-center text-xs sm:text-sm whitespace-nowrap text-text-primary">How It Works</span>
             </button>
             <a
               href="https://workfrom.co/add"
@@ -348,8 +348,8 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
               className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-accent-secondary transition-colors h-[38px]"
               disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
             >
-              {searchPhase === 'locating' ? 'Finding your location...' :
-               searchPhase === 'loading' ? 'Locating nearby places...' :
+              {searchPhase === 'locating' ? 'Getting your location...' :
+               searchPhase === 'loading' ? 'Searching nearby...' :
                'Search'}
             </button>
           </div>
