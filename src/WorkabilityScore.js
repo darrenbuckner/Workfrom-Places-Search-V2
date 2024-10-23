@@ -188,9 +188,6 @@ const WorkabilityScore = ({ place, variant = 'full' }) => {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
               <div className="flex items-baseline">
                 <span className="text-gray-600 font-medium">{factor.name}</span>
-                <span className="text-sm text-gray-500 ml-2">
-                  {factor.score}/{factor.max} pts
-                </span>
               </div>
               <span className="text-gray-500 text-sm">{factor.detail}</span>
             </div>

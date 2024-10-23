@@ -27,6 +27,7 @@ import VirtualList from './VirtualList';
 import WorkabilityScore from './WorkabilityScore';
 import WorkabilityControls from './WorkabilityControls';
 import { calculateWorkabilityScore } from './WorkabilityScore';
+import SearchResultsControls from './SearchResultsControls';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 
@@ -123,14 +124,17 @@ const WorkfromPlacesApp = () => {
     return 'Unknown';
   }, []);
 
-  const processPlaces = useCallback((rawPlaces) => {
-    let processed = rawPlaces.map(place => ({
+  // Convert processPlaces to useMemo to efficiently handle resort
+  const processedPlaces = useMemo(() => {
+    if (!places.length) return [];
+    
+    let processed = places.map(place => ({
       ...place,
       mappedNoise: mapNoiseLevel(place.noise_level || place.noise),
       workabilityScore: calculateWorkabilityScore(place).score
     }));
 
-    // Always sort by score (default high to low), unless explicitly set to 'none'
+    // Sort based on current sortBy value
     if (sortBy !== 'none') {
       processed.sort((a, b) => 
         sortBy === 'score_high' 
@@ -140,7 +144,7 @@ const WorkfromPlacesApp = () => {
     }
 
     return processed;
-  }, [mapNoiseLevel, sortBy]);
+  }, [places, sortBy, mapNoiseLevel]);
 
   const searchPlaces = useCallback(async () => {
     setSearchPhase('locating');
@@ -163,14 +167,11 @@ const WorkfromPlacesApp = () => {
       const data = await response.json();
 
       if (data.meta.code === 200 && Array.isArray(data.response)) {
-        // Process places with workability score
-        let processedPlaces = processPlaces(data.response);
-        
-        setPlaces(processedPlaces);
-        setTotalPlaces(processedPlaces.length);
-        setTotalPages(Math.ceil(processedPlaces.length / itemsPerPage));
+        setPlaces(data.response);
+        setTotalPlaces(data.response.length);
+        setTotalPages(Math.ceil(data.response.length / itemsPerPage));
 
-        if (processedPlaces.length === 0) {
+        if (data.response.length === 0) {
           setError('No places found matching your criteria. Try adjusting your filters or increasing the radius.');
         }
       } else {
@@ -185,7 +186,7 @@ const WorkfromPlacesApp = () => {
     } finally {
       setSearchPhase('complete');
     }
-  }, [location, radius, getLocation, processPlaces]);
+  }, [location, radius, getLocation]);
 
   const fetchPlacePhotos = useCallback(async (placeId) => {
     setIsPhotoLoading(true);
@@ -311,7 +312,16 @@ const WorkfromPlacesApp = () => {
     </footer>
   ), []);
 
-  const paginatedPlaces = places.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const handleSort = useCallback((newSortValue) => {
+    setSortBy(newSortValue);
+    setCurrentPage(1); // Reset to first page when sorting changes
+  }, []);
+
+  // Update pagination to use processedPlaces
+  const paginatedPlaces = processedPlaces.slice(
+    (currentPage - 1) * itemsPerPage, 
+    currentPage * itemsPerPage
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -365,8 +375,8 @@ const WorkfromPlacesApp = () => {
           {location ? (
             <div className="mb-3">
               <p>Your location has been saved.&nbsp;
-                <a
-                  href="#"
+                
+                <a href="#"
                   onClick={(e) => { e.preventDefault(); clearLocation(); }}
                   className="text-blue-500 hover:underline"
                 >
@@ -378,48 +388,38 @@ const WorkfromPlacesApp = () => {
             <p className="mb-3">Click search to use your current location</p>
           )}
 
-          <WorkabilityControls 
-            onSortChange={setSortBy}
-            currentSort={sortBy}
-            radius={radius}
-            setRadius={setRadius}
-          />
-          
-          <div className="flex justify-between items-center mt-4">
+          <div className="flex items-end gap-4">
+            <div className="flex-1">
+              <WorkabilityControls 
+                radius={radius}
+                setRadius={setRadius}
+                showSortControl={false}
+              />
+            </div>
             <button
               onClick={searchPlaces}
-              className="bg-blue-500 text-white p-2 px-6 py-3 rounded hover:bg-blue-600 transition-colors"
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition-colors h-[38px]"
               disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
             >
               {searchPhase === 'locating' && 'Finding your location...'}
               {searchPhase === 'loading' && 'Locating nearby places...'}
               {(searchPhase === 'initial' || searchPhase === 'complete') && 'Search'}
             </button>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-              >
-                <List size={20} />
-              </button>
-              <button
-                onClick={() => setViewMode('map')}
-                className={`p-2 rounded ${viewMode === 'map' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-              >
-                <Map size={20} />
-              </button>
-            </div>
           </div>
         </div>
 
         {error && <MessageBanner message={error} type="error" />}
         {loading && <MessageBanner message="Loading..." type="info" />}
 
-        {hasSearched && places.length > 0 && (
+        {hasSearched && processedPlaces.length > 0 && (
           <div className="mb-12">
-            <MessageBanner 
-              message={`Found ${totalPlaces} place${totalPlaces !== 1 ? 's' : ''} within ${radius} miles.`}
-              type="info"
+            <SearchResultsControls 
+              totalPlaces={totalPlaces}
+              radius={radius}
+              sortBy={sortBy}
+              onSortChange={handleSort}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
             />
             
             {viewMode === 'list' ? (
@@ -476,12 +476,12 @@ const WorkfromPlacesApp = () => {
                             <div className="flex items-center text-sm">
                               <span className="mr-1">Background Noise:</span>
                               <span className={`font-medium ${
-                                mapNoiseLevel(place.noise_level || place.noise) === 'Below average' ? 'text-green-600' :
-                                mapNoiseLevel(place.noise_level || place.noise) === 'Average' ? 'text-blue-600' :
-                                mapNoiseLevel(place.noise_level || place.noise) === 'Above average' ? 'text-yellow-600' :
+                                place.mappedNoise === 'Below average' ? 'text-green-600' :
+                                place.mappedNoise === 'Average' ? 'text-blue-600' :
+                                place.mappedNoise === 'Above average' ? 'text-yellow-600' :
                                 'text-gray-600'
                               }`}>
-                                {mapNoiseLevel(place.noise_level || place.noise)}
+                                {place.mappedNoise}
                               </span>
                             </div>
                           </div>
@@ -524,12 +524,11 @@ const WorkfromPlacesApp = () => {
                     </div>
                   </React.Fragment>
                 ))}
+                <Pagination />
               </div>
             ) : (
-              <NearbyPlacesMap places={places} userLocation={location} />
+              <NearbyPlacesMap places={processedPlaces} userLocation={location} />
             )}
-            
-            {viewMode === 'list' && <Pagination />}
           </div>
         )}
 
