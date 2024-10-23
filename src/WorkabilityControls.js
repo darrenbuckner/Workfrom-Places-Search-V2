@@ -5,12 +5,25 @@ const WorkabilityControls = ({
   currentSort,
   radius,
   setRadius,
-  showSortControl = true  // Controls whether to show sort toggle
+  showSortControl = true,  // Controls whether to show sort toggle
+  onSearch  // New prop for search function
 }) => {
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSearch?.();
+  };
+
+  // Handler for radius change
+  const handleRadiusChange = (e) => {
+    const value = Math.max(1, Math.min(999, Number(e.target.value)));
+    setRadius(value);
+  };
+
   // If not showing sort control, only show radius input
   if (!showSortControl) {
     return (
-      <div className="flex items-center gap-4">
+      <form onSubmit={handleSubmit} className="flex items-center gap-4">
         <div className="w-24"> {/* Reduced width container */}
           <label htmlFor="radius" className="block text-sm font-medium text-gray-700 mb-1">
             Search Radius
@@ -23,10 +36,7 @@ const WorkabilityControls = ({
               max="999"
               maxLength="3"
               value={radius}
-              onChange={(e) => {
-                const value = Math.max(1, Math.min(999, Number(e.target.value)));
-                setRadius(value);
-              }}
+              onChange={handleRadiusChange}
               className="w-full rounded border-gray-300 shadow-sm pr-8"
               placeholder="2"
             />
@@ -35,7 +45,7 @@ const WorkabilityControls = ({
             </span>
           </div>
         </div>
-      </div>
+      </form>
     );
   }
 

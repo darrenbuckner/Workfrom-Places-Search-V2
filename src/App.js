@@ -42,7 +42,7 @@ const stripHtml = (html) => {
 
 // Components
 const WorkfromLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-12 h-12">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-8 h-8 sm:w-10 sm:h-10">
     <circle cx="50" cy="50" r="48" fill="#160040" />
     <path d="M50 75 L75 40 A35 35 0 0 0 25 40 Z" fill="#F5A623" />
     <path d="M50 75 L67 50 A24 24 0 0 0 33 50 Z" fill="#FFFFFF" />
@@ -272,30 +272,33 @@ const WorkfromPlacesApp = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="container mx-auto p-4 max-w-2xl flex-grow">
-        {/* Header */}
-        <header className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
+      <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
+        {/* Optimized Header */}
+        <header className="flex justify-between items-center mb-4 gap-2">
+          <div className="flex items-center min-w-0"> {/* add min-w-0 to allow truncation */}
             <WorkfromLogo />
-            <h1 className="text-2xl font-bold ml-2">Workfrom Places Search</h1>
+            <h1 className="text-lg sm:text-2xl font-bold ml-2 truncate">
+              Workfrom Places Search
+            </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0"> {/* add flex-shrink-0 to prevent shrinking */}
             <button
               onClick={() => setShowHowItWorks(true)}
-              className="p-1 sm:p-2 rounded hover:bg-gray-100 transition-colors flex items-center text-gray-600 hover:text-gray-900"
+              className="p-1.5 sm:p-2 rounded hover:bg-gray-100 transition-colors flex items-center text-gray-600 hover:text-gray-900"
+              title="How It Works"
             >
-              <InfoIcon size={16} className="mr-1" />
-              <span className="hidden sm:inline">How It Works</span>
+              <InfoIcon size={16} />
+              <span className="hidden sm:inline ml-1">How It Works</span>
             </button>
             <a
               href="https://workfrom.co/add"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1 sm:p-2 rounded hover:bg-gray-200 transition-colors flex items-center text-xs sm:text-sm"
+              className="p-1.5 sm:p-2 rounded hover:bg-gray-200 transition-colors flex items-center text-xs sm:text-sm whitespace-nowrap"
             >
-              <Plus size={16} className="mr-1" />
-              <span className="hidden sm:inline">Add Place</span>
-              <span className="sm:hidden">Add</span>
+              <Plus size={16} />
+              <span className="hidden sm:inline ml-1">Add Place</span>
+              <span className="sm:hidden ml-1">Add</span>
             </a>
           </div>
         </header>
@@ -324,6 +327,7 @@ const WorkfromPlacesApp = () => {
                 radius={radius}
                 setRadius={setRadius}
                 showSortControl={false}
+                onSearch={searchPlaces}
               />
             </div>
             <button
