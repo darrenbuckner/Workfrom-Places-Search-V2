@@ -5,10 +5,7 @@ import {
   ChevronUp,
   AlertCircle,
   AlertTriangle,
-  ArrowDownCircle,
   InfoIcon,
-  Moon,
-  Sun
 } from 'lucide-react';
 
 import { ThemeProvider, ThemeToggle } from './ThemeProvider';
@@ -17,9 +14,10 @@ import WorkfromVirtualAd from './WorkfromVirtualAd';
 import NearbyPlacesMap from './NearbyPlacesMap';
 import PhotoModal from './PhotoModal';
 import PlaceCard from './PlaceCard';
-import WorkabilityControls from './WorkabilityControls';
 import SearchResultsControls from './SearchResultsControls';
 import { calculateWorkabilityScore } from './WorkabilityScore';
+import PostSearchFilters from './PostSearchFilters';
+import SearchButton from './SearchButton';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 const ITEMS_PER_PAGE = 10;
@@ -50,13 +48,8 @@ const WorkfromLogo = () => (
     viewBox="0 0 100 100" 
     className="w-8 h-8 sm:w-10 sm:h-10"
   >
-    {/* Dark theme base circle */}
     <circle cx="50" cy="50" r="48" fill="#1a1f2c" />
-    
-    {/* Outer glow effect */}
     <circle cx="50" cy="50" r="46" fill="none" stroke="#2a3142" strokeWidth="4" />
-    
-    {/* Mountain shape with gradient */}
     <defs>
       <linearGradient id="mountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#3b82f6" />
@@ -68,8 +61,6 @@ const WorkfromLogo = () => (
       fill="url(#mountainGradient)"
       opacity="0.9"
     />
-    
-    {/* Inner mountain with subtle gradient */}
     <defs>
       <linearGradient id="innerMountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#f8fafc" />
@@ -81,21 +72,10 @@ const WorkfromLogo = () => (
       fill="url(#innerMountainGradient)"
       opacity="0.95"
     />
-    
-    {/* Bottom dot with glow effect */}
     <circle cx="50" cy="75" r="6" fill="#3b82f6" />
-    <circle 
-      cx="50" 
-      cy="75" 
-      r="7" 
-      fill="none" 
-      stroke="#60a5fa" 
-      strokeWidth="2" 
-      opacity="0.5"
-    />
+    <circle cx="50" cy="75" r="7" fill="none" stroke="#60a5fa" strokeWidth="2" opacity="0.5" />
   </svg>
 );
-
 
 const MessageBanner = ({ message, type = 'info' }) => {
   const styles = {
@@ -152,7 +132,8 @@ const Footer = () => (
   </footer>
 );
 
-const WorkfromPlacesContent = () => {  // State management with custom hooks
+const WorkfromPlacesContent = () => {
+  // Basic state
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState('');
   const [radius, setRadius] = useState(2);
@@ -164,18 +145,26 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [fullImg, setFullImg] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
-  const [totalPlaces, setTotalPlaces] = useState(0);
-  const [showDescription, setShowDescription] = useState(false);
-  const [viewMode, setViewMode] = useState('list');
-  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
-  const [sortBy, setSortBy] = useState('score_high');
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
+  const [viewMode, setViewMode] = useState('list');
+  const [sortBy, setSortBy] = useState('score_high');
+
+  // Post-search filters state
+  const [postSearchFilters, setPostSearchFilters] = useState({
+    type: 'any',
+    power: 'any',
+    noise: 'any',
+    openNow: false
+  });
 
   // Load saved location on mount
   useEffect(() => {
-    const savedLocation = localStorage.getItem('savedLocation');
-    if (savedLocation) {
-      setLocation(JSON.parse(savedLocation));
+    const savedLocationData = localStorage.getItem('savedLocationData');
+    if (savedLocationData) {
+      const { location, locationName: savedName } = JSON.parse(savedLocationData);
+      setLocation(location);
+      setLocationName(savedName);
     }
   }, []);
 
@@ -194,21 +183,34 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
             longitude: position.coords.longitude
           };
           
-          // Get friendly location name using reverse geocoding
           try {
             const response = await fetch(
               `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`
             );
             const data = await response.json();
             const friendly = data.address?.city || data.address?.town || data.address?.suburb || 'your area';
+            
+            const locationData = {
+              location: newLocation,
+              locationName: friendly
+            };
+            localStorage.setItem('savedLocationData', JSON.stringify(locationData));
+            
             setLocationName(friendly);
+            resolve(newLocation);
           } catch (err) {
             console.error('Error getting location name:', err);
-            setLocationName('your area');
+            const friendly = 'your area';
+            
+            const locationData = {
+              location: newLocation,
+              locationName: friendly
+            };
+            localStorage.setItem('savedLocationData', JSON.stringify(locationData));
+            
+            setLocationName(friendly);
+            resolve(newLocation);
           }
-
-          localStorage.setItem('savedLocation', JSON.stringify(newLocation));
-          resolve(newLocation);
         },
         () => reject(new Error('Unable to retrieve your location'))
       );
@@ -221,27 +223,69 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
     setLocationName('');
     setPlaces([]);
     setError('');
-    localStorage.removeItem('savedLocation');
+    localStorage.removeItem('savedLocationData');
   }, []);
+
+  // Filter places based on post-search filters
+  const getFilteredPlaces = useCallback((places) => {
+    return places.filter(place => {
+      // Filter by type
+      if (postSearchFilters.type !== 'any' && place.type !== postSearchFilters.type) {
+        return false;
+      }
+
+      // Filter by power
+      if (postSearchFilters.power !== 'any') {
+        const powerValue = String(place.power || '').toLowerCase();
+        if (!powerValue.includes(postSearchFilters.power)) {
+          return false;
+        }
+      }
+
+      // Filter by noise level
+      if (postSearchFilters.noise !== 'any') {
+        const noise = String(place.noise_level || place.noise || '').toLowerCase();
+        if (postSearchFilters.noise === 'quiet' && !noise.includes('quiet') && !noise.includes('low')) {
+          return false;
+        }
+        if (postSearchFilters.noise === 'moderate' && !noise.includes('moderate') && !noise.includes('average')) {
+          return false;
+        }
+        if (postSearchFilters.noise === 'noisy' && !noise.includes('noisy') && !noise.includes('high')) {
+          return false;
+        }
+      }
+
+      // Filter by open now
+      if (postSearchFilters.openNow && !place.hr_formatted) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [postSearchFilters]);
+
+  // Handle post-search filter changes
+  const handlePostSearchFilter = (key, value) => {
+    setPostSearchFilters(prev => ({ ...prev, [key]: value }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
 
   // Process and sort places
   const processedPlaces = useMemo(() => {
     if (!places.length) return [];
     
-    const processed = places.map(place => ({
+    const filtered = getFilteredPlaces(places);
+    const processed = filtered.map(place => ({
       ...place,
       mappedNoise: mapNoiseLevel(place.noise_level || place.noise),
       workabilityScore: calculateWorkabilityScore(place).score
     }));
 
-    return sortBy !== 'none' 
-      ? processed.sort((a, b) => 
-          sortBy === 'score_high' 
-            ? b.workabilityScore - a.workabilityScore 
-            : a.workabilityScore - b.workabilityScore
-        )
+    return sortBy === 'score_high' 
+      ? processed.sort((a, b) => b.workabilityScore - a.workabilityScore)
       : processed;
-  }, [places, sortBy]);
+  }, [places, sortBy, getFilteredPlaces]);
 
   // Paginated places
   const paginatedPlaces = useMemo(() => 
@@ -252,24 +296,24 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
     [processedPlaces, currentPage]
   );
 
-  // Add ref for the container
-  const resultsContainerRef = useRef(null);
-
-  // Add effect to scroll to top when page changes
+  // Update total pages when filtered results change
   useEffect(() => {
-    if (resultsContainerRef.current) {
-      resultsContainerRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-  }, [currentPage]);
+    setTotalPages(Math.ceil(processedPlaces.length / ITEMS_PER_PAGE));
+  }, [processedPlaces.length]);
 
   // Search places
   const searchPlaces = useCallback(async () => {
     setSearchPhase('locating');
     setError('');
     setCurrentPage(1);
+    
+    // Reset filters on new search
+    setPostSearchFilters({
+      type: 'any',
+      power: 'any',
+      noise: 'any',
+      openNow: false
+    });
 
     try {
       const currentLocation = location || await getLocation();
@@ -277,17 +321,16 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
       setSearchPhase('loading');
 
       const response = await fetch(
-        `${API_BASE_URL}/places/ll/${currentLocation.latitude},${currentLocation.longitude}?radius=${radius}&appid=${process.env.REACT_APP_API_KEY}&rpp=200`
+        `${API_BASE_URL}/places/ll/${currentLocation.latitude},${currentLocation.longitude}?radius=${radius}&appid=${process.env.REACT_APP_API_KEY}&rpp=100`
       );
+      
       const data = await response.json();
 
       if (data.meta.code === 200 && Array.isArray(data.response)) {
         setPlaces(data.response);
-        setTotalPlaces(data.response.length);
-        setTotalPages(Math.ceil(data.response.length / ITEMS_PER_PAGE));
 
         if (data.response.length === 0) {
-          setError('No places found matching your criteria. Try adjusting your filters or increasing the radius.');
+          setError('No places found in your area. Try increasing the search radius.');
         }
       } else {
         throw new Error('Unexpected response from the server');
@@ -295,7 +338,6 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
     } catch (err) {
       setError(`An error occurred: ${err.message}`);
       setPlaces([]);
-      setTotalPlaces(0);
     } finally {
       setSearchPhase('complete');
     }
@@ -328,20 +370,25 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
 
   const handleSort = useCallback((newSortValue) => {
     setSortBy(newSortValue);
-    
-    // Calculate what page the first item on the current page would be on after sorting
-    const firstItemIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    if (firstItemIndex >= places.length) {
-      // If the current page would be invalid after sorting, reset to page 1
-      setCurrentPage(1);
+    setCurrentPage(1);
+  }, []);
+
+  const resultsContainerRef = useRef(null);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    if (resultsContainerRef.current) {
+      resultsContainerRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
     }
-    // Otherwise, keep the current page
-  }, [places.length, currentPage]);
+  }, [currentPage]);
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
-        {/* Header with Theme Toggle */}
+      {/* Header with Theme Toggle */}
         <header className="flex justify-between items-center mb-4 gap-2">
           <div className="flex items-center min-w-0">
             <WorkfromLogo />
@@ -357,7 +404,9 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
               title="How It Works"
             >
               <InfoIcon size={16} />
-              <span className="hidden sm:inline ml-1 items-center text-xs sm:text-sm whitespace-nowrap text-text-primary">How It Works</span>
+              <span className="hidden sm:inline ml-1 items-center text-xs sm:text-sm whitespace-nowrap text-text-primary">
+                How It Works
+              </span>
             </button>
             <a
               href="https://workfrom.co/add"
@@ -377,37 +426,66 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
           {location ? (
             <div className="mb-3">
               <p className="text-text-primary">
-                Searching your last location in {locationName}.{' '}
+                Using your last location in {locationName}.{' '}
                 <button
                   onClick={clearLocation}
                   className="text-accent-primary hover:text-accent-secondary transition-colors underline"
                 >
-                  Change location
-                </button>
+                  Start over
+                </button> to search a new area.
               </p>
             </div>
           ) : (
-            <p className="mb-3 text-text-primary">Click search to use your current location</p>
+            <p className="mb-3 text-text-primary">
+              <strong>Click search</strong> to discover work-friendly places nearby.
+            </p>
           )}
 
           <div className="flex items-end gap-4">
             <div className="flex-1">
-              <WorkabilityControls 
-                radius={radius}
-                setRadius={setRadius}
-                showSortControl={false}
-                onSearch={searchPlaces}
-              />
+              <label htmlFor="radius" className="block text-sm font-medium text-text-primary mb-1.5">
+                Search Radius
+              </label>
+              <div className="relative w-[120px]">
+                <input
+                  type="number"
+                  id="radius"
+                  min="0.5"
+                  max="999"
+                  step="0.1"
+                  value={radius}
+                  onChange={(e) => setRadius(Math.max(0.5, Math.min(999, Number(e.target.value))))}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      searchPlaces(); // Changed from onSearch?.(). to searchPlaces()
+                    }
+                  }}
+                  className="w-full h-10 px-3 rounded-md border transition-colors
+                    bg-[#2a3142] dark:bg-[#2a3142] 
+                    text-gray-900 dark:text-white
+                    border-border-primary
+                    placeholder-text-tertiary 
+                    focus:border-accent-primary 
+                    focus:ring-1 focus:ring-accent-primary/50 
+                    pr-8
+                    [appearance:textfield] 
+                    [&::-webkit-outer-spin-button]:appearance-none 
+                    [&::-webkit-inner-spin-button]:appearance-none 
+                    hover:border-accent-secondary"
+                  placeholder="2"
+                />
+
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary text-sm pointer-events-none">
+                  mi
+                </span>
+              </div>
             </div>
-            <button
+            <SearchButton
               onClick={searchPlaces}
-              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-accent-secondary transition-colors h-[38px]"
               disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
-            >
-              {searchPhase === 'locating' ? 'Getting your location...' :
-               searchPhase === 'loading' ? 'Searching nearby...' :
-               'Search'}
-            </button>
+              searchPhase={searchPhase}
+            />
           </div>
         </div>
 
@@ -417,8 +495,15 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
         {/* Results */}
         {places.length > 0 && (
           <div className="mb-12" ref={resultsContainerRef}>
+            {/* Post-Search Filters */}
+            <PostSearchFilters
+              onFilterChange={handlePostSearchFilter}
+              currentFilters={postSearchFilters}
+              className="mb-6"
+            />
+
             <SearchResultsControls 
-              totalPlaces={totalPlaces}
+              totalPlaces={processedPlaces.length}
               radius={radius}
               sortBy={sortBy}
               onSortChange={handleSort}
@@ -426,7 +511,12 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
               setViewMode={setViewMode}
             />
             
-            {viewMode === 'list' ? (
+            {processedPlaces.length === 0 ? (
+              <MessageBanner 
+                message="No places match your current filters. Try adjusting your criteria." 
+                type="info" 
+              />
+            ) : viewMode === 'list' ? (
               <div className="space-y-6">
                 {paginatedPlaces.map((place, index) => (
                   <React.Fragment key={place.ID}>
