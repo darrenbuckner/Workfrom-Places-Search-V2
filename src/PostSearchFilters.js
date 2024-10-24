@@ -3,7 +3,8 @@ import {
   ChevronDown,
   ChevronUp,
   SlidersHorizontal,
-  Volume2
+  Volume2,
+  Check
 } from 'lucide-react';
 import CustomSelect from './CustomSelect';
 
@@ -28,6 +29,10 @@ const PostSearchFilters = ({
     { value: 'noisy', label: 'Lively' }
   ];
 
+  const isFilterActive = (filterType, value) => {
+    return currentFilters[filterType] === value;
+  };
+
   return (
     <div className={`${className} border border-border-primary rounded-lg bg-bg-secondary`}>
       <div className="p-4">
@@ -45,9 +50,12 @@ const PostSearchFilters = ({
           {/* Advanced Filters Toggle */}
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="self-end h-10 px-4 flex items-center gap-1.5 text-accent-primary 
-              hover:text-accent-secondary text-sm font-medium transition-colors border 
-              border-border-primary rounded-md bg-bg-tertiary hover:border-accent-secondary"
+            className={`self-end h-10 px-4 flex items-center gap-1.5 transition-colors border 
+              rounded-md bg-bg-tertiary 
+              ${Object.values(currentFilters).some(value => value !== 'any' && value !== false)
+                ? 'text-accent-primary border-accent-primary hover:border-accent-secondary'
+                : 'text-text-primary border-border-primary hover:border-accent-secondary'
+              }`}
           >
             <SlidersHorizontal size={14} />
             <span className="hidden sm:inline">
@@ -66,25 +74,31 @@ const PostSearchFilters = ({
                 Noise Level
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                {noiseLevels.map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => onFilterChange('noise', value)}
-                    className={`p-3 rounded-md border transition-colors text-left ${
-                      currentFilters.noise === value
-                        ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-                        : 'border-border-primary hover:border-accent-primary/50 bg-bg-tertiary'
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Volume2 
-                        size={14} 
-                        className={currentFilters.noise === value ? 'text-accent-primary' : 'text-text-secondary'} 
-                      />
-                      <span className="font-medium">{label}</span>
-                    </div>
-                  </button>
-                ))}
+                {noiseLevels.map(({ value, label }) => {
+                  const isActive = isFilterActive('noise', value);
+                  return (
+                    <button
+                      key={value}
+                      onClick={() => onFilterChange('noise', value)}
+                      className={`relative p-3 rounded-md border transition-colors text-left group ${
+                        isActive
+                          ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
+                          : 'border-border-primary hover:border-accent-primary/50 bg-bg-tertiary text-text-primary'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Volume2 
+                          size={14} 
+                          className={isActive ? 'text-accent-primary' : 'text-text-secondary'} 
+                        />
+                        <span className="font-medium">{label}</span>
+                        {isActive && (
+                          <Check size={14} className="ml-auto text-accent-primary" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
