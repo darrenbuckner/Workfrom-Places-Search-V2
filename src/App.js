@@ -99,22 +99,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => (
 const Footer = () => (
   <footer className="mt-12 py-6 bg-bg-secondary border-t border-border-primary">
     <div className="container mx-auto px-4 text-center">
-      <p className="text-text-secondary">&copy; 2024 Workfrom.</p>
-      <div className="mt-2 space-x-4">
-        <a 
-          href="#" 
-          className="text-accent-primary hover:text-accent-secondary transition-colors text-sm"
-        >
-          Terms of Service
-        </a>
-        <span className="text-text-tertiary">|</span>
-        <a 
-          href="#" 
-          className="text-accent-primary hover:text-accent-secondary transition-colors text-sm"
-        >
-          Privacy Policy
-        </a>
-      </div>
+      <p className="text-text-secondary">&copy; Workfrom Places</p>
     </div>
   </footer>
 );

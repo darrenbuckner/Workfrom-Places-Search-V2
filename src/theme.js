@@ -11,8 +11,8 @@ export const darkTheme = {
   'text-tertiary': '#64748b', // blue-300
   
   // Accent colors
-  'accent-primary': '#3b82f6', // blue-500
-  'accent-secondary': '#60a5fa', // blue-400
+  'accent-primary': '#1441ff', // Updated to new button color
+  'accent-secondary': '#1039e5', // Darker shade for hover
   'accent-tertiary': '#93c5fd', // blue-300
   
   // Border colors
@@ -24,6 +24,10 @@ export const darkTheme = {
   'card-hover': '#2a3142',
   'input-bg': '#2a3142',
   'input-border': 'rgba(255, 255, 255, 0.1)',
+  
+  // Button colors
+  'button-primary': '#1441ff',
+  'button-hover': '#1039e5',
 };
 
 export const lightTheme = {
@@ -38,8 +42,8 @@ export const lightTheme = {
   'text-tertiary': '#64748b',
   
   // Accent colors
-  'accent-primary': '#3b82f6',
-  'accent-secondary': '#2563eb',
+  'accent-primary': '#1441ff', // Updated to new button color
+  'accent-secondary': '#1039e5', // Darker shade for hover
   'accent-tertiary': '#1d4ed8',
   
   // Border colors
@@ -51,4 +55,8 @@ export const lightTheme = {
   'card-hover': '#f8fafc',
   'input-bg': '#ffffff',
   'input-border': '#e2e8f0',
+  
+  // Button colors
+  'button-primary': '#1441ff',
+  'button-hover': '#1039e5',
 };
