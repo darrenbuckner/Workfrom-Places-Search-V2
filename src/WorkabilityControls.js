@@ -14,8 +14,11 @@ const WorkabilityControls = ({
   };
 
   const handleRadiusChange = (e) => {
-    const value = Math.max(1, Math.min(999, Number(e.target.value)));
-    setRadius(value);
+    // Convert to number and ensure it has at most 1 decimal place
+    const value = Math.round(Number(e.target.value) * 10) / 10;
+    // Set minimum to 0.5 and maximum to 999
+    const validValue = Math.max(0.5, Math.min(999, value));
+    setRadius(validValue);
   };
 
   if (!showSortControl) {
@@ -29,9 +32,9 @@ const WorkabilityControls = ({
             <input
               type="number"
               id="radius"
-              min="1"
+              min="0.5"
               max="999"
-              maxLength="3"
+              step="0.1"
               value={radius}
               onChange={handleRadiusChange}
               className="w-full px-3 rounded-md bg-[#2a3142] border border-border-primary text-white 

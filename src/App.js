@@ -45,13 +45,57 @@ const stripHtml = (html) => {
 
 // Components
 const WorkfromLogo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-8 h-8 sm:w-10 sm:h-10">
-    <circle cx="50" cy="50" r="48" fill="#160040" />
-    <path d="M50 75 L75 40 A35 35 0 0 0 25 40 Z" fill="#F5A623" />
-    <path d="M50 75 L67 50 A24 24 0 0 0 33 50 Z" fill="#FFFFFF" />
-    <circle cx="50" cy="75" r="6" fill="#F5A623" />
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 100 100" 
+    className="w-8 h-8 sm:w-10 sm:h-10"
+  >
+    {/* Dark theme base circle */}
+    <circle cx="50" cy="50" r="48" fill="#1a1f2c" />
+    
+    {/* Outer glow effect */}
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#2a3142" strokeWidth="4" />
+    
+    {/* Mountain shape with gradient */}
+    <defs>
+      <linearGradient id="mountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3b82f6" />
+        <stop offset="100%" stopColor="#1d4ed8" />
+      </linearGradient>
+    </defs>
+    <path 
+      d="M50 75 L75 40 A35 35 0 0 0 25 40 Z" 
+      fill="url(#mountainGradient)"
+      opacity="0.9"
+    />
+    
+    {/* Inner mountain with subtle gradient */}
+    <defs>
+      <linearGradient id="innerMountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#f8fafc" />
+        <stop offset="100%" stopColor="#e2e8f0" />
+      </linearGradient>
+    </defs>
+    <path 
+      d="M50 75 L67 50 A24 24 0 0 0 33 50 Z" 
+      fill="url(#innerMountainGradient)"
+      opacity="0.95"
+    />
+    
+    {/* Bottom dot with glow effect */}
+    <circle cx="50" cy="75" r="6" fill="#3b82f6" />
+    <circle 
+      cx="50" 
+      cy="75" 
+      r="7" 
+      fill="none" 
+      stroke="#60a5fa" 
+      strokeWidth="2" 
+      opacity="0.5"
+    />
   </svg>
 );
+
 
 const MessageBanner = ({ message, type = 'info' }) => {
   const styles = {
@@ -110,6 +154,7 @@ const Footer = () => (
 
 const WorkfromPlacesContent = () => {  // State management with custom hooks
   const [location, setLocation] = useState(null);
+  const [locationName, setLocationName] = useState('');
   const [radius, setRadius] = useState(2);
   const [places, setPlaces] = useState([]);
   const [error, setError] = useState('');
@@ -143,11 +188,25 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
       }
 
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           const newLocation = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
           };
+          
+          // Get friendly location name using reverse geocoding
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${position.coords.latitude}&lon=${position.coords.longitude}&format=json`
+            );
+            const data = await response.json();
+            const friendly = data.address?.city || data.address?.town || data.address?.suburb || 'your area';
+            setLocationName(friendly);
+          } catch (err) {
+            console.error('Error getting location name:', err);
+            setLocationName('your area');
+          }
+
           localStorage.setItem('savedLocation', JSON.stringify(newLocation));
           resolve(newLocation);
         },
@@ -159,6 +218,7 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
   // Clear location and reset state
   const clearLocation = useCallback(() => {
     setLocation(null);
+    setLocationName('');
     setPlaces([]);
     setError('');
     localStorage.removeItem('savedLocation');
@@ -268,8 +328,15 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
 
   const handleSort = useCallback((newSortValue) => {
     setSortBy(newSortValue);
-    setCurrentPage(1);
-  }, []);
+    
+    // Calculate what page the first item on the current page would be on after sorting
+    const firstItemIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    if (firstItemIndex >= places.length) {
+      // If the current page would be invalid after sorting, reset to page 1
+      setCurrentPage(1);
+    }
+    // Otherwise, keep the current page
+  }, [places.length, currentPage]);
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
@@ -310,12 +377,12 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
           {location ? (
             <div className="mb-3">
               <p className="text-text-primary">
-                Your location has been saved.{' '}
+                Searching your last location in {locationName}.{' '}
                 <button
                   onClick={clearLocation}
                   className="text-accent-primary hover:text-accent-secondary transition-colors underline"
                 >
-                  Undo
+                  Change location
                 </button>
               </p>
             </div>
