@@ -22,3 +22,64 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.map-dark .leaflet-popup-content-wrapper {
+  background: transparent;
+  box-shadow: none;
+  color: white;
+}
+
+.map-dark .leaflet-popup-content {
+  margin: 0;
+  min-width: 300px;
+}
+
+.map-dark .leaflet-popup-tip {
+  background: #1a1f2c;
+}
+
+.map-dark .leaflet-container a.leaflet-popup-close-button {
+  color: #94a3b8;
+  padding: 8px;
+  width: 28px;
+  height: 28px;
+}
+
+.map-dark .leaflet-container a.leaflet-popup-close-button:hover {
+  color: white;
+}
+
+.map-dark .leaflet-popup-content p {
+  margin: 0;
+}
+
+/* Set a lower z-index for the map container */
+.leaflet-container {
+  z-index: 1;
+}
+
+/* Set lower z-index for map controls */
+.leaflet-control-container {
+  z-index: 2;
+}
+
+/* Set lower z-index for map popups */
+.leaflet-popup {
+  z-index: 3;
+}
+
+/* Ensure modals stay on top */
+.modal-overlay {
+  z-index: 50;
+}
+
+/* Add this class to both HowItWorksModal and PhotoModal */
+.modal-backdrop {
+  z-index: 50 !important;
+}
+
+/* Ensure the map's parent container has a defined z-index */
+.map-container {
+  position: relative;
+  z-index: 1;
+}

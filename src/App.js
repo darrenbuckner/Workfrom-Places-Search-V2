@@ -79,17 +79,21 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => (
     <button
       onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
       disabled={currentPage === 1}
-      className="px-3 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300"
+      className="px-3 py-1 rounded transition-colors
+        enabled:bg-bg-secondary enabled:text-text-primary enabled:hover:bg-bg-tertiary
+        disabled:bg-bg-secondary/50 disabled:text-text-tertiary"
     >
       Previous
     </button>
-    <span className="px-3 py-1">
+    <span className="px-3 py-1 text-text-primary">
       Page {currentPage} of {totalPages}
     </span>
     <button
       onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
       disabled={currentPage === totalPages}
-      className="px-3 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300"
+      className="px-3 py-1 rounded transition-colors
+        enabled:bg-bg-secondary enabled:text-text-primary enabled:hover:bg-bg-tertiary
+        disabled:bg-bg-secondary/50 disabled:text-text-tertiary"
     >
       Next
     </button>
@@ -380,6 +384,11 @@ const WorkfromPlacesContent = () => {  // State management with custom hooks
               <NearbyPlacesMap 
                 places={processedPlaces}
                 userLocation={location}
+                onPhotoClick={(place) => {
+                  setSelectedPlace(place);
+                  setShowPhotoModal(true);
+                  fetchPlacePhotos(place.ID);
+                }}
               />
             )}
           </div>

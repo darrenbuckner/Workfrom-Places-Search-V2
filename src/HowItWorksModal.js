@@ -3,11 +3,10 @@ import { X, Wifi, Battery, Volume2, Coffee, ChevronLeft } from 'lucide-react';
 import { useScrollLock } from './useScrollLock';
 
 const HowItWorksModal = ({ setShowModal }) => {
-
   useScrollLock(true);
   
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 overflow-y-auto md:overflow-hidden">
+    <div className="fixed inset-0 bg-black/90 modal-backdrop">
       <div className="min-h-screen md:flex md:items-center md:justify-center">
         <div className="md:w-[600px] bg-white md:rounded-lg overflow-hidden relative">
           {/* Close Button - Desktop */}

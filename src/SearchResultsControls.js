@@ -29,14 +29,22 @@ const SearchResultsControls = ({
           <div className="flex space-x-2">
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'list' 
+                  ? 'bg-accent-primary text-white hover:bg-accent-secondary' 
+                  : 'bg-bg-secondary text-text-primary hover:bg-bg-tertiary disabled:text-text-tertiary disabled:bg-bg-secondary/50'
+              }`}
               aria-label="List view"
             >
               <List size={20} />
             </button>
             <button
               onClick={() => setViewMode('map')}
-              className={`p-2 rounded ${viewMode === 'map' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+              className={`p-2 rounded transition-colors ${
+                viewMode === 'map' 
+                  ? 'bg-accent-primary text-white hover:bg-accent-secondary' 
+                  : 'bg-bg-secondary text-text-primary hover:bg-bg-tertiary disabled:text-text-tertiary disabled:bg-bg-secondary/50'
+              }`}
               aria-label="Map view"
             >
               <Map size={20} />
