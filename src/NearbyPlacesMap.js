@@ -1,10 +1,47 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useRef, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Navigation, ArrowRight, Battery, Wifi, Volume2 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import WorkabilityScore from './WorkabilityScore';
+
+// Utility component to handle map events and updates
+const MapEventHandler = ({ onPopupOpen }) => {
+  const map = useMap();
+
+  React.useEffect(() => {
+    map.on('popupopen', (e) => {
+      // Get the popup and its position
+      const popup = e.popup;
+      const popupLatLng = popup.getLatLng();
+      
+      // Wait for the popup to be fully rendered
+      requestAnimationFrame(() => {
+        // Get the popup content element
+        const popupContent = popup._container;
+        if (!popupContent) return;
+
+        // Calculate popup dimensions
+        const popupHeight = popupContent.offsetHeight;
+        
+        // Calculate the new position that will center the popup
+        const point = map.project(popupLatLng);
+        
+        // Only adjust vertical position, leave horizontal as is
+        point.y -= popupHeight / 2;
+        
+        // Convert back to LatLng and pan
+        const newCenter = map.unproject(point);
+        map.panTo(newCenter, { animate: true });
+      });
+      
+      onPopupOpen?.(e);
+    });
+  }, [map, onPopupOpen]);
+
+  return null;
+};
 
 const NearbyPlacesMap = ({ 
   places, 
@@ -13,6 +50,7 @@ const NearbyPlacesMap = ({
 }) => {
   const { isDark } = useTheme();
   const defaultPosition = [userLocation.latitude, userLocation.longitude];
+  const mapRef = useRef(null);
 
   const userIcon = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
@@ -43,14 +81,21 @@ const NearbyPlacesMap = ({
     return 'Unknown';
   };
 
+  const handlePopupOpen = useCallback((e) => {
+    // Additional popup open handling if needed
+    console.log('Popup opened:', e);
+  }, []);
+
   return (
     <div className="rounded-lg overflow-hidden border border-border-primary map-container">
       <MapContainer 
+        ref={mapRef}
         center={defaultPosition} 
         zoom={13} 
         style={{ height: '500px', width: '100%' }}
         className={isDark ? 'map-dark' : ''}
       >
+        <MapEventHandler onPopupOpen={handlePopupOpen} />
         <TileLayer
           url={isDark 
             ? 'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png'

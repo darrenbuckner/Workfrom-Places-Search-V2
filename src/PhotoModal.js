@@ -22,7 +22,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   const sanitizedDescription = selectedPlace?.description ? stripHtml(selectedPlace.description) : '';
   
   return (
-    <div className="fixed inset-0 bg-black/90 modal-backdrop">
+    <div className="fixed inset-0 bg-black/90 z-50 overflow-y-auto md:overflow-hidden">
       <div className="min-h-screen md:flex md:items-center md:justify-center">
         <div className="md:flex md:w-[90vw] md:max-w-6xl md:h-[85vh] bg-[#1a1f2c] md:rounded-lg overflow-hidden relative border">
           {/* Close Button - Visible on Desktop */}
