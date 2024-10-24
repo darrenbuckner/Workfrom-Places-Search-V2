@@ -18,6 +18,7 @@ import SearchResultsControls from './SearchResultsControls';
 import { calculateWorkabilityScore } from './WorkabilityScore';
 import PostSearchFilters from './PostSearchFilters';
 import SearchButton from './SearchButton';
+import LocationConfirmDialog from './LocationConfirmDialog';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 const ITEMS_PER_PAGE = 10;
@@ -149,6 +150,7 @@ const WorkfromPlacesContent = () => {
   const [isPhotoLoading, setIsPhotoLoading] = useState(false);
   const [viewMode, setViewMode] = useState('list');
   const [sortBy, setSortBy] = useState('score_high');
+  const [showLocationConfirm, setShowLocationConfirm] = useState(false);
 
   // Post-search filters state
   const [postSearchFilters, setPostSearchFilters] = useState({
@@ -223,6 +225,7 @@ const WorkfromPlacesContent = () => {
     setLocationName('');
     setPlaces([]);
     setError('');
+    setShowLocationConfirm(false);  // Add this line
     localStorage.removeItem('savedLocationData');
   }, []);
 
@@ -301,10 +304,8 @@ const WorkfromPlacesContent = () => {
     setTotalPages(Math.ceil(processedPlaces.length / ITEMS_PER_PAGE));
   }, [processedPlaces.length]);
 
-  // Search places
-  const searchPlaces = useCallback(async () => {
+  const performSearch = async (useExistingLocation = false) => {
     setSearchPhase('locating');
-    setError('');
     setCurrentPage(1);
     
     // Reset filters on new search
@@ -316,12 +317,12 @@ const WorkfromPlacesContent = () => {
     });
 
     try {
-      const currentLocation = location || await getLocation();
-      setLocation(currentLocation);
+      const searchLocation = useExistingLocation ? location : await getLocation();
+      setLocation(searchLocation);
       setSearchPhase('loading');
 
       const response = await fetch(
-        `${API_BASE_URL}/places/ll/${currentLocation.latitude},${currentLocation.longitude}?radius=${radius}&appid=${process.env.REACT_APP_API_KEY}&rpp=100`
+        `${API_BASE_URL}/places/ll/${searchLocation.latitude},${searchLocation.longitude}?radius=${radius}&appid=${process.env.REACT_APP_API_KEY}&rpp=100`
       );
       
       const data = await response.json();
@@ -341,7 +342,21 @@ const WorkfromPlacesContent = () => {
     } finally {
       setSearchPhase('complete');
     }
-  }, [location, radius, getLocation]);
+  };
+
+  // Search places
+  const searchPlaces = useCallback(async () => {
+    setError('');
+    
+    // If we have a saved location, show the confirmation dialog
+    if (location) {
+      setShowLocationConfirm(true);
+      return;
+    }
+    
+    // Continue with the original search logic for new locations
+    performSearch();
+  }, [location, getLocation, radius]);
 
   // Fetch place photos
   const fetchPlacePhotos = useCallback(async (placeId) => {
@@ -426,13 +441,13 @@ const WorkfromPlacesContent = () => {
           {location ? (
             <div className="mb-3">
               <p className="text-text-primary">
-                Using your last location in {locationName}.{' '}
+                Searching your location in {locationName}.{' '}
                 <button
                   onClick={clearLocation}
                   className="text-accent-primary hover:text-accent-secondary transition-colors underline"
                 >
-                  Start over
-                </button> to search a new area.
+                  Clear my location
+                </button>
               </p>
             </div>
           ) : (
@@ -561,6 +576,23 @@ const WorkfromPlacesContent = () => {
             fullImg={fullImg}
             isPhotoLoading={isPhotoLoading}
             setShowPhotoModal={setShowPhotoModal}
+          />
+        )}
+        {showLocationConfirm && (
+          <LocationConfirmDialog
+            locationName={locationName}
+            onUseExisting={() => {
+              setShowLocationConfirm(false);
+              performSearch(true);
+            }}
+            onSearchNew={() => {
+              clearLocation();
+              setShowLocationConfirm(false);
+              performSearch(false);
+            }}
+            onCancel={() => {
+              setShowLocationConfirm(false);
+            }}
           />
         )}
       </div>
