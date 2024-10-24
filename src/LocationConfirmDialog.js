@@ -1,5 +1,5 @@
 import React from 'react';
-import { mapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 const LocationConfirmDialog = ({ 
   locationName, 
@@ -8,31 +8,31 @@ const LocationConfirmDialog = ({
   onCancel 
 }) => {
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-bg-primary border border-border-primary rounded-lg shadow-lg max-w-md w-full">
+    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+      <div className="bg-[#1a1f2c] rounded-lg shadow-lg max-w-md w-full border border-white/10">
         <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4 text-text-primary">
+          <h2 className="text-xl font-semibold mb-4 text-white">
             Choose Location
           </h2>
           
-          <p className="text-text-secondary mb-6">
+          <p className="text-blue-200 mb-6">
             You have a saved location in {locationName}. Would you like to:
           </p>
           
           <div className="space-y-3">
             <button
               onClick={onUseExisting}
-              className="w-full p-4 border border-border-primary rounded-lg bg-bg-secondary hover:bg-bg-tertiary transition-colors text-left group"
+              className="w-full p-4 border border-white/10 rounded-lg bg-[#2a3142] hover:bg-[#323950] transition-colors text-left group"
             >
               <div className="flex items-center">
-                <div className="bg-accent-primary/10 rounded-full p-2 mr-3">
-                  <mapPin className="w-5 h-5 text-accent-primary" />
+                <div className="bg-blue-500/10 rounded-full p-2 mr-3">
+                  <MapPin className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <div className="font-medium text-text-primary">
-                    Use saved location
+                  <div className="font-medium text-white">
+                    Use my last searched location
                   </div>
-                  <div className="text-sm text-text-secondary">
+                  <div className="text-sm text-blue-200">
                     Search again in {locationName}
                   </div>
                 </div>
@@ -41,18 +41,18 @@ const LocationConfirmDialog = ({
             
             <button
               onClick={onSearchNew}
-              className="w-full p-4 border border-border-primary rounded-lg bg-bg-secondary hover:bg-bg-tertiary transition-colors text-left group"
+              className="w-full p-4 border border-white/10 rounded-lg bg-[#2a3142] hover:bg-[#323950] transition-colors text-left group"
             >
               <div className="flex items-center">
-                <div className="bg-accent-primary/10 rounded-full p-2 mr-3">
-                  <mapPin className="w-5 h-5 text-accent-primary" />
+                <div className="bg-blue-500/10 rounded-full p-2 mr-3">
+                  <MapPin className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <div className="font-medium text-text-primary">
-                    Search new area
+                  <div className="font-medium text-white">
+                    Search a new area
                   </div>
-                  <div className="text-sm text-text-secondary">
-                    Use your current location
+                  <div className="text-sm text-blue-200">
+                    Lookup my current location
                   </div>
                 </div>
               </div>
@@ -60,10 +60,10 @@ const LocationConfirmDialog = ({
           </div>
         </div>
         
-        <div className="border-t border-border-primary p-4 bg-bg-secondary rounded-b-lg">
+        <div className="border-t border-white/10 p-4 bg-[#232838] rounded-b-lg">
           <button
             onClick={onCancel}
-            className="w-full px-4 py-2 text-text-secondary hover:text-text-primary transition-colors text-sm"
+            className="w-full px-4 py-2 text-blue-200 hover:text-white transition-colors text-sm"
           >
             Cancel
           </button>

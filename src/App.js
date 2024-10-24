@@ -446,7 +446,7 @@ const WorkfromPlacesContent = () => {
                   onClick={clearLocation}
                   className="text-accent-primary hover:text-accent-secondary transition-colors underline"
                 >
-                  Clear my location
+                  Clear your location
                 </button>
               </p>
             </div>
