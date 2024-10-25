@@ -188,7 +188,13 @@ const NearbyPlacesMap = ({
                     href={getGoogleMapsUrl(`${place.street}, ${place.city}, ${place.postal}`)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-sm px-3 py-1.5 bg-blue-500 hover:bg-blue-600 transition-colors text-white rounded"
+                    className={`
+                      inline-flex items-center text-sm px-3 py-1.5 rounded transition-colors !text-white
+                      ${isDark 
+                        ? 'bg-accent-primary hover:bg-accent-secondary text-white' 
+                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }
+                    `}
                   >
                     <Navigation size={14} className="mr-1.5" />
                     Get Directions

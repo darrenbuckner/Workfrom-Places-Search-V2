@@ -24,7 +24,8 @@ code {
 }
 
 /* Dark theme popup styles */
-.map-dark .leaflet-popup-content-wrapper {
+.map-dark .leaflet-popup-content-wrapper,
+.map-dark .leaflet-popup-tip {
   background: transparent;
   box-shadow: none;
   color: white;
@@ -47,7 +48,8 @@ code {
 }
 
 /* Light theme popup styles */
-.leaflet-popup-content-wrapper {
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
   background: white;
   color: #1a1f2c;
   padding: 0;
