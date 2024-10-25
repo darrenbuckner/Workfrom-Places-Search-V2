@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
 
 export const calculateWorkabilityScore = (place) => {
   // Keeping the existing calculation logic unchanged
@@ -80,7 +81,12 @@ export const calculateWorkabilityScore = (place) => {
   }
 
   score += amenityScore;
-  factors.push({ name: 'Amenities', score: amenityScore, max: 20, detail: amenityDetails.length ? amenityDetails.join(', ') : 'Limited' });
+  factors.push({ 
+    name: 'Amenities', 
+    score: amenityScore, 
+    max: 20, 
+    detail: amenityDetails.length ? amenityDetails.join(', ') : 'Limited' 
+  });
 
   const finalScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
   
@@ -92,6 +98,8 @@ export const calculateWorkabilityScore = (place) => {
 };
 
 const WorkabilityScore = ({ place, variant = 'full' }) => {
+  const { isDark } = useTheme();
+  
   const calculateTotalPoints = (factors) => {
     const earned = factors.reduce((sum, factor) => sum + factor.score, 0);
     const possible = factors.reduce((sum, factor) => sum + factor.max, 0);
@@ -105,11 +113,15 @@ const WorkabilityScore = ({ place, variant = 'full' }) => {
   if (variant === 'compact') {
     return (
       <div className="flex items-center space-x-2">
-        <div className="text-sm font-semibold text-blue-400">
+        <div className={`text-sm font-semibold ${
+          isDark ? 'text-blue-400' : 'text-blue-600'
+        }`}>
           {earned}/{possible}
         </div>
         {reliability < 1 && (
-          <AlertCircle size={14} className="text-blue-300" />
+          <AlertCircle size={14} className={
+            isDark ? 'text-blue-300' : 'text-blue-400'
+          } />
         )}
       </div>
     );
@@ -117,21 +129,41 @@ const WorkabilityScore = ({ place, variant = 'full' }) => {
 
   // Full version with progress bars
   return (
-    <div className="bg-[#1a1f2c] text-white rounded-lg p-4">
+    <div className={`rounded-lg p-4 ${
+      isDark 
+        ? 'bg-[#1a1f2c] text-white' 
+        : 'bg-gray-50 text-gray-900 border border-gray-200'
+    }`}>
       <div className="flex flex-col mb-6">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-blue-300">Workability Score</h3>
+          <h3 className={`text-lg font-semibold ${
+            isDark ? 'text-blue-300' : 'text-blue-700'
+          }`}>
+            Workability Score
+          </h3>
           <div className="flex items-baseline">
-            <span className="text-2xl font-bold text-blue-400">{earned}</span>
-            <span className="text-sm text-blue-200 ml-1">/{possible} points</span>
+            <span className={`text-2xl font-bold ${
+              isDark ? 'text-blue-400' : 'text-blue-600'
+            }`}>
+              {earned}
+            </span>
+            <span className={`text-sm ml-1 ${
+              isDark ? 'text-blue-200' : 'text-blue-500'
+            }`}>
+              /{possible} points
+            </span>
           </div>
         </div>
         
         {/* Overall progress bar */}
         <div className="mt-3">
-          <div className="h-2 w-full bg-[#2a3142] rounded-full overflow-hidden">
+          <div className={`h-2 w-full rounded-full overflow-hidden ${
+            isDark ? 'bg-[#2a3142]' : 'bg-gray-200'
+          }`}>
             <div 
-              className="h-full bg-blue-500 transition-all duration-500"
+              className={`h-full transition-all duration-500 ${
+                isDark ? 'bg-blue-500' : 'bg-blue-600'
+              }`}
               style={{ width: `${(earned / possible) * 100}%` }}
             />
           </div>
@@ -143,15 +175,28 @@ const WorkabilityScore = ({ place, variant = 'full' }) => {
           <div key={index} className="space-y-2">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
               <div className="flex items-baseline">
-                <span className="text-blue-100 font-medium">{factor.name}</span>
+                <span className={
+                  isDark ? 'text-blue-100' : 'text-gray-900'
+                }>
+                  {factor.name}
+                </span>
               </div>
-              <span className="text-blue-300 text-sm">{factor.detail}</span>
+              <span className={
+                isDark ? 'text-blue-300' : 'text-blue-600'
+              }>
+                {factor.detail}
+              </span>
             </div>
-            <div className="h-1 w-full bg-[#2a3142] rounded-full overflow-hidden">
+            <div className={`h-1 w-full rounded-full overflow-hidden ${
+              isDark ? 'bg-[#2a3142]' : 'bg-gray-200'
+            }`}>
               <div 
                 className={`h-full transition-all duration-500 ${
-                  factor.score === 0 ? 'bg-[#2a3142]' :
-                  factor.score === factor.max ? 'bg-blue-400' : 'bg-blue-500'
+                  factor.score === 0 
+                    ? isDark ? 'bg-[#2a3142]' : 'bg-gray-200'
+                    : factor.score === factor.max 
+                      ? isDark ? 'bg-blue-400' : 'bg-blue-500'
+                      : isDark ? 'bg-blue-500' : 'bg-blue-600'
                 }`}
                 style={{ width: `${(factor.score / factor.max) * 100}%` }}
               />
@@ -161,9 +206,13 @@ const WorkabilityScore = ({ place, variant = 'full' }) => {
       </div>
 
       {reliability < 1 && (
-        <div className="mt-6 flex items-start space-x-2 text-sm text-blue-200">
-          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
-          <p>
+        <div className="mt-6 flex items-start space-x-2 text-sm">
+          <AlertCircle size={16} className={`flex-shrink-0 mt-0.5 ${
+            isDark ? 'text-blue-200' : 'text-blue-500'
+          }`} />
+          <p className={
+            isDark ? 'text-blue-200' : 'text-blue-600'
+          }>
             Some metrics are missing. Score may not reflect complete workspace quality.
           </p>
         </div>

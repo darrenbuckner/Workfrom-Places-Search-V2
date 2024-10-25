@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
 
 const LocationConfirmDialog = ({ 
   locationName, 
@@ -7,32 +8,62 @@ const LocationConfirmDialog = ({
   onSearchNew, 
   onCancel 
 }) => {
+  const { isDark } = useTheme();
+  
   return (
     <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#1a1f2c] rounded-lg shadow-lg max-w-md w-full border border-white/10">
+      <div className={`
+        max-w-md w-full rounded-lg shadow-lg border
+        ${isDark 
+          ? 'bg-[#1a1f2c] border-white/10' 
+          : 'bg-white border-gray-200'
+        }
+      `}>
         <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4 text-white">
+          <h2 className={`text-xl font-semibold mb-4 ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>
             Choose Location
           </h2>
           
-          <p className="text-blue-200 mb-6">
+          <p className={`mb-6 ${
+            isDark ? 'text-blue-200' : 'text-gray-600'
+          }`}>
             You have a saved location in {locationName}. Would you like to:
           </p>
           
           <div className="space-y-3">
             <button
               onClick={onUseExisting}
-              className="w-full p-4 border border-white/10 rounded-lg bg-[#2a3142] hover:bg-[#323950] transition-colors text-left group"
+              className={`
+                w-full p-4 rounded-lg border text-left group transition-colors
+                ${isDark 
+                  ? 'bg-[#2a3142] border-white/10 hover:bg-[#323950]' 
+                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                }
+              `}
             >
               <div className="flex items-center">
-                <div className="bg-blue-500/10 rounded-full p-2 mr-3">
-                  <MapPin className="w-5 h-5 text-blue-400" />
+                <div className={`
+                  rounded-full p-2 mr-3
+                  ${isDark 
+                    ? 'bg-blue-500/10' 
+                    : 'bg-blue-100'
+                  }
+                `}>
+                  <MapPin className={
+                    isDark ? 'w-5 h-5 text-blue-400' : 'w-5 h-5 text-blue-600'
+                  } />
                 </div>
                 <div>
-                  <div className="font-medium text-white">
+                  <div className={
+                    isDark ? 'font-medium text-white' : 'font-medium text-gray-900'
+                  }>
                     Use your last location
                   </div>
-                  <div className="text-sm text-blue-200">
+                  <div className={
+                    isDark ? 'text-sm text-blue-200' : 'text-sm text-gray-600'
+                  }>
                     Search again in {locationName}
                   </div>
                 </div>
@@ -41,17 +72,35 @@ const LocationConfirmDialog = ({
             
             <button
               onClick={onSearchNew}
-              className="w-full p-4 border border-white/10 rounded-lg bg-[#2a3142] hover:bg-[#323950] transition-colors text-left group"
+              className={`
+                w-full p-4 rounded-lg border text-left group transition-colors
+                ${isDark 
+                  ? 'bg-[#2a3142] border-white/10 hover:bg-[#323950]' 
+                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                }
+              `}
             >
               <div className="flex items-center">
-                <div className="bg-blue-500/10 rounded-full p-2 mr-3">
-                  <MapPin className="w-5 h-5 text-blue-400" />
+                <div className={`
+                  rounded-full p-2 mr-3
+                  ${isDark 
+                    ? 'bg-blue-500/10' 
+                    : 'bg-blue-100'
+                  }
+                `}>
+                  <MapPin className={
+                    isDark ? 'w-5 h-5 text-blue-400' : 'w-5 h-5 text-blue-600'
+                  } />
                 </div>
                 <div>
-                  <div className="font-medium text-white">
+                  <div className={
+                    isDark ? 'font-medium text-white' : 'font-medium text-gray-900'
+                  }>
                     Search a new area
                   </div>
-                  <div className="text-sm text-blue-200">
+                  <div className={
+                    isDark ? 'text-sm text-blue-200' : 'text-sm text-gray-600'
+                  }>
                     Lookup your new location
                   </div>
                 </div>
@@ -60,10 +109,22 @@ const LocationConfirmDialog = ({
           </div>
         </div>
         
-        <div className="border-t border-white/10 p-4 bg-[#232838] rounded-b-lg">
+        <div className={`
+          border-t p-4 rounded-b-lg
+          ${isDark 
+            ? 'border-white/10 bg-[#232838]' 
+            : 'border-gray-200 bg-gray-50'
+          }
+        `}>
           <button
             onClick={onCancel}
-            className="w-full px-4 py-2 text-blue-200 hover:text-white transition-colors text-sm"
+            className={`
+              w-full px-4 py-2 text-sm transition-colors
+              ${isDark 
+                ? 'text-blue-200 hover:text-white' 
+                : 'text-gray-600 hover:text-gray-900'
+              }
+            `}
           >
             Cancel
           </button>

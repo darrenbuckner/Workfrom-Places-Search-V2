@@ -10,6 +10,7 @@ import {
 
 import { ThemeProvider, ThemeToggle } from './ThemeProvider';
 import HowItWorksModal from './HowItWorksModal';
+import SearchResults from './SearchResults';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
 import NearbyPlacesMap from './NearbyPlacesMap';
 import PhotoModal from './PhotoModal';
@@ -20,6 +21,7 @@ import PostSearchFilters from './PostSearchFilters';
 import SearchButton from './SearchButton';
 import LocationConfirmDialog from './LocationConfirmDialog';
 import Pagination from './Pagination';
+import { useTheme } from './ThemeProvider';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 const ITEMS_PER_PAGE = 10;
@@ -116,8 +118,6 @@ const WorkfromPlacesContent = () => {
   const [places, setPlaces] = useState([]);
   const [error, setError] = useState('');
   const [searchPhase, setSearchPhase] = useState('initial');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [fullImg, setFullImg] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
@@ -126,6 +126,7 @@ const WorkfromPlacesContent = () => {
   const [viewMode, setViewMode] = useState('list');
   const [sortBy, setSortBy] = useState('score_high');
   const [showLocationConfirm, setShowLocationConfirm] = useState(false);
+  const { isDark } = useTheme();
 
   // Post-search filters state
   const [postSearchFilters, setPostSearchFilters] = useState({
@@ -246,7 +247,6 @@ const WorkfromPlacesContent = () => {
   // Handle post-search filter changes
   const handlePostSearchFilter = (key, value) => {
     setPostSearchFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // Reset to first page when filters change
   };
 
   // Process and sort places
@@ -265,29 +265,8 @@ const WorkfromPlacesContent = () => {
       : processed;
   }, [places, sortBy, getFilteredPlaces]);
 
-  // Paginated places
-  const paginatedPlaces = useMemo(() => 
-    processedPlaces.slice(
-      (currentPage - 1) * ITEMS_PER_PAGE, 
-      currentPage * ITEMS_PER_PAGE
-    ),
-    [processedPlaces, currentPage]
-  );
-
-  // Update total pages when filtered results change
-    useEffect(() => {
-    const total = Math.max(1, Math.ceil(processedPlaces.length / ITEMS_PER_PAGE));
-    setTotalPages(total);
-    
-    // If current page is greater than total pages, reset to page 1
-    if (currentPage > total) {
-      setCurrentPage(1);
-    }
-  }, [processedPlaces.length, currentPage]);
-
   const performSearch = async (useExistingLocation = false) => {
     setSearchPhase('locating');
-    setCurrentPage(1);
     
     // Reset filters on new search
     setPostSearchFilters({
@@ -366,20 +345,9 @@ const WorkfromPlacesContent = () => {
 
   const handleSort = useCallback((newSortValue) => {
     setSortBy(newSortValue);
-    setCurrentPage(1);
   }, []);
 
   const resultsContainerRef = useRef(null);
-
-  // Scroll to top when page changes
-  useEffect(() => {
-    if (resultsContainerRef.current) {
-      resultsContainerRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-  }, [currentPage]);
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
@@ -418,28 +386,35 @@ const WorkfromPlacesContent = () => {
         </header>
 
         {/* Search Controls */}
-        <div className="bg-bg-secondary border border-border-primary rounded-lg p-4 shadow-sm mb-6">
+        <div className={`bg-bg-secondary border border-border-primary rounded-lg p-4 shadow-sm mb-6 ${
+          isDark ? 'bg-[#2a3142] border-white/10' : 'bg-gray-50 border-gray-200'
+        }`}>
           {location ? (
             <div className="mb-3">
-              <p className="text-text-primary">
-                Using your last-known {locationName} location.{' '}
+              <p className={isDark ? 'text-white' : 'text-gray-900'}>
+                Using your last-known location in {locationName}.{' '}
                 <button
                   onClick={clearLocation}
-                  className="text-accent-primary hover:text-accent-secondary transition-colors underline"
+                  className="text-blue-500 hover:text-blue-600 transition-colors underline"
                 >
                   Undo
                 </button>
               </p>
             </div>
           ) : (
-            <p className="mb-3 text-text-primary">
+            <p className={`mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
               <strong>Click search</strong> to discover work-friendly places nearby.
             </p>
           )}
 
           <div className="flex items-end gap-4">
             <div className="flex-1">
-              <label htmlFor="radius" className="block text-sm font-medium text-text-primary mb-1.5">
+              <label 
+                htmlFor="radius" 
+                className={`block text-sm font-medium mb-1.5 ${
+                  isDark ? 'text-white' : 'text-gray-900'
+                }`}
+              >
                 Search Radius
               </label>
               <div className="relative w-[120px]">
@@ -450,29 +425,33 @@ const WorkfromPlacesContent = () => {
                   max="999"
                   step="0.1"
                   value={radius}
-                  onChange={(e) => setRadius(Math.max(0.5, Math.min(999, Number(e.target.value))))}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      searchPlaces(); // Changed from onSearch?.(). to searchPlaces()
-                    }
+                  onChange={(e) => {
+                    const value = Math.round(Number(e.target.value) * 10) / 10;
+                    const validValue = Math.max(0.5, Math.min(999, value));
+                    setRadius(validValue);
                   }}
-                  className="w-full h-10 px-3 rounded-md border transition-colors
-                    bg-[#2a3142] dark:bg-[#2a3142] 
-                    text-gray-900 dark:text-white
-                    border-border-primary
-                    placeholder-text-tertiary 
-                    focus:border-accent-primary 
-                    focus:ring-1 focus:ring-accent-primary/50 
-                    pr-8
-                    [appearance:textfield] 
-                    [&::-webkit-outer-spin-button]:appearance-none 
-                    [&::-webkit-inner-spin-button]:appearance-none 
-                    hover:border-accent-secondary"
+                  className={`
+                    w-full px-3 rounded-md border pr-8 h-10 
+                    transition-colors duration-200
+                    [appearance:textfield]
+                    [&::-webkit-outer-spin-button]:appearance-none
+                    [&::-webkit-inner-spin-button]:appearance-none
+                    ${isDark 
+                      ? 'bg-[#2a3142] border-white/10 text-white placeholder-gray-500'
+                      : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
+                    }
+                    ${isDark
+                      ? 'focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 hover:border-blue-400'
+                      : 'focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 hover:border-gray-300'
+                    }
+                  `}
                   placeholder="2"
                 />
-
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary text-sm pointer-events-none">
+                <span className={`
+                  absolute right-3 top-1/2 -translate-y-1/2 
+                  text-sm pointer-events-none
+                  ${isDark ? 'text-gray-400' : 'text-gray-500'}
+                `}>
                   mi
                 </span>
               </div>
@@ -514,26 +493,18 @@ const WorkfromPlacesContent = () => {
                 type="info" 
               />
             ) : viewMode === 'list' ? (
-              <div className="space-y-6">
-                {paginatedPlaces.map((place, index) => (
-                  <React.Fragment key={place.ID}>
-                    {index > 0 && index % 5 === 0 && <WorkfromVirtualAd />}
-                    <PlaceCard
-                      place={place}
-                      onPhotoClick={() => {
-                        setSelectedPlace(place);
-                        setShowPhotoModal(true);
-                        fetchPlacePhotos(place.ID);
-                      }}
-                    />
-                  </React.Fragment>
-                ))}
-                <Pagination 
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
+              <SearchResults
+                places={processedPlaces}
+                sortBy={sortBy}
+                filters={postSearchFilters}
+                itemsPerPage={ITEMS_PER_PAGE}
+                viewMode={viewMode}
+                onPhotoClick={(place) => {
+                  setSelectedPlace(place);
+                  setShowPhotoModal(true);
+                  fetchPlacePhotos(place.ID);
+                }}
+              />
             ) : (
               <NearbyPlacesMap 
                 places={processedPlaces}
