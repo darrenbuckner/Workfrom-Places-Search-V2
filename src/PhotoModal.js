@@ -125,8 +125,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
             }}
           >
             <div className="relative md:flex md:w-full">
-              {/* Image Section */}
-              <div className="relative md:w-3/5 flex-shrink-0 bg-black transform-gpu"
+              {/* Image Section - Added overflow-hidden */}
+              <div className="relative md:w-3/5 flex-shrink-0 bg-black transform-gpu overflow-hidden"
                 style={{
                   height: window.innerWidth >= 768 ? '100%' : '35vh',
                 }}
@@ -138,22 +138,26 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                     </div>
                   ) : fullImg ? (
                     <>
-                      <img
-                        src={fullImg}
-                        alt={selectedPlace?.title}
-                        className="w-full h-full object-cover transform-gpu transition-transform duration-200"
+                      {/* Added translate to center the scaled image */}
+                      <div className="absolute inset-0 transform-gpu transition-transform duration-200"
                         style={{
                           transform: window.innerWidth < 768 
                             ? `scale(${1 + Math.min(progress * 0.05, 0.05)})` 
                             : 'none',
                         }}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = `https://placehold.co/800x600/${
-                            isDark ? '1a1f2c' : 'f1f5f9'
-                          }/60a5fa?text=Image not available&font=raleway`;
-                        }}
-                      />
+                      >
+                        <img
+                          src={fullImg}
+                          alt={selectedPlace?.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = `https://placehold.co/800x600/${
+                              isDark ? '1a1f2c' : 'f1f5f9'
+                            }/60a5fa?text=Image not available&font=raleway`;
+                          }}
+                        />
+                      </div>
                       <div 
                         className="absolute inset-x-0 -bottom-1 h-32 pointer-events-none md:hidden
                           bg-gradient-to-t from-black via-black/80 to-transparent"
