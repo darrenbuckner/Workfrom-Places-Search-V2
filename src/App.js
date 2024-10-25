@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 import { ThemeProvider, ThemeToggle } from './ThemeProvider';
+import WorkfromHeader from './WorkfromHeader';
 import HowItWorksModal from './HowItWorksModal';
 import SearchResults from './SearchResults';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
@@ -388,9 +389,7 @@ const processedPlaces = useMemo(() => {
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
         {/* Header */}
-        <header className="flex justify-between items-center mb-4 gap-2">
-          {/* ... existing header implementation ... */}
-        </header>
+        <WorkfromHeader onShowHowItWorks={() => setShowHowItWorks(true)} />
 
         {/* Search Controls */}
         <div className={`bg-bg-secondary border border-border-primary rounded-lg p-4 shadow-sm mb-6 ${
