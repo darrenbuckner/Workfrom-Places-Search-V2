@@ -18,8 +18,8 @@ const PostSearchFilters = ({
   const spaceTypes = [
     { value: 'any', label: 'Any Type' },
     { value: 'commercial', label: 'Cafes & Shops' },
-    { value: 'dedicated', label: 'Coworking' },
-    { value: 'free', label: 'Free Spaces' }
+    { value: 'dedicated', label: 'Dedcated' },
+    { value: 'free', label: 'Free Community Spaces' }
   ];
 
   const noiseLevels = [
