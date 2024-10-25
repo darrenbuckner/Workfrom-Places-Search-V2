@@ -4,7 +4,9 @@ import {
   Copy, 
   AlertTriangle, 
   Star,
-  User
+  User,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import LazyImage from './LazyImage';
 import WorkabilityScore from './WorkabilityScore';
@@ -24,6 +26,22 @@ const PlaceCard = ({ place, onPhotoClick }) => {
     console.log(`Reported place with ID: ${placeId}`);
     alert("Thank you for your report. This feature will be implemented in the future.");
   };
+
+  const getWifiStatus = () => {
+    if (place.no_wifi === "1") {
+      return { icon: WifiOff, text: "No WiFi Available", colorClass: "text-red-500" };
+    }
+    if (place.download) {
+      return { 
+        icon: Wifi, 
+        text: `WiFi Speed: ${Math.round(place.download)} Mbps`, 
+        colorClass: "text-green-600" 
+      };
+    }
+    return { icon: Wifi, text: "WiFi Status Unknown", colorClass: "text-gray-500" };
+  };
+
+  const wifiStatus = getWifiStatus();
 
   return (
     <div 
@@ -70,20 +88,17 @@ const PlaceCard = ({ place, onPhotoClick }) => {
               <WorkabilityScore place={place} variant="compact" />
             </div>
 
-            <p className="text-sm mb-1">
+            <p className="text-sm mb-2">
               Distance: {place.distance} miles
             </p>
 
-            {place.download && (
-              <div className="mb-1">
-                <p className="text-sm flex items-center">
-                  <span className="mr-1">WiFi Speed:</span>
-                  <strong className="text-green-600">
-                    {Math.round(place.download)} Mbps
-                  </strong>
-                </p>
-              </div>
-            )}
+            {/* WiFi Status */}
+            <div className="mb-2">
+              <p className={`text-sm flex items-center ${wifiStatus.colorClass}`}>
+                <wifiStatus.icon size={16} className="mr-1.5" />
+                <strong>{wifiStatus.text}</strong>
+              </p>
+            </div>
 
             <div className="flex items-center text-sm">
               <span className="mr-1">Noise Levels:</span>
