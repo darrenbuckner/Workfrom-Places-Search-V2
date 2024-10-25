@@ -19,6 +19,7 @@ import { calculateWorkabilityScore } from './WorkabilityScore';
 import PostSearchFilters from './PostSearchFilters';
 import SearchButton from './SearchButton';
 import LocationConfirmDialog from './LocationConfirmDialog';
+import Pagination from './Pagination';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 const ITEMS_PER_PAGE = 10;
@@ -98,32 +99,6 @@ const MessageBanner = ({ message, type = 'info' }) => {
     </div>
   );
 };
-
-const Pagination = ({ currentPage, totalPages, onPageChange }) => (
-  <div className="flex justify-center mt-4 space-x-2">
-    <button
-      onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
-      disabled={currentPage === 1}
-      className="px-3 py-1 rounded transition-colors
-        enabled:bg-bg-secondary enabled:text-text-primary enabled:hover:bg-bg-tertiary
-        disabled:bg-bg-secondary/50 disabled:text-text-tertiary"
-    >
-      Previous
-    </button>
-    <span className="px-3 py-1 text-text-primary">
-      Page {currentPage} of {totalPages}
-    </span>
-    <button
-      onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
-      disabled={currentPage === totalPages}
-      className="px-3 py-1 rounded transition-colors
-        enabled:bg-bg-secondary enabled:text-text-primary enabled:hover:bg-bg-tertiary
-        disabled:bg-bg-secondary/50 disabled:text-text-tertiary"
-    >
-      Next
-    </button>
-  </div>
-);
 
 const Footer = () => (
   <footer className="mt-12 py-6 bg-bg-secondary border-t border-border-primary">
@@ -300,9 +275,15 @@ const WorkfromPlacesContent = () => {
   );
 
   // Update total pages when filtered results change
-  useEffect(() => {
-    setTotalPages(Math.ceil(processedPlaces.length / ITEMS_PER_PAGE));
-  }, [processedPlaces.length]);
+    useEffect(() => {
+    const total = Math.max(1, Math.ceil(processedPlaces.length / ITEMS_PER_PAGE));
+    setTotalPages(total);
+    
+    // If current page is greater than total pages, reset to page 1
+    if (currentPage > total) {
+      setCurrentPage(1);
+    }
+  }, [processedPlaces.length, currentPage]);
 
   const performSearch = async (useExistingLocation = false) => {
     setSearchPhase('locating');
