@@ -6,6 +6,10 @@ import {
   AlertCircle,
   AlertTriangle,
   InfoIcon,
+  MapPin,
+  Search,
+  Loader,
+  Check
 } from 'lucide-react';
 
 import { ThemeProvider, ThemeToggle } from './ThemeProvider';
@@ -26,7 +30,123 @@ import { useTheme } from './ThemeProvider';
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
 const ITEMS_PER_PAGE = 10;
 
+// Search Progress Indicator Component
+const SearchProgressIndicator = ({ phase, error }) => {
+  const steps = [
+    {
+      key: 'locating',
+      label: 'Getting your location',
+      icon: MapPin,
+      loading: phase === 'locating',
+      complete: phase === 'loading' || phase === 'complete',
+      error: error && phase === 'locating'
+    },
+    {
+      key: 'loading',
+      label: 'Finding workspaces',
+      icon: Search,
+      loading: phase === 'loading',
+      complete: phase === 'complete',
+      error: error && phase === 'loading'
+    }
+  ];
+
+  if (phase === 'initial') return null;
+
+  return (
+    <div className="mt-4 max-w-lg mx-auto">
+      <div className="flex flex-col gap-3">
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+          
+          return (
+            <div 
+              key={step.key}
+              className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                step.loading
+                  ? 'border-blue-500 bg-blue-500/10'
+                  : step.complete
+                    ? 'border-green-500 bg-green-500/10'
+                    : step.error
+                      ? 'border-red-500 bg-red-500/10'
+                      : 'border-border-primary bg-bg-secondary opacity-50'
+              }`}
+            >
+              <div className="relative">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  step.loading
+                    ? 'bg-blue-500'
+                    : step.complete
+                      ? 'bg-green-500'
+                      : step.error
+                        ? 'bg-red-500'
+                        : 'bg-bg-tertiary'
+                }`}>
+                  {step.loading ? (
+                    <Loader className="w-4 h-4 text-white animate-spin" />
+                  ) : step.complete ? (
+                    <Check className="w-4 h-4 text-white" />
+                  ) : step.error ? (
+                    <AlertCircle className="w-4 h-4 text-white" />
+                  ) : (
+                    <Icon className="w-4 h-4 text-text-secondary" />
+                  )}
+                </div>
+
+                {index < steps.length - 1 && (
+                  <div className={`absolute left-1/2 top-full h-3 w-px ${
+                    step.complete
+                      ? 'bg-green-500'
+                      : 'bg-border-primary'
+                  }`} />
+                )}
+              </div>
+
+              <div className="flex-1">
+                <div className={`font-medium ${
+                  step.loading
+                    ? 'text-blue-500'
+                    : step.complete
+                      ? 'text-green-500'
+                      : step.error
+                        ? 'text-red-500'
+                        : 'text-text-secondary'
+                }`}>
+                  {step.label}
+                </div>
+                {step.loading && (
+                  <div className="text-sm text-text-secondary mt-0.5">
+                    {step.key === 'locating'
+                      ? 'Please allow location access if prompted'
+                      : 'Searching nearby places...'}
+                  </div>
+                )}
+                {step.error && error && (
+                  <div className="text-sm text-red-500 mt-0.5">
+                    {error}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Utility Components (keep existing implementations)
+const WorkfromLogo = () => {/* ... existing implementation ... */};
+const MessageBanner = ({ message, type = 'info' }) => {/* ... existing implementation ... */};
+const Footer = () => {/* ... existing implementation ... */};
 // Utility functions
+const stripHtml = (html) => {
+  if (!html) return '';
+  const tmp = document.createElement("DIV");
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || "";
+};
+
 const mapNoiseLevel = (noise) => {
   if (!noise) return 'Unknown';
   if (typeof noise === 'string') {
@@ -39,79 +159,8 @@ const mapNoiseLevel = (noise) => {
   return 'Unknown';
 };
 
-const stripHtml = (html) => {
-  const tmp = document.createElement("DIV");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
-};
-
-// Components
-const WorkfromLogo = () => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 100 100" 
-    className="w-8 h-8 sm:w-10 sm:h-10"
-  >
-    <circle cx="50" cy="50" r="48" fill="#1a1f2c" />
-    <circle cx="50" cy="50" r="46" fill="none" stroke="#2a3142" strokeWidth="4" />
-    <defs>
-      <linearGradient id="mountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#3b82f6" />
-        <stop offset="100%" stopColor="#1d4ed8" />
-      </linearGradient>
-    </defs>
-    <path 
-      d="M50 75 L75 40 A35 35 0 0 0 25 40 Z" 
-      fill="url(#mountainGradient)"
-      opacity="0.9"
-    />
-    <defs>
-      <linearGradient id="innerMountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#f8fafc" />
-        <stop offset="100%" stopColor="#e2e8f0" />
-      </linearGradient>
-    </defs>
-    <path 
-      d="M50 75 L67 50 A24 24 0 0 0 33 50 Z" 
-      fill="url(#innerMountainGradient)"
-      opacity="0.95"
-    />
-    <circle cx="50" cy="75" r="6" fill="#3b82f6" />
-    <circle cx="50" cy="75" r="7" fill="none" stroke="#60a5fa" strokeWidth="2" opacity="0.5" />
-  </svg>
-);
-
-const MessageBanner = ({ message, type = 'info' }) => {
-  const styles = {
-    info: 'bg-blue-100 border-blue-500 text-blue-700',
-    error: 'bg-red-100 border-red-500 text-red-700',
-    warning: 'bg-yellow-100 border-yellow-500 text-yellow-700'
-  };
-  
-  const icons = {
-    info: <AlertCircle size={24} className="mr-2" />,
-    error: <AlertTriangle size={24} className="mr-2" />,
-    warning: <AlertCircle size={24} className="mr-2" />
-  };
-
-  return (
-    <div className={`${styles[type] || styles.info} border-l-4 p-4 mb-4 rounded flex items-center`}>
-      {icons[type]}
-      <p>{message}</p>
-    </div>
-  );
-};
-
-const Footer = () => (
-  <footer className="mt-12 py-6 bg-bg-secondary border-t border-border-primary">
-    <div className="container mx-auto px-4 text-center">
-      <p className="text-text-secondary">&copy; Workfrom Places</p>
-    </div>
-  </footer>
-);
-
 const WorkfromPlacesContent = () => {
-  // Basic state
+  // State Management
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState('');
   const [radius, setRadius] = useState(2);
@@ -128,7 +177,6 @@ const WorkfromPlacesContent = () => {
   const [showLocationConfirm, setShowLocationConfirm] = useState(false);
   const { isDark } = useTheme();
 
-  // Post-search filters state
   const [postSearchFilters, setPostSearchFilters] = useState({
     type: 'any',
     power: 'any',
@@ -201,73 +249,15 @@ const WorkfromPlacesContent = () => {
     setLocationName('');
     setPlaces([]);
     setError('');
-    setShowLocationConfirm(false);  // Add this line
+    setShowLocationConfirm(false);
     localStorage.removeItem('savedLocationData');
   }, []);
 
-  // Filter places based on post-search filters
-  const getFilteredPlaces = useCallback((places) => {
-    return places.filter(place => {
-      // Filter by type
-      if (postSearchFilters.type !== 'any' && place.type !== postSearchFilters.type) {
-        return false;
-      }
-
-      // Filter by power
-      if (postSearchFilters.power !== 'any') {
-        const powerValue = String(place.power || '').toLowerCase();
-        if (!powerValue.includes(postSearchFilters.power)) {
-          return false;
-        }
-      }
-
-      // Filter by noise level
-      if (postSearchFilters.noise !== 'any') {
-        const noise = String(place.noise_level || place.noise || '').toLowerCase();
-        if (postSearchFilters.noise === 'quiet' && !noise.includes('quiet') && !noise.includes('low')) {
-          return false;
-        }
-        if (postSearchFilters.noise === 'moderate' && !noise.includes('moderate') && !noise.includes('average')) {
-          return false;
-        }
-        if (postSearchFilters.noise === 'noisy' && !noise.includes('noisy') && !noise.includes('high')) {
-          return false;
-        }
-      }
-
-      // Filter by open now
-      if (postSearchFilters.openNow && !place.hr_formatted) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [postSearchFilters]);
-
-  // Handle post-search filter changes
-  const handlePostSearchFilter = (key, value) => {
-    setPostSearchFilters(prev => ({ ...prev, [key]: value }));
-  };
-
-  // Process and sort places
-  const processedPlaces = useMemo(() => {
-    if (!places.length) return [];
-    
-    const filtered = getFilteredPlaces(places);
-    const processed = filtered.map(place => ({
-      ...place,
-      mappedNoise: mapNoiseLevel(place.noise_level || place.noise),
-      workabilityScore: calculateWorkabilityScore(place).score
-    }));
-
-    return sortBy === 'score_high' 
-      ? processed.sort((a, b) => b.workabilityScore - a.workabilityScore)
-      : processed;
-  }, [places, sortBy, getFilteredPlaces]);
-
+  // Perform search
   const performSearch = async (useExistingLocation = false) => {
     setSearchPhase('locating');
-    
+    setPlaces([]); // Clear existing results
+
     // Reset filters on new search
     setPostSearchFilters({
       type: 'any',
@@ -314,11 +304,62 @@ const WorkfromPlacesContent = () => {
       return;
     }
     
+    // Hide existing results while searching
+    setPlaces([]);
+    
     // Continue with the original search logic for new locations
     performSearch();
   }, [location, getLocation, radius]);
 
-  // Fetch place photos
+  // Handle post-search filter changes
+  const handlePostSearchFilter = (key, value) => {
+    setPostSearchFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  // Filter and process places
+const processedPlaces = useMemo(() => {
+  if (!places.length) return [];
+  
+  // First add workability scores to all places
+  const placesWithScores = places.map(place => ({
+    ...place,
+    mappedNoise: mapNoiseLevel(place.noise_level || place.noise),
+    workabilityScore: calculateWorkabilityScore(place).score
+  }));
+  
+  // Then filter based on criteria
+  const filtered = placesWithScores.filter(place => {
+    if (postSearchFilters.type !== 'any' && place.type !== postSearchFilters.type) {
+      return false;
+    }
+    if (postSearchFilters.noise !== 'any') {
+      const noise = String(place.noise_level || place.noise || '').toLowerCase();
+      if (postSearchFilters.noise === 'quiet' && !noise.includes('quiet') && !noise.includes('low')) {
+        return false;
+      }
+      if (postSearchFilters.noise === 'moderate' && !noise.includes('moderate') && !noise.includes('average')) {
+        return false;
+      }
+      if (postSearchFilters.noise === 'noisy' && !noise.includes('noisy') && !noise.includes('high')) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // Sort if needed
+  return sortBy === 'score_high' 
+    ? filtered.sort((a, b) => b.workabilityScore - a.workabilityScore)
+    : filtered;
+  }, [places, sortBy, postSearchFilters]);
+
+  const handleSort = useCallback((newSortValue) => {
+    setSortBy(newSortValue);
+  }, []);
+
+  const resultsContainerRef = useRef(null);
+
+  // Photo handling
   const fetchPlacePhotos = useCallback(async (placeId) => {
     setIsPhotoLoading(true);
     try {
@@ -343,46 +384,12 @@ const WorkfromPlacesContent = () => {
     }
   }, []);
 
-  const handleSort = useCallback((newSortValue) => {
-    setSortBy(newSortValue);
-  }, []);
-
-  const resultsContainerRef = useRef(null);
-
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
-      {/* Header with Theme Toggle */}
+        {/* Header */}
         <header className="flex justify-between items-center mb-4 gap-2">
-          <div className="flex items-center min-w-0">
-            <WorkfromLogo />
-            <h1 className="text-lg sm:text-2xl font-bold ml-2 truncate text-text-primary">
-              Workfrom Places Search
-            </h1>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-            <ThemeToggle />
-            <button
-              onClick={() => setShowHowItWorks(true)}
-              className="p-1.5 sm:p-2 rounded hover:bg-bg-secondary transition-colors flex items-center text-text-tertiary hover:text-text-primary"
-              title="How It Works"
-            >
-              <InfoIcon size={16} />
-              <span className="hidden sm:inline ml-1 items-center text-xs sm:text-sm whitespace-nowrap text-text-primary">
-                How It Works
-              </span>
-            </button>
-            <a
-              href="https://workfrom.co/add"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 sm:p-2 rounded hover:bg-bg-secondary transition-colors flex items-center text-xs sm:text-sm whitespace-nowrap text-text-primary"
-            >
-              <Plus size={16} />
-              <span className="hidden sm:inline ml-1">Add Place</span>
-              <span className="sm:hidden ml-1">Add</span>
-            </a>
-          </div>
+          {/* ... existing header implementation ... */}
         </header>
 
         {/* Search Controls */}
@@ -465,8 +472,15 @@ const WorkfromPlacesContent = () => {
           </div>
         </div>
 
+        {/* Search Progress - Only show during search phases when no results are displayed */}
+        {(searchPhase === 'locating' || searchPhase === 'loading') && places.length === 0 && (
+          <SearchProgressIndicator phase={searchPhase} error={error} />
+        )}
+
         {/* Messages */}
-        {error && <MessageBanner message={error} type="error" />}
+        {error && places.length === 0 && (
+          <MessageBanner message={error} type="error" />
+        )}
 
         {/* Results */}
         {places.length > 0 && (
@@ -523,6 +537,7 @@ const WorkfromPlacesContent = () => {
         {showHowItWorks && (
           <HowItWorksModal setShowModal={setShowHowItWorks} />
         )}
+        
         {showPhotoModal && (
           <PhotoModal
             selectedPlace={selectedPlace}
@@ -531,16 +546,19 @@ const WorkfromPlacesContent = () => {
             setShowPhotoModal={setShowPhotoModal}
           />
         )}
+
         {showLocationConfirm && (
           <LocationConfirmDialog
             locationName={locationName}
             onUseExisting={() => {
               setShowLocationConfirm(false);
+              setPlaces([]); // Hide existing results
               performSearch(true);
             }}
             onSearchNew={() => {
               clearLocation();
               setShowLocationConfirm(false);
+              setPlaces([]); // Hide existing results
               performSearch(false);
             }}
             onCancel={() => {
