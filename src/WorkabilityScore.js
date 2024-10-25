@@ -102,7 +102,12 @@ export const calculateWorkabilityScore = (place) => {
   };
 };
 
-const WorkabilityScore = ({ place, variant = 'full' }) => {
+const WorkabilityScore = ({ 
+  place, 
+  variant = 'full', 
+  onClick = null,
+  showPointer = false 
+}) => {
   const { isDark } = useTheme();
   
   const calculateTotalPoints = (factors) => {
@@ -117,8 +122,21 @@ const WorkabilityScore = ({ place, variant = 'full' }) => {
   // Compact version for list view
   if (variant === 'compact') {
     return (
-      <div className="flex items-center space-x-2">
-        <div className={`text-sm font-semibold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
+      <div 
+        onClick={onClick}
+        className={`
+          flex items-center space-x-2 
+          ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}
+          ${showPointer ? 'cursor-pointer' : ''}
+        `}
+        role={onClick ? "button" : undefined}
+        aria-label={onClick ? "View workability score details" : undefined}
+      >
+        <div className={`
+          text-sm font-semibold 
+          ${isDark ? 'text-blue-400' : 'text-blue-600'}
+          ${showPointer ? 'hover:text-accent-primary transition-colors' : ''}
+        `}>
           {earned}/{possible}
         </div>
         {reliability < 1 && (

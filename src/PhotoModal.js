@@ -26,9 +26,7 @@ const useScrollPosition = (ref) => {
     const handleScroll = () => {
       const scrollTop = ref.current.scrollTop;
       const viewportHeight = window.innerHeight;
-      const triggerDistance = viewportHeight * 0.35; // Height of image
-      
-      // Calculate progress based on scroll position
+      const triggerDistance = viewportHeight * 0.35;
       const progress = Math.min(Math.max(scrollTop / triggerDistance, 0), 1);
       setProgress(progress);
     };
@@ -75,13 +73,11 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
       aria-labelledby="modal-title"
     >
       {/* Mobile Header */}
-      <div className={`flex-shrink-0 md:hidden sticky top-0 z-20 ${
-        isDark ? 'bg-[#11151f]' : 'bg-black'
-      }`}>
+      <div className="flex-shrink-0 md:hidden sticky top-0 z-20 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
         <div className="flex items-center justify-between p-3">
           <button 
             onClick={() => setShowPhotoModal(false)}
-            className="flex items-center text-white hover:text-white/90 transition-colors"
+            className="flex items-center text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors"
             aria-label="Back to results"
           >
             <ChevronLeft size={20} className="mr-1" />
@@ -89,7 +85,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
           </button>
           <h2 
             id="modal-title"
-            className="text-base font-semibold text-center flex-1 mx-4 truncate text-white"
+            className="text-base font-semibold text-center flex-1 mx-4 truncate text-[var(--text-primary)]"
           >
             {selectedPlace?.title || 'Place Details'}
           </h2>
@@ -99,18 +95,16 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
 
       {/* Main Content */}
       <div className="flex-grow flex md:items-center md:justify-center overflow-hidden">
-        <div className={`w-full h-full md:w-[90vw] md:max-w-6xl md:h-[85vh] md:flex 
+        <div className="w-full h-full md:w-[90vw] md:max-w-6xl md:h-[85vh] md:flex 
           md:rounded-lg border overflow-hidden relative
-          ${isDark ? 'border-white/10' : 'border-gray-200'}`}
-        >
+          bg-[var(--bg-primary)] border-[var(--border-primary)]">
           {/* Desktop Close Button */}
           <button 
             onClick={() => setShowPhotoModal(false)}
             className={`hidden md:flex absolute right-4 top-4 z-20 items-center justify-center 
               w-8 h-8 rounded-full transition-colors
-              ${isDark 
-                ? 'bg-white/10 hover:bg-white/20 text-white' 
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-600'}`}
+              bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)]
+              text-[var(--text-primary)]`}
             aria-label="Close modal"
           >
             <X size={20} />
