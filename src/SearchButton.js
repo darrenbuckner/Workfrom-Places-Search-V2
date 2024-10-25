@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 
-const SearchButton = ({ onClick, disabled, searchPhase }) => {
+const SearchButton = ({ onClick, disabled, searchPhase, hasLocation }) => {
   return (
     <button
       onClick={onClick}
@@ -22,7 +22,7 @@ const SearchButton = ({ onClick, disabled, searchPhase }) => {
       <span>
         {searchPhase === 'locating' ? 'Locating...' :
          searchPhase === 'loading' ? 'Searching...' :
-         'Search'}
+         hasLocation ? 'Search Again' : 'Search'}
       </span>
       
       {/* Glow effect */}

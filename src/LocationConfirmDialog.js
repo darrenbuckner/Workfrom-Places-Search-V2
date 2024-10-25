@@ -30,7 +30,7 @@ const LocationConfirmDialog = ({
                 </div>
                 <div>
                   <div className="font-medium text-white">
-                    Use my last searched location
+                    Use your last location
                   </div>
                   <div className="text-sm text-blue-200">
                     Search again in {locationName}
@@ -52,7 +52,7 @@ const LocationConfirmDialog = ({
                     Search a new area
                   </div>
                   <div className="text-sm text-blue-200">
-                    Lookup my current location
+                    Lookup your new location
                   </div>
                 </div>
               </div>

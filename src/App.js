@@ -441,12 +441,12 @@ const WorkfromPlacesContent = () => {
           {location ? (
             <div className="mb-3">
               <p className="text-text-primary">
-                Searching your location in {locationName}.{' '}
+                Using your last-known {locationName} location.{' '}
                 <button
                   onClick={clearLocation}
                   className="text-accent-primary hover:text-accent-secondary transition-colors underline"
                 >
-                  Clear your location
+                  Undo
                 </button>
               </p>
             </div>
@@ -500,6 +500,7 @@ const WorkfromPlacesContent = () => {
               onClick={searchPlaces}
               disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
               searchPhase={searchPhase}
+              hasLocation={!!location}
             />
           </div>
         </div>
