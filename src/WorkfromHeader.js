@@ -38,6 +38,11 @@ const WorkfromLogo = () => (
 );
 
 const WorkfromHeader = ({ onShowHowItWorks }) => {
+  const handleAddPlace = (e) => {
+    e.preventDefault();
+    alert("Thank you for your interest. The ability to add new places will be available soon!");
+  };
+
   return (
     <header className="flex justify-between items-center mb-4 gap-2">
       <div className="flex items-center min-w-0">
@@ -61,16 +66,14 @@ const WorkfromHeader = ({ onShowHowItWorks }) => {
           </span>
         </button>
         
-        <a
-          href="https://workfrom.co/add"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={handleAddPlace}
           className="p-1.5 sm:p-2 rounded hover:bg-bg-secondary transition-colors flex items-center text-xs sm:text-sm whitespace-nowrap text-text-primary"
         >
           <Plus size={16} />
           <span className="hidden sm:inline ml-1">Add Place</span>
           <span className="sm:hidden ml-1">Add</span>
-        </a>
+        </button>
       </div>
     </header>
   );
