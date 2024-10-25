@@ -38,7 +38,7 @@ const SearchResultsControls = ({
               onClick={() => setViewMode('list')}
               className={`p-2 rounded transition-colors ${
                 viewMode === 'list'
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
+                  ? 'bg-[var(--action-primary)] text-white hover:bg-[var(--action-primary-hover)]'
                   : isDark
                     ? 'bg-[#2a3142] text-white hover:bg-[#323950] border border-white/10'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
@@ -51,7 +51,7 @@ const SearchResultsControls = ({
               onClick={() => setViewMode('map')}
               className={`p-2 rounded transition-colors ${
                 viewMode === 'map'
-                  ? 'bg-blue-500 text-white hover:bg-blue-600'
+                  ? 'bg-[var(--action-primary)] text-white hover:bg-[var(--action-primary-hover)]'
                   : isDark
                     ? 'bg-[#2a3142] text-white hover:bg-[#323950] border border-white/10'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'

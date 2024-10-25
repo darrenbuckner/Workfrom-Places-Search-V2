@@ -85,23 +85,26 @@ const WorkabilityControls = ({
           onChange={(e) => onSortChange(e.target.checked ? 'score_high' : 'none')}
           className="sr-only peer"
         />
-        <div className={`
-          relative w-14 h-6 rounded-full
-          peer-focus:outline-none peer-focus:ring-2
-          transition-colors
-          ${isDark 
-            ? `peer-checked:bg-blue-500 
-               peer-checked:border-blue-500
-               bg-[#2a3142] border border-white/10
-               peer-focus:ring-blue-500/30
-               hover:border-blue-400`
-            : `peer-checked:bg-blue-600
-               peer-checked:border-blue-600
-               bg-gray-200 border border-gray-200
-               peer-focus:ring-blue-500/30
-               hover:border-blue-300`
-          }
-        `}>
+        <div className="relative w-11 h-6 bg-bg-secondary border border-border-primary
+          peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[var(--action-primary-light)]
+          rounded-full peer 
+          peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full 
+          peer-checked:after:border-white 
+          peer-checked:bg-[var(--action-primary)]
+          peer-checked:border-[var(--action-primary)]
+          after:content-[''] 
+          after:absolute 
+          after:top-[2px] 
+          after:start-[2px] 
+          after:bg-text-tertiary
+          after:border-none
+          after:rounded-full 
+          after:h-5 
+          after:w-5 
+          after:transition-all
+          hover:border-[var(--action-primary-hover)]
+          transition-colors"
+        >
           <div className="relative w-full h-full select-none">
             <span className={`
               absolute left-1.5 top-1/2 -translate-y-1/2 

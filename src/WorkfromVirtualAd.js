@@ -18,7 +18,9 @@ const WorkfromVirtualAd = () => {
             href="https://www.workfrom.com" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="group inline-flex items-center justify-center whitespace-nowrap px-4 py-2 bg-[#1441ff] text-white text-sm rounded-full font-medium hover:bg-opacity-90 transition-all duration-300"
+            className="group inline-flex items-center justify-center whitespace-nowrap px-4 py-2 
+              bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] 
+              text-white text-sm rounded-full font-medium transition-all duration-300"
           >
             Start Building
             <ArrowRight size={16} className="ml-1 transform transition-transform duration-300 group-hover:translate-x-1" />

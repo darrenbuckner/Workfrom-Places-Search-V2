@@ -7,27 +7,27 @@ const SearchButton = ({ onClick, disabled, searchPhase, hasLocation }) => {
       onClick={onClick}
       disabled={disabled}
       className={`
-        relative px-8 py-2 h-10 rounded-lg font-medium
-        shadow-[0_0_20px_rgba(59,130,246,0.15)]
+        relative px-6 py-2 h-10 rounded-lg font-medium
+        shadow-[0_0_20px_var(--action-primary-border)]
         transition-all duration-300
         ${disabled ? 
           'bg-bg-secondary text-text-tertiary cursor-not-allowed' : 
-          'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-500 hover:to-blue-400 hover:shadow-[0_0_25px_rgba(59,130,246,0.25)]'
+          'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white'
         }
-        flex items-center justify-center gap-2 min-w-[120px]
-        border border-blue-500/20
+        flex items-center justify-center gap-2
+        whitespace-nowrap min-w-[140px]
+        border border-[var(--action-primary-border)]
       `}
     >
       <Search size={18} className={disabled ? '' : 'animate-pulse'} />
-      <span>
+      <span className="inline-block">
         {searchPhase === 'locating' ? 'Locating...' :
          searchPhase === 'loading' ? 'Searching...' :
          hasLocation ? 'Search Again' : 'Search'}
       </span>
       
-      {/* Glow effect */}
       {!disabled && (
-        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-600/20 to-blue-400/20 blur opacity-50 group-hover:opacity-75 transition-opacity" />
+        <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-[var(--action-primary-light)] to-[var(--action-primary-light)] blur opacity-50 group-hover:opacity-75 transition-opacity" />
       )}
     </button>
   );

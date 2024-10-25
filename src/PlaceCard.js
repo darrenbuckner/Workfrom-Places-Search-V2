@@ -127,7 +127,8 @@ const PlaceCard = ({ place, onPhotoClick }) => {
             href={getGoogleMapsUrl(`${place.street}, ${place.city}, ${place.postal}`)}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 hover:text-blue-700 text-sm flex items-center"
+            className="text-[var(--action-primary)] hover:text-[var(--action-primary-hover)] 
+              text-sm flex items-center transition-colors"
           >
             <Navigation size={16} className="mr-1 flex-shrink-0" />
             <span className="hidden sm:inline">Get Directions</span>
@@ -136,7 +137,8 @@ const PlaceCard = ({ place, onPhotoClick }) => {
 
           <button
             onClick={() => copyAddressToClipboard(`${place.street}, ${place.city}, ${place.postal}`)}
-            className="text-blue-500 hover:text-blue-700 text-sm flex items-center"
+            className="text-[var(--action-primary)] hover:text-[var(--action-primary-hover)] 
+              text-sm flex items-center transition-colors"
           >
             <Copy size={16} className="mr-1 flex-shrink-0" />
             <span className="hidden sm:inline">Copy Address</span>
