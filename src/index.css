@@ -23,6 +23,7 @@ code {
     monospace;
 }
 
+/* Dark theme popup styles */
 .map-dark .leaflet-popup-content-wrapper {
   background: transparent;
   box-shadow: none;
@@ -43,6 +44,24 @@ code {
   padding: 8px;
   width: 28px;
   height: 28px;
+}
+
+/* Light theme popup styles */
+.leaflet-popup-content-wrapper {
+  background: white;
+  color: #1a1f2c;
+  padding: 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  min-width: 300px;
+}
+
+.leaflet-popup-tip {
+  background: white;
 }
 
 .map-dark .leaflet-container a.leaflet-popup-close-button:hover {

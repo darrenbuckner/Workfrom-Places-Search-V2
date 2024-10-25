@@ -18,7 +18,7 @@ const PostSearchFilters = ({
   const spaceTypes = [
     { value: 'any', label: 'Any Type' },
     { value: 'commercial', label: 'Cafes & Shops' },
-    { value: 'dedicated', label: 'Dedcated' },
+    { value: 'dedicated', label: 'Dedicated' },
     { value: 'free', label: 'Free Community Spaces' }
   ];
 

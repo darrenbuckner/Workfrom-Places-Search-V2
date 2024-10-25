@@ -108,7 +108,11 @@ const NearbyPlacesMap = ({
         />
         <Marker position={defaultPosition} icon={userIcon}>
           <Popup>
-            <div className="bg-[#1a1f2c] text-white p-2 rounded">
+            <div className={`p-2 rounded ${
+              isDark 
+                ? 'bg-[#1a1f2c] text-white' 
+                : 'bg-white text-gray-900'
+            }`}>
               <p className="font-medium">Your location</p>
             </div>
           </Popup>
@@ -120,19 +124,27 @@ const NearbyPlacesMap = ({
             icon={placeIcon}
           >
             <Popup minWidth={300}>
-              <div className="bg-[#1a1f2c] text-white p-4 -m-4 rounded">
+              <div className={`-m-4 p-4 rounded ${
+                isDark 
+                  ? 'bg-[#1a1f2c] text-white' 
+                  : 'bg-white text-gray-900'
+              }`}>
                 {/* Header */}
                 <div className="mb-3">
                   <div className="flex justify-between items-start mb-2">
                     <h3 
-                      className="text-lg font-semibold text-white hover:text-blue-300 cursor-pointer transition-colors"
+                      className={`text-lg font-semibold cursor-pointer transition-colors ${
+                        isDark
+                          ? 'text-white hover:text-blue-300'
+                          : 'text-gray-900 hover:text-blue-600'
+                      }`}
                       onClick={() => onPhotoClick(place)}
                     >
                       {place.title}
                     </h3>
                     <WorkabilityScore place={place} variant="compact" />
                   </div>
-                  <p className="text-blue-200 text-sm">
+                  <p className={isDark ? 'text-blue-200' : 'text-gray-600'}>
                     Distance: {place.distance} miles
                   </p>
                 </div>
@@ -141,31 +153,31 @@ const NearbyPlacesMap = ({
                 <div className="space-y-2 mb-4">
                   {place.download && (
                     <div className="flex items-center text-sm">
-                      <Wifi size={16} className="text-blue-400 mr-2" />
-                      <span className="text-blue-200">WiFi Speed:</span>
-                      <span className="ml-1 text-green-400 font-medium">
+                      <Wifi size={16} className={`mr-2 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />
+                      <span className={isDark ? 'text-blue-200' : 'text-gray-600'}>WiFi Speed:</span>
+                      <span className={`ml-1 ${isDark ? 'text-green-400' : 'text-green-600'} font-medium`}>
                         {Math.round(place.download)} Mbps
                       </span>
                     </div>
                   )}
                   <div className="flex items-center text-sm">
-                    <Battery size={16} className="text-blue-400 mr-2" />
-                    <span className="text-blue-200">Power:</span>
-                    <span className="ml-1 text-white">
+                    <Battery size={16} className={`mr-2 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />
+                    <span className={isDark ? 'text-blue-200' : 'text-gray-600'}>Power:</span>
+                    <span className="ml-1">
                       {getPowerLabel(place.power)}
                     </span>
                   </div>
                   <div className="flex items-center text-sm">
-                    <Volume2 size={16} className="text-blue-400 mr-2" />
-                    <span className="text-blue-200">Noise Level:</span>
-                    <span className="ml-1 text-white">
+                    <Volume2 size={16} className={`mr-2 ${isDark ? 'text-blue-400' : 'text-blue-500'}`} />
+                    <span className={isDark ? 'text-blue-200' : 'text-gray-600'}>Noise Level:</span>
+                    <span className="ml-1">
                       {place.mappedNoise}
                     </span>
                   </div>
                 </div>
 
                 {/* Address */}
-                <div className="text-sm text-blue-200 mb-4">
+                <div className={`text-sm mb-4 ${isDark ? 'text-blue-200' : 'text-gray-600'}`}>
                   <p>{place.street}</p>
                   <p>{place.city}, {place.postal}</p>
                 </div>
@@ -176,14 +188,18 @@ const NearbyPlacesMap = ({
                     href={getGoogleMapsUrl(`${place.street}, ${place.city}, ${place.postal}`)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-sm px-3 py-1.5 bg-accent-primary hover:bg-accent-secondary transition-colors text-white rounded"
+                    className="inline-flex items-center text-sm px-3 py-1.5 bg-blue-500 hover:bg-blue-600 transition-colors text-white rounded"
                   >
                     <Navigation size={14} className="mr-1.5" />
                     Get Directions
                   </a>
                   <button
                     onClick={() => onPhotoClick(place)}
-                    className="inline-flex items-center text-sm px-3 py-1.5 bg-[#2a3142] hover:bg-[#323950] transition-colors text-blue-200 rounded"
+                    className={`inline-flex items-center text-sm px-3 py-1.5 transition-colors rounded ${
+                      isDark
+                        ? 'bg-[#2a3142] hover:bg-[#323950] text-blue-200'
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    }`}
                   >
                     <ArrowRight size={14} className="mr-1.5" />
                     See More
