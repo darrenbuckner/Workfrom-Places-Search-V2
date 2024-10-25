@@ -83,3 +83,17 @@ code {
   position: relative;
   z-index: 1;
 }
+
+/* Modal backdrops */
+.backdrop-blur-sm {
+  backdrop-filter: blur(10px);
+}
+
+/* Menu backgrounds */
+.bg-bg-primary\/95,
+.bg-bg-secondary\/95,
+.bg-bg-tertiary\/95,
+.bg-white\/95,
+.bg-\[\#1a1f2c\]\/95 {
+  backdrop-filter: blur(10px);
+}
