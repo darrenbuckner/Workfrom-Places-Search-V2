@@ -1,16 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
-const CustomSelect = ({ 
+export const CustomSelect = ({ 
   value, 
   onChange, 
   options, 
   label,
-  className = '' 
+  className = '',
+  variant = 'default', // 'default' | 'minimal'
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
-
   const selectedOption = options.find(opt => opt.value === value);
 
   useEffect(() => {
@@ -24,6 +24,20 @@ const CustomSelect = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const buttonStyles = variant === 'minimal' 
+    ? `w-full h-10 px-3 bg-bg-secondary border border-border-primary rounded-md
+       text-text-primary hover:border-accent-secondary focus:border-accent-primary 
+       focus:ring-1 focus:ring-accent-primary/50 transition-colors`
+    : `w-full h-10 px-3 bg-bg-tertiary border border-border-primary rounded-md
+       text-text-primary hover:border-accent-secondary focus:border-accent-primary 
+       focus:ring-1 focus:ring-accent-primary/50 transition-colors`;
+
+  const dropdownStyles = variant === 'minimal'
+    ? `absolute z-50 w-full mt-1 py-1 rounded-md shadow-lg overflow-auto
+       bg-bg-secondary border border-border-primary`
+    : `absolute z-50 w-full mt-1 py-1 rounded-md shadow-lg overflow-auto
+       bg-bg-secondary border border-border-primary backdrop-blur-sm`;
+
   return (
     <div className={className}>
       {label && (
@@ -35,23 +49,21 @@ const CustomSelect = ({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full h-10 px-3 bg-bg-tertiary border border-border-primary rounded-md
-            text-text-primary hover:border-accent-secondary focus:border-accent-primary 
-            focus:ring-1 focus:ring-accent-primary/50 transition-colors
-            flex items-center justify-between"
+          className={buttonStyles}
         >
-          <span>{selectedOption?.label}</span>
-          {isOpen ? (
-            <ChevronUp size={16} className="text-text-secondary" />
-          ) : (
-            <ChevronDown size={16} className="text-text-secondary" />
-          )}
+          <div className="flex items-center justify-between">
+            <span className="truncate">{selectedOption?.label}</span>
+            {isOpen ? (
+              <ChevronUp size={16} className="text-text-secondary flex-shrink-0 ml-2" />
+            ) : (
+              <ChevronDown size={16} className="text-text-secondary flex-shrink-0 ml-2" />
+            )}
+          </div>
         </button>
         
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 py-1 rounded-md shadow-lg overflow-auto
-            bg-bg-secondary border border-border-primary backdrop-blur-sm">
-            <div className="bg-bg-secondary rounded-md">
+          <div className={dropdownStyles}>
+            <div className="rounded-md">
               {options.map((option) => (
                 <button
                   key={option.value}
@@ -65,7 +77,12 @@ const CustomSelect = ({
                       : 'text-text-primary hover:bg-bg-tertiary'
                     }`}
                 >
-                  {option.label}
+                  <span className="block truncate">{option.label}</span>
+                  {option.description && (
+                    <span className="block text-sm text-text-secondary mt-0.5">
+                      {option.description}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>

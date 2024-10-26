@@ -365,7 +365,14 @@ const processedPlaces = useMemo(() => {
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
         {/* Header */}
-        <WorkfromHeader onShowHowItWorks={() => setShowHowItWorks(true)} />
+        <WorkfromHeader
+          onShowHowItWorks={() => setShowHowItWorks(true)}
+          className="mb-4"
+          // Optional customizations remain available:
+          // showThemeToggle={false}
+          // showAddPlace={false}
+          // headerTitle="Custom Title"
+        />
 
         {/* Search Controls */}
         <div className={`bg-bg-secondary border border-border-primary rounded-lg p-4 shadow-sm mb-6 ${
