@@ -295,6 +295,17 @@ const WorkfromPlacesContent = () => {
     }
   };
 
+  const handleSearch = ({ useSaved }) => {
+    setError('');
+    
+    if (useSaved) {
+      performSearch(true);
+    } else {
+      clearLocation();
+      performSearch(false);
+    }
+  };
+
   // Search places
   const searchPlaces = useCallback(async () => {
     setError('');
@@ -462,12 +473,21 @@ const processedPlaces = useMemo(() => {
                 </span>
               </div>
             </div>
-            <SearchButton
-              onClick={searchPlaces}
-              disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
-              searchPhase={searchPhase}
-              hasLocation={!!location}
-            />
+            <div className="w-full sm:w-auto">
+              <SearchButton
+                onClick={handleSearch}
+                disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
+                searchPhase={searchPhase}
+                hasLocation={!!location}
+                savedLocation={location}
+                locationName={locationName}
+                onLocationModeChange={(mode) => {
+                  if (mode === 'new') {
+                    setError('');
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
 
