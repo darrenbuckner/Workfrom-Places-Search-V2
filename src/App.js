@@ -406,24 +406,6 @@ const processedPlaces = useMemo(() => {
         <div className={`bg-bg-secondary border border-border-primary rounded-lg p-4 shadow-sm mb-6 ${
           isDark ? 'bg-[#2a3142] border-white/10' : 'bg-gray-50 border-gray-200'
         }`}>
-          {location ? (
-            <div className="mb-3">
-              <p className={isDark ? 'text-white' : 'text-gray-900'}>
-                Using your last-known location in {locationName}.{' '}
-                <button
-                  onClick={clearLocation}
-                  className="text-blue-500 hover:text-blue-600 transition-colors underline"
-                >
-                  Undo
-                </button>
-              </p>
-            </div>
-          ) : (
-            <p className={`mb-3 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              <strong>Click search</strong> to discover work-friendly places nearby.
-            </p>
-          )}
-
           <div className="flex items-end gap-4">
             <div className="flex-1">
               <label 
