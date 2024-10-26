@@ -379,7 +379,7 @@ const processedPlaces = useMemo(() => {
                   isDark ? 'text-white' : 'text-gray-900'
                 }`}
               >
-                Search Radius
+                Distance
               </label>
               <div className="relative w-[120px]">
                 <input

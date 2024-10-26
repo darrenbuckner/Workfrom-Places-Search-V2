@@ -48,7 +48,7 @@ const WorkfromHeader = ({ onShowHowItWorks }) => {
       <div className="flex items-center min-w-0">
         <WorkfromLogo />
         <h1 className="text-lg sm:text-2xl font-bold ml-2 truncate text-text-primary">
-          Workfrom Places Search
+          Workfrom Places
         </h1>
       </div>
       

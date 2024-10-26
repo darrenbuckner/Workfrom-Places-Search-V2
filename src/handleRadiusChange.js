@@ -46,9 +46,9 @@ const SearchControls = ({ radius, setRadius, location, clearLocation, searchPlac
             <input
               type="number"
               id="radius"
-              min="0.5"
+              min="1"
               max="999"
-              step="0.1"
+              step="1"
               value={radius}
               onChange={handleRadiusChange}
               className={`
