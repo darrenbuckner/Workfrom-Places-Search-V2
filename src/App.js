@@ -212,12 +212,11 @@ const WorkfromPlacesContent = () => {
     localStorage.removeItem('savedLocationData');
   }, []);
 
-  // Perform search
   const performSearch = async (useExistingLocation = false) => {
     setSearchPhase('locating');
-    setPlaces([]); // Clear existing results
+    setPlaces([]); 
 
-    // Reset filters on new search
+    // Reset filters
     setPostSearchFilters({
       type: 'any',
       power: 'any',
@@ -226,8 +225,16 @@ const WorkfromPlacesContent = () => {
     });
 
     try {
-      const searchLocation = useExistingLocation ? location : await getLocation();
-      setLocation(searchLocation);
+      let searchLocation;
+      if (useExistingLocation) {
+        searchLocation = location;
+      } else {
+        searchLocation = await getLocation();
+        // Explicitly set the new location and save it
+        setLocation(searchLocation);
+        // Note: getLocation already handles saving to localStorage and setting locationName
+      }
+      
       setSearchPhase('loading');
 
       const response = await fetch(
@@ -238,7 +245,6 @@ const WorkfromPlacesContent = () => {
 
       if (data.meta.code === 200 && Array.isArray(data.response)) {
         setPlaces(data.response);
-
         if (data.response.length === 0) {
           setError('No places found in your area. Try increasing the search radius.');
         }
@@ -253,14 +259,15 @@ const WorkfromPlacesContent = () => {
     }
   };
 
-  const handleSearch = ({ useSaved }) => {
+  // Updated handle search function
+  const handleSearch = async ({ useSaved }) => {
     setError('');
     
     if (useSaved) {
       performSearch(true);
     } else {
-      clearLocation();
-      performSearch(false);
+      // Don't clear location until we have the new one
+      await performSearch(false);
     }
   };
 
