@@ -5,6 +5,7 @@
 :root {
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
+  --header-height: 64px; /* Adjust based on your actual header height */
   /* ... other variables will be set by ThemeProvider */
 }
 body {

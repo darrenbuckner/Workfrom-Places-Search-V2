@@ -160,7 +160,7 @@ const SearchResults = ({
   }, []);
 
   return (
-    <div ref={resultsRef} className="relative">
+    <div ref={resultsRef} className="relative pt-6">
       <div ref={controlsRef} className="scroll-mt-32" />
       
       <div className="space-y-6">
@@ -173,9 +173,11 @@ const SearchResults = ({
               {index > 0 && index % 5 === 0 && <WorkfromVirtualAd />}
               <div 
                 ref={isRecommended ? recommendedCardRef : null}
-                className={`transition-transform duration-300 ${
-                  highlightRecommended && isRecommended ? 'scale-[1.02]' : ''
-                }`}
+                className={`
+                  transition-transform duration-300
+                  ${highlightRecommended && isRecommended ? 'scale-[1.02]' : ''}
+                  ${isRecommended ? '-mt-4' : ''}
+                `}
               >
                 <PlaceCard
                   place={place}

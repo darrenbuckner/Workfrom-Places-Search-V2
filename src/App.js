@@ -5,6 +5,7 @@ import WorkfromHeader from './WorkfromHeader';
 import HowItWorksModal from './HowItWorksModal';
 import SearchResults from './SearchResults';
 import GenAIInsights from './GenAIInsights';
+import StickyControls from './StickyControls';
 import NearbyPlacesMap from './NearbyPlacesMap';
 import PhotoModal from './PhotoModal';
 import SearchResultsControls from './SearchResultsControls';
@@ -367,25 +368,16 @@ const WorkfromPlacesContent = () => {
         {/* Search Results (continued) */}
         {places.length > 0 && (
           <div className="mb-12" ref={resultsContainerRef}>
-            {/* Search Results Controls */}
-            <SearchResultsControls 
+            {/* Search Results Controls - Includes AI Insights */}
+            <StickyControls 
               totalPlaces={processedPlaces.length}
               radius={radius}
               sortBy={sortBy}
               onSortChange={handleSort}
               viewMode={viewMode}
               setViewMode={setViewMode}
-            />
-
-            {/* Post-Search Filters */}
-            <PostSearchFilters
-              onFilterChange={handlePostSearchFilter}
               currentFilters={postSearchFilters}
-              className="mb-6"
-            />
-
-            {/* AI Insights */}
-            <GenAIInsights 
+              onFilterChange={handlePostSearchFilter}
               places={processedPlaces}
               isSearching={searchPhase !== 'complete'}
               onPhotoClick={(place) => {
@@ -399,7 +391,6 @@ const WorkfromPlacesContent = () => {
                 }
               }}
             />
-            
             {/* No Results Message - Using new Message component */}
             {processedPlaces.length === 0 ? (
               <Message 

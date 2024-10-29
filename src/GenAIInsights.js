@@ -17,7 +17,8 @@ const GenAIInsights = ({
   places, 
   isSearching, 
   onPhotoClick,
-  onRecommendationMade
+  onRecommendationMade,
+  className = ''
 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [insights, setInsights] = useState(null);
@@ -122,7 +123,7 @@ const GenAIInsights = ({
   // Show error state
   if (error) {
     return (
-      <div className="bg-bg-secondary border border-border-primary rounded-lg p-4 mb-6">
+      <div className={`bg-bg-secondary border border-border-primary rounded-lg p-4 ${className}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-text-secondary">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -144,7 +145,7 @@ const GenAIInsights = ({
   }
 
   return (
-    <div className="bg-bg-secondary border border-border-primary rounded-lg overflow-hidden mb-6">
+    <div className={className}>
       {/* Header Section */}
       <div className="relative p-4 bg-[var(--action-primary)]/5">
         <div className="flex items-center justify-between w-full gap-4">

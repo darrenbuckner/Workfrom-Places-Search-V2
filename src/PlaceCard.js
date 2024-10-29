@@ -73,11 +73,11 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
   return (
     <div className={`
       relative group 
-      ${isRecommended ? 'pt-4 animate-fade-in' : ''}
+      ${isRecommended ? 'pt-8' : ''}
     `}>
       {/* AI Recommendation Badge */}
       {isRecommended && (
-        <div className="absolute -top-4 left-4 z-20 flex items-center gap-2 
+        <div className="absolute -top-1 left-4 z-20 flex items-center gap-2 
           px-3 py-1.5 rounded-full 
           bg-[var(--accent-primary)] text-white
           shadow-lg [animation:recommendedPulse_2s_ease-in-out_infinite]"

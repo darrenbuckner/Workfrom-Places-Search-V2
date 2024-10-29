@@ -15,7 +15,7 @@ const SearchResultsControls = ({
   
   return (
     <div className={`
-      sticky top-0 z-30 backdrop-blur-sm border-b mb-6 px-4 
+      sticky top-0 z-30 backdrop-blur-sm border-b mb-3 px-4 
       border border-border-primary rounded-lg
       ${isDark 
         ? 'bg-[#1a1f2c]/95 border-white/10' 
