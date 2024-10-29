@@ -23,6 +23,7 @@ const SearchResults = ({
   const controlsRef = useRef(null);
   const resultsRef = useRef(null);
   const recommendedCardRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
 
   const totalPages = Math.max(1, Math.ceil(places.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -51,14 +52,16 @@ const SearchResults = ({
     }
   }, [recommendedPlaceName, hasInitialized, getRecommendedPlaceInfo, currentPage]);
 
-  const handlePageChange = useCallback((newPage) => {
-    if (newPage < 1 || newPage > totalPages) {
-      return;
-    }
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
-    setIsPageChanging(true);
-    setCurrentPage(newPage);
-
+  const scrollToControls = useCallback(() => {
     if (controlsRef.current) {
       const headerPadding = 120;
       const controlsTop = controlsRef.current.getBoundingClientRect().top;
@@ -68,12 +71,30 @@ const SearchResults = ({
         top: Math.max(0, scrollPosition),
         behavior: 'smooth'
       });
-
-      setTimeout(() => {
-        setIsPageChanging(false);
-      }, 500);
     }
-  }, [currentPage, totalPages]);
+  }, []);
+
+  const handlePageChange = useCallback((newPage) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage) {
+      return;
+    }
+
+    setIsPageChanging(true);
+    setCurrentPage(newPage);
+
+    // Wait for the next render cycle before scrolling
+    requestAnimationFrame(() => {
+      // Add a small delay to ensure content has updated
+      scrollTimeoutRef.current = setTimeout(() => {
+        scrollToControls();
+        
+        // Reset page changing state after scroll completes
+        setTimeout(() => {
+          setIsPageChanging(false);
+        }, 500);
+      }, 50);
+    });
+  }, [currentPage, totalPages, scrollToControls]);
 
   const scrollToRecommended = useCallback(() => {
     if (recommendedCardRef.current && !isPageChanging) {

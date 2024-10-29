@@ -35,7 +35,7 @@ const SearchProgressIndicator = ({ phase, error, usingSavedLocation }) => {
               <div className="font-medium text-[var(--action-primary)]">
                 Finding places nearby
               </div>
-              <div className="text-sm text-text-secondary mt-0.5">
+              <div className="text-sm text-[var(--text-primary)] mt-0.5">
                 Searching nearby places...
               </div>
             </div>

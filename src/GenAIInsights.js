@@ -200,7 +200,7 @@ const GenAIInsights = ({
               transition-all duration-300 text-sm font-medium
               ${isExpanded
                 ? 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white border-[var(--action-primary-border)]'
-                : 'bg-[var(--action-primary)]/10 hover:bg-[var(--action-primary)]/15 text-[var(--action-primary)] border-[var(--action-primary)]/20'
+                : 'bg-[var(--action-primary)]/10 hover:bg-[var(--action-primary)]/15 text-[var(--text-primary)] border-[var(--action-primary)]/20'
               }
               whitespace-nowrap
               border
@@ -211,7 +211,7 @@ const GenAIInsights = ({
               size={16} 
               className={isExpanded 
                 ? 'text-white' 
-                : 'text-[var(--action-primary)]'
+                : 'text-[var(--text-primary)]'
               } 
             />
             {isAnalyzing ? 'Analyzing...' : isExpanded ? 'Hide Analysis' : 'See Why'}
@@ -279,7 +279,7 @@ const GenAIInsights = ({
                       flex items-center gap-2 px-4 py-2 rounded-full
                       transition-all duration-300 text-sm font-medium
                       bg-[var(--action-primary)]/10 hover:bg-[var(--action-primary)]/15 
-                      text-[var(--action-primary)] border-[var(--action-primary)]/20
+                      text-[var(--text-primary)] border-[var(--action-primary)]/20
                       border whitespace-nowrap
                     `}
                   >

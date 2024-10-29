@@ -127,6 +127,7 @@ export const SearchProgressIndicator = ({ phase, error, usingSavedLocation }) =>
     return (
       <div className="mt-4 max-w-lg mx-auto">
         <Message
+          className="text-[var(--text-primary)]"
           variant="loading"
           message="Finding workspaces"
           description="Searching nearby places..."
@@ -161,7 +162,7 @@ export const LoadingBlock = ({
     `}>
       <div className="text-center">
         <LoadingSpinner size={32} className="mx-auto mb-3" />
-        <div className="text-[var(--text-secondary)]">{message}</div>
+        <div className="text-[var(--text-primary)]">{message}</div>
       </div>
     </div>
   );

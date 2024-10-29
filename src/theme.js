@@ -9,11 +9,11 @@ export const darkTheme = {
   'text-secondary': '#9ba1b0',        // Muted but legible
   'text-tertiary': '#6b7280',        // Subtle text
   
-  // Action colors - Bold purple accent
-  'action-primary': '#8b5cf6',        // Vibrant purple
-  'action-primary-hover': '#7c3aed',  // Deeper purple
-  'action-primary-light': 'rgba(139, 92, 246, 0.12)',
-  'action-primary-border': 'rgba(139, 92, 246, 0.25)',
+  // Action colors - Vibrant purple accent
+  'action-primary': '#5340f0',        // New primary purple
+  'action-primary-hover': '#4733e0',  // Darker shade
+  'action-primary-light': 'rgba(83, 64, 240, 0.12)',
+  'action-primary-border': 'rgba(83, 64, 240, 0.25)',
   
   // Interactive colors - Clean transitions
   'interactive-text': '#ffffff',      
@@ -21,9 +21,9 @@ export const darkTheme = {
   'interactive-muted': '#6b7280',     
   
   // Accent colors - Modernist palette
-  'accent-primary': '#8b5cf6',        // Bold purple
-  'accent-secondary': '#a78bfa',      // Lighter purple
-  'accent-muted': '#2e1065',         // Deep purple background
+  'accent-primary': '#5340f0',        // New primary purple
+  'accent-secondary': '#6e5df2',      // Lighter purple
+  'accent-muted': '#2a1f99',         // Deep purple background
   
   // Border colors - Architectural definition
   'border-primary': 'rgba(255, 255, 255, 0.08)',
@@ -41,54 +41,54 @@ export const darkTheme = {
   'success': '#10b981',               // Modern green
   'warning': '#f59e0b',               // Bold amber
   'error': '#ef4444',                 // Vivid red
-  'info': '#8b5cf6',                  // Consistent purple
+  'info': '#5340f0',                  // Updated to match new purple
   
   // Place-specific colors - Bold modernist approach
-  'place-highlight-bg': '#16171c',     // Elevated surface
-  'place-highlight-border': '#1f2937', // Defined edges
-  'place-tag-bg': 'rgba(139, 92, 246, 0.15)',
-  'place-tag-text': '#a78bfa',
-  'place-score-high': '#10b981',       // Success green
-  'place-score-medium': '#f59e0b',     // Warning amber
-  'place-score-low': '#ef4444',        // Error red
-  'place-feature-icon': '#a78bfa',     // Purple consistency
-  'place-distance': '#9ba1b0',         // Secondary text
-  'place-hours': '#10b981',            // Success state
-  'place-hours-closed': '#ef4444',     // Error state
+  'place-highlight-bg': '#16171c',     
+  'place-highlight-border': '#1f2937', 
+  'place-tag-bg': 'rgba(83, 64, 240, 0.15)',
+  'place-tag-text': '#6e5df2',
+  'place-score-high': '#10b981',       
+  'place-score-medium': '#f59e0b',     
+  'place-score-low': '#ef4444',        
+  'place-feature-icon': '#6e5df2',     
+  'place-distance': '#9ba1b0',         
+  'place-hours': '#10b981',            
+  'place-hours-closed': '#ef4444',     
 
   // Promoted place colors - Dramatic emphasis
-  'promoted-bg': '#1e1b4b',           // Deep indigo background
-  'promoted-border': '#312e81',       // Rich border
-  'promoted-text': '#ffffff',         // Clear contrast
-  'promoted-secondary': '#9ba1b0',    // Balanced secondary
-  'promoted-highlight': '#8b5cf6',    // Purple accent
-  'promoted-tag-bg': 'rgba(139, 92, 246, 0.2)',
-  'promoted-tag-text': '#a78bfa',
-  'promoted-score-bg': '#1f2937',     // Elevated surface
-  'promoted-score-text': '#ffffff',   // High contrast
-  'promoted-feature-icon': '#a78bfa', // Consistent accent
+  'promoted-bg': '#1e1b4b',           
+  'promoted-border': '#312e81',       
+  'promoted-text': '#ffffff',         
+  'promoted-secondary': '#9ba1b0',    
+  'promoted-highlight': '#5340f0',    // Updated to new purple
+  'promoted-tag-bg': 'rgba(83, 64, 240, 0.2)',
+  'promoted-tag-text': '#6e5df2',
+  'promoted-score-bg': '#1f2937',     
+  'promoted-score-text': '#ffffff',   
+  'promoted-feature-icon': '#6e5df2', 
   
   // Scoring colors for promoted items - Bold states
-  'promoted-score-high': '#10b981',   // Success green
-  'promoted-score-medium': '#f59e0b', // Warning amber
-  'promoted-score-low': '#ef4444',    // Error red
+  'promoted-score-high': '#10b981',   
+  'promoted-score-medium': '#f59e0b', 
+  'promoted-score-low': '#ef4444',    
   
   // Navigation - Clear wayfinding
-  'nav-active': '#8b5cf6',
+  'nav-active': '#5340f0',           // Updated to new purple
   'nav-inactive': '#6b7280',
-  'nav-hover': '#a78bfa',
+  'nav-hover': '#6e5df2',
   
   // Map elements - Contemporary styling
-  'map-marker': '#8b5cf6',
-  'map-marker-active': '#a78bfa',
+  'map-marker': '#5340f0',           // Updated to new purple
+  'map-marker-active': '#6e5df2',
   'map-overlay': 'rgba(10, 11, 13, 0.85)',
   
   // Modal - Dramatic overlay
   'modal-overlay': 'rgba(10, 11, 13, 0.95)',
   
   // Gradients - Modern transitions
-  'gradient-primary': 'linear-gradient(to right, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.08))',
-  'gradient-hover': 'linear-gradient(to right, rgba(139, 92, 246, 0.25), rgba(139, 92, 246, 0.15))',
+  'gradient-primary': 'linear-gradient(to right, rgba(83, 64, 240, 0.15), rgba(83, 64, 240, 0.08))',
+  'gradient-hover': 'linear-gradient(to right, rgba(83, 64, 240, 0.25), rgba(83, 64, 240, 0.15))',
 };
 
 export const lightTheme = {
