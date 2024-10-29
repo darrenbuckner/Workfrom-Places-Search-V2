@@ -15,11 +15,6 @@
   status = 200
 
 [[redirects]]
-  from = "/.netlify/functions/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
-
-[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
@@ -33,4 +28,5 @@
   command = "npm start"
 
 [build.environment]
-  NODE_VERSION = "18.x"
+  NODE_VERSION = "18.19.0"
+  NPM_VERSION = "9.8.1"
