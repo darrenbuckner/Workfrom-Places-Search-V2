@@ -15,6 +15,7 @@
 .DS_Store
 .env.local
 .env.development.local
+.env.development
 .env.test.local
 .env.production.local
 
@@ -25,6 +26,5 @@ yarn-error.log*
 node_modules
 build
 .env
-.env.development
 # Local Netlify folder
 .netlify
