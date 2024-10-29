@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Search, ArrowLeft, ChevronDown } from 'lucide-react';
-import LoadingSpinner from './LoadingSpinner';
+import { LoadingSpinner } from './components/ui/loading';
 
 const SearchButton = ({ 
   onClick, 

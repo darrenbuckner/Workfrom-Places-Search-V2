@@ -52,7 +52,7 @@ const WorkabilityControls = ({
                 [&::-webkit-inner-spin-button]:appearance-none
                 ${isDark 
                   ? 'bg-[#2a3142] border-white/10 text-white placeholder-gray-500'
-                  : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400'
+                  : 'bg-[var(--bg-primary)] border-[var(--border-primary)] text-gray-900 placeholder-gray-400'
                 }
                 ${isDark
                   ? 'focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 hover:border-blue-400'
@@ -92,7 +92,7 @@ const WorkabilityControls = ({
           peer-checked:border-[var(--action-primary)]
           after:content-[''] 
           after:absolute 
-          after:bg-white
+          after:bg-[var(--bg-primary)]
           after:border 
           after:border-gray-300
           after:rounded-full 

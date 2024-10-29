@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Navigation, ArrowRight, Battery, Wifi, WifiOff, Volume2 } from 'lucide-react';
+import { LoadingSpinner } from './components/ui/loading';
 import { useTheme } from './ThemeProvider';
 import WorkabilityScore from './WorkabilityScore';
 
@@ -137,7 +138,7 @@ const NearbyPlacesMap = ({
         <Marker position={defaultPosition} icon={userIcon}>
           <Popup>
             <div className={`p-2 rounded ${
-              isDark ? 'bg-[#1a1f2c] text-white' : 'bg-white text-gray-900'
+              isDark ? 'bg-[#1a1f2c] text-white' : 'bg-[var(--bg-primary)] text-gray-900'
             }`}>
               <p className="font-medium">Your location</p>
             </div>
@@ -156,7 +157,7 @@ const NearbyPlacesMap = ({
             >
               <Popup minWidth={300}>
                 <div className={`-m-4 p-4 rounded ${
-                  isDark ? 'bg-[#1a1f2c] text-white' : 'bg-white text-gray-900'
+                  isDark ? 'bg-[#1a1f2c] text-white' : 'bg-[var(--bg-primary)] text-gray-900'
                 }`}>
                   {/* Header */}
                   <div className="mb-4">
@@ -171,7 +172,7 @@ const NearbyPlacesMap = ({
                       </h3>
                       <WorkabilityScore place={place} variant="compact" />
                     </div>
-                    <p className={`text-sm ${isDark ? 'text-blue-200' : 'text-gray-600'}`}>
+                    <p className={`text-sm ${isDark ? 'text-blue-200' : 'text-[var(--text-secondary)]'}`}>
                       Distance: {place.distance} miles
                     </p>
                   </div>
@@ -183,7 +184,7 @@ const NearbyPlacesMap = ({
                         size={16} 
                         className={`mr-2 ${wifiStatus.colorClass}`} 
                       />
-                      <span className={isDark ? 'text-blue-200' : 'text-gray-600'}>WiFi:</span>
+                      <span className={isDark ? 'text-blue-200' : 'text-[var(--text-secondary)]'}>WiFi:</span>
                       <span className={`ml-1 font-medium ${wifiStatus.colorClass}`}>
                         {wifiStatus.text}
                       </span>
@@ -194,7 +195,7 @@ const NearbyPlacesMap = ({
                         size={16} 
                         className={`mr-2 ${powerStatusColor}`} 
                       />
-                      <span className={isDark ? 'text-blue-200' : 'text-gray-600'}>Power:</span>
+                      <span className={isDark ? 'text-blue-200' : 'text-[var(--text-secondary)]'}>Power:</span>
                       <span className={`ml-1 font-medium ${powerStatusColor}`}>
                         {getPowerLabel(place.power)}
                       </span>
@@ -205,7 +206,7 @@ const NearbyPlacesMap = ({
                         size={16} 
                         className={`mr-2 ${noiseStatusColor}`}
                       />
-                      <span className={isDark ? 'text-blue-200' : 'text-gray-600'}>Noise Level:</span>
+                      <span className={isDark ? 'text-blue-200' : 'text-[var(--text-secondary)]'}>Noise Level:</span>
                       <span className={`ml-1 font-medium ${noiseStatusColor}`}>
                         {place.mappedNoise}
                       </span>
@@ -213,7 +214,7 @@ const NearbyPlacesMap = ({
                   </div>
 
                   {/* Address */}
-                  <div className={`text-sm mb-4 ${isDark ? 'text-blue-200' : 'text-gray-600'}`}>
+                  <div className={`text-sm mb-4 ${isDark ? 'text-blue-200' : 'text-[var(--text-secondary)]'}`}>
                     <p>{place.street}</p>
                     <p>{place.city}, {place.postal}</p>
                   </div>

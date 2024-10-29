@@ -16,7 +16,7 @@ const LocationConfirmDialog = ({
         max-w-md w-full rounded-lg shadow-lg border
         ${isDark 
           ? 'bg-[#1a1f2c] border-white/10' 
-          : 'bg-white border-gray-200'
+          : 'bg-[var(--bg-primary)] border-[var(--border-primary)]'
         }
       `}>
         <div className="p-6">
@@ -27,7 +27,7 @@ const LocationConfirmDialog = ({
           </h2>
           
           <p className={`mb-6 ${
-            isDark ? 'text-blue-200' : 'text-gray-600'
+            isDark ? 'text-blue-200' : 'text-[var(--text-secondary)]'
           }`}>
             You have a saved location in {locationName}. Would you like to:
           </p>
@@ -39,7 +39,7 @@ const LocationConfirmDialog = ({
                 w-full p-4 rounded-lg border text-left group transition-colors
                 ${isDark 
                   ? 'bg-[#2a3142] border-white/10 hover:bg-[#323950]' 
-                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                  : 'bg-gray-50 border-[var(--border-primary)] hover:bg-gray-100'
                 }
               `}
             >
@@ -62,7 +62,7 @@ const LocationConfirmDialog = ({
                     Use your last location
                   </div>
                   <div className={
-                    isDark ? 'text-sm text-blue-200' : 'text-sm text-gray-600'
+                    isDark ? 'text-sm text-blue-200' : 'text-sm text-[var(--text-secondary)]'
                   }>
                     Search again in {locationName}
                   </div>
@@ -76,7 +76,7 @@ const LocationConfirmDialog = ({
                 w-full p-4 rounded-lg border text-left group transition-colors
                 ${isDark 
                   ? 'bg-[#2a3142] border-white/10 hover:bg-[#323950]' 
-                  : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                  : 'bg-gray-50 border-[var(--border-primary)] hover:bg-gray-100'
                 }
               `}
             >
@@ -99,7 +99,7 @@ const LocationConfirmDialog = ({
                     Search a new area
                   </div>
                   <div className={
-                    isDark ? 'text-sm text-blue-200' : 'text-sm text-gray-600'
+                    isDark ? 'text-sm text-blue-200' : 'text-sm text-[var(--text-secondary)]'
                   }>
                     Lookup your new location
                   </div>
@@ -113,7 +113,7 @@ const LocationConfirmDialog = ({
           border-t p-4 rounded-b-lg
           ${isDark 
             ? 'border-white/10 bg-[#232838]' 
-            : 'border-gray-200 bg-gray-50'
+            : 'border-[var(--border-primary)] bg-gray-50'
           }
         `}>
           <button
@@ -122,7 +122,7 @@ const LocationConfirmDialog = ({
               w-full px-4 py-2 text-sm transition-colors
               ${isDark 
                 ? 'text-blue-200 hover:text-white' 
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-[var(--text-secondary)] hover:text-gray-900'
               }
             `}
           >

@@ -7,81 +7,81 @@ export const calculateWorkabilityScore = (place) => {
   let maxScore = 0;
   const factors = [];
 
-  // WiFi Speed (0-30 points)
-  maxScore += 30;
+  // WiFi Speed (0-3 points)
+  maxScore += 3;
   if (place.no_wifi === "1") {
-    factors.push({ name: 'WiFi Speed', score: 0, max: 30, detail: 'No WiFi' });
+    factors.push({ name: 'WiFi Speed', score: 0, max: 3, detail: 'No WiFi' });
   } else if (place.download) {
     if (place.download >= 50) {
-      score += 30;
-      factors.push({ name: 'WiFi Speed', score: 30, max: 30, detail: 'Excellent' });
+      score += 3;
+      factors.push({ name: 'WiFi Speed', score: 3, max: 3, detail: 'Excellent' });
     } else if (place.download >= 20) {
-      score += 25;
-      factors.push({ name: 'WiFi Speed', score: 25, max: 30, detail: 'Very Good' });
+      score += 2.5;
+      factors.push({ name: 'WiFi Speed', score: 2.5, max: 3, detail: 'Very Good' });
     } else if (place.download >= 10) {
-      score += 20;
-      factors.push({ name: 'WiFi Speed', score: 20, max: 30, detail: 'Good' });
+      score += 2;
+      factors.push({ name: 'WiFi Speed', score: 2, max: 3, detail: 'Good' });
     } else {
-      score += 10;
-      factors.push({ name: 'WiFi Speed', score: 10, max: 30, detail: 'Basic' });
+      score += 1;
+      factors.push({ name: 'WiFi Speed', score: 1, max: 3, detail: 'Basic' });
     }
   } else {
-    factors.push({ name: 'WiFi Speed', score: 0, max: 30, detail: 'Unknown' });
+    factors.push({ name: 'WiFi Speed', score: 0, max: 3, detail: 'Unknown' });
   }
 
-  // Power Availability (0-25 points)
-  maxScore += 25;
+  // Power Availability (0-2.5 points)
+  maxScore += 2.5;
   const powerValue = String(place.power || '').toLowerCase();
   if (powerValue === 'none' || powerValue === '') {
-    factors.push({ name: 'Power Outlets', score: 0, max: 25, detail: 'No outlets' });
+    factors.push({ name: 'Power Outlets', score: 0, max: 2.5, detail: 'No outlets' });
   } else if (powerValue.includes('range3') || powerValue.includes('good')) {
-    score += 25;
-    factors.push({ name: 'Power Outlets', score: 25, max: 25, detail: 'Abundant' });
+    score += 2.5;
+    factors.push({ name: 'Power Outlets', score: 2.5, max: 2.5, detail: 'Abundant' });
   } else if (powerValue.includes('range2')) {
-    score += 20;
-    factors.push({ name: 'Power Outlets', score: 20, max: 25, detail: 'Good' });
+    score += 2;
+    factors.push({ name: 'Power Outlets', score: 2, max: 2.5, detail: 'Good' });
   } else if (powerValue.includes('range1') || powerValue.includes('little')) {
-    score += 15;
-    factors.push({ name: 'Power Outlets', score: 15, max: 25, detail: 'Limited' });
+    score += 1.5;
+    factors.push({ name: 'Power Outlets', score: 1.5, max: 2.5, detail: 'Limited' });
   } else {
-    factors.push({ name: 'Power Outlets', score: 0, max: 25, detail: 'Unknown' });
+    factors.push({ name: 'Power Outlets', score: 0, max: 2.5, detail: 'Unknown' });
   }
 
-  // Noise Level (0-25 points)
-  maxScore += 25;
+  // Noise Level (0-2.5 points)
+  maxScore += 2.5;
   const noiseLevel = String(place.noise_level || place.noise || '').toLowerCase();
   if (noiseLevel.includes('quiet') || noiseLevel.includes('low')) {
-    score += 25;
-    factors.push({ name: 'Background Noise', score: 25, max: 25, detail: 'Lower than average' });
+    score += 2.5;
+    factors.push({ name: 'Background Noise', score: 2.5, max: 2.5, detail: 'Lower than average' });
   } else if (noiseLevel.includes('moderate') || noiseLevel.includes('average')) {
-    score += 20;
-    factors.push({ name: 'Background Noise', score: 20, max: 25, detail: 'Average level' });
+    score += 2;
+    factors.push({ name: 'Background Noise', score: 2, max: 2.5, detail: 'Average level' });
   } else if (noiseLevel.includes('noisy') || noiseLevel.includes('high')) {
-    score += 10;
-    factors.push({ name: 'Background Noise', score: 10, max: 25, detail: 'Higher than average' });
+    score += 1;
+    factors.push({ name: 'Background Noise', score: 1, max: 2.5, detail: 'Higher than average' });
   } else {
-    factors.push({ name: 'Background Noise', score: 0, max: 25, detail: 'Unknown' });
+    factors.push({ name: 'Background Noise', score: 0, max: 2.5, detail: 'Unknown' });
   }
 
-  // Amenities (0-20 points)
-  maxScore += 20;
+  // Amenities (0-2 points)
+  maxScore += 2;
   let amenityScore = 0;
   let amenityDetails = [];
 
   if (place.coffee || place.type?.toLowerCase().includes('coffee')) {
-    amenityScore += 5;
+    amenityScore += 0.5;
     amenityDetails.push('Coffee');
   }
   if (place.food) {
-    amenityScore += 5;
+    amenityScore += 0.5;
     amenityDetails.push('Food');
   }
   if (place.outdoor_seating === '1' || place.outside) {
-    amenityScore += 5;
+    amenityScore += 0.5;
     amenityDetails.push('Outdoor Seating');
   }
   if (place.alcohol) {
-    amenityScore += 5;
+    amenityScore += 0.5;
     amenityDetails.push('Alcohol');
   }
 
@@ -89,11 +89,12 @@ export const calculateWorkabilityScore = (place) => {
   factors.push({ 
     name: 'Amenities', 
     score: amenityScore, 
-    max: 20, 
+    max: 2, 
     detail: amenityDetails.length ? amenityDetails.join(', ') : 'Limited' 
   });
 
-  const finalScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+  // Calculate final score out of 10 (maxScore should equal 10)
+  const finalScore = maxScore > 0 ? Math.round((score / maxScore) * 10 * 10) / 10 : 0;
   
   return {
     score: finalScore,
@@ -113,7 +114,7 @@ const WorkabilityScore = ({
   const calculateTotalPoints = (factors) => {
     const earned = factors.reduce((sum, factor) => sum + factor.score, 0);
     const possible = factors.reduce((sum, factor) => sum + factor.max, 0);
-    return { earned, possible };
+    return { earned: Math.round(earned * 10) / 10, possible };
   };
 
   const { score, factors, reliability } = calculateWorkabilityScore(place);
@@ -137,7 +138,7 @@ const WorkabilityScore = ({
           ${isDark ? 'text-blue-400' : 'text-blue-600'}
           ${showPointer ? 'hover:text-accent-primary transition-colors' : ''}
         `}>
-          {earned}/{possible}
+          {earned}/10
         </div>
         {reliability < 1 && (
           <AlertCircle size={14} className={isDark ? 'text-blue-300' : 'text-blue-400'} />
@@ -158,8 +159,8 @@ const WorkabilityScore = ({
             <span className={`text-2xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
               {earned}
             </span>
-            <span className={`text-sm ml-1 ${isDark ? 'text-blue-200' : 'text-blue-500'}`}>
-              /{possible} points
+            <span className={`text-sm ml-1 ${isDark ? 'text-blue-200' : 'text-[var(--action-primary)]'}`}>
+              /10
             </span>
           </div>
         </div>
@@ -173,7 +174,7 @@ const WorkabilityScore = ({
               className={`h-full transition-all duration-500 ${
                 isDark ? 'bg-blue-500' : 'bg-blue-600'
               }`}
-              style={{ width: `${(earned / possible) * 100}%` }}
+              style={{ width: `${(earned / 10) * 100}%` }}
             />
           </div>
         </div>
@@ -217,7 +218,7 @@ const WorkabilityScore = ({
           <AlertCircle 
             size={16} 
             className={`flex-shrink-0 mt-0.5 ${
-              isDark ? 'text-blue-300' : 'text-blue-500'
+              isDark ? 'text-blue-300' : 'text-[var(--action-primary)]'
             }`} 
           />
           <p className={isDark ? 'text-blue-200' : 'text-blue-600'}>

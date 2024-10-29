@@ -3,18 +3,35 @@ import {
   Navigation, 
   Copy, 
   AlertTriangle,
-  Star,
-  Trophy,
   User,
   Wifi,
   WifiOff,
-  ImageIcon
+  ImageIcon,
+  Brain,
+  Sparkles
 } from 'lucide-react';
-import LazyImage from './LazyImage';
-import WorkabilityScore from './WorkabilityScore';
+import { useTheme } from './ThemeProvider';
 
-const PlaceCard = ({ place, onPhotoClick }) => {
+const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
   const isPromoted = place.owner_promoted_flag === "1";
+  const { isDark } = useTheme();
+
+  // Add animation keyframes effect
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes recommendedPulse {
+        0%, 100% { opacity: 0.9; }
+        50% { opacity: 1; }
+      }
+      @keyframes recommendedBrainPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
   
   const copyAddressToClipboard = (address) => {
     navigator.clipboard.writeText(address).then(
@@ -26,199 +43,232 @@ const PlaceCard = ({ place, onPhotoClick }) => {
   const getGoogleMapsUrl = (address) => 
     `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
 
+  const getPlaceholderBg = () => {
+    if (isPromoted) return 'e5e7eb';
+    if (isRecommended) return 'e2e8f0';
+    return 'e5e7eb';
+  };
+
+  const getWifiDisplay = (place) => {
+    if (place.no_wifi === "1") return "No WiFi";
+    if (place.download) {
+      const speed = Math.round(place.download);
+      if (speed >= 50) return "Excellent";
+      if (speed >= 20) return "Very Good";
+      if (speed >= 10) return "Good";
+      return "Basic";
+    }
+    return "Unknown";
+  };
+
+  const getPowerDisplay = (power) => {
+    const powerValue = String(power || '').toLowerCase();
+    if (powerValue === 'none' || powerValue === '') return 'No outlets';
+    if (powerValue.includes('range3') || powerValue.includes('good')) return 'Abundant';
+    if (powerValue.includes('range2')) return 'Good';
+    if (powerValue.includes('range1') || powerValue.includes('little')) return 'Limited';
+    return 'Unknown';
+  };
+
   return (
-    <div 
-      className={`
-        border rounded shadow-sm hover:shadow-md transition-shadow relative
+    <div className={`
+      relative group 
+      ${isRecommended ? 'pt-4 animate-fade-in' : ''}
+    `}>
+      {/* AI Recommendation Badge */}
+      {isRecommended && (
+        <div className="absolute -top-4 left-4 z-20 flex items-center gap-2 
+          px-3 py-1.5 rounded-full 
+          bg-[var(--accent-primary)] text-white
+          shadow-lg [animation:recommendedPulse_2s_ease-in-out_infinite]"
+        >
+          <Brain 
+            size={14} 
+            className="[animation:recommendedBrainPulse_2s_ease-in-out_infinite]" 
+          />
+          <span className="text-xs font-medium whitespace-nowrap">
+            AI Recommended
+          </span>
+        </div>
+      )}
+      {/* Card Container */}
+      <div className={`
+        relative border rounded shadow-sm 
+        transition-all duration-300
         ${isPromoted 
           ? 'border-[var(--promoted-border)] bg-[var(--promoted-bg)]' 
-          : 'border-border-primary'
+          : isRecommended
+            ? `border-[var(--accent-primary)] border-2 bg-[var(--bg-primary)] 
+               shadow-lg hover:shadow-xl
+               ${highlight ? 'ring-2 ring-[var(--accent-primary)] ring-opacity-50' : ''}`
+            : 'border-[var(--border-primary)] hover:shadow-md'
         }
-      `}
-    >
-      <div className="p-4">
-        <div className="flex flex-col space-y-4">
-          {/* Header with Title and Score */}
-          <div className="flex items-start gap-3">
-            {/* Title and Distance Container */}
-            <div className="flex-1 min-w-0">
-              <h2 
-                className={`
+        ${isRecommended ? 'transform scale-[1.02]' : ''}
+      `}>
+        <div className="p-4">
+          <div className="flex flex-col space-y-4">
+            {/* Header with Title and Score */}
+            <div className="flex items-start gap-3">
+              <div className="flex-1 min-w-0">
+                <h2 className={`
                   text-xl font-semibold mb-1 cursor-pointer
-                  hover:text-[var(--action-primary)] transition-colors
-                  ${isPromoted ? 'text-[var(--promoted-text)]' : 'text-text-primary'}
+                  transition-colors
+                  ${isPromoted 
+                    ? 'text-[var(--promoted-text)] hover:text-[var(--promoted-text)]/90' 
+                    : 'text-text-primary hover:text-[var(--action-primary)]'
+                  }
                   truncate block
                 `}
-                title={place.title}
-                onClick={() => onPhotoClick(place)}
-              >
-                {place.title}
-              </h2>
-              <p className={`text-sm ${
-                isPromoted ? 'text-[var(--promoted-secondary)]' : 'text-text-secondary'
-              }`}>
-                Distance: {place.distance} miles
-              </p>
-            </div>
-            
-            {/* Score Badge */}
-            <div 
-              onClick={() => onPhotoClick(place)}
-              className={`
-                flex items-center px-3 py-1 rounded-full flex-shrink-0 cursor-pointer
-                hover:opacity-90 transition-all duration-200
-                ${isPromoted 
-                  ? 'bg-[var(--promoted-tag-bg)]' 
-                  : 'bg-[var(--place-tag-bg)]'
-                }
-              `}
-            >
-              {isPromoted && (
-                <Trophy 
-                  size={14} 
-                  className="mr-1.5 text-[var(--promoted-tag-text)]" 
-                />
-              )}
-              <span className={`
-                font-medium whitespace-nowrap
-                ${isPromoted 
-                  ? 'text-[var(--promoted-tag-text)]' 
-                  : 'text-[var(--place-tag-text)]'
-                }
-              `}>
-                {place.workabilityScore}/100
-              </span>
-            </div>
-          </div>
-
-          {/* Content Area */}
-          <div className="flex space-x-4">
-            {/* Thumbnail */}
-            <div 
-              onClick={() => onPhotoClick(place)}
-              className={`
-                w-24 h-24 rounded flex-shrink-0 overflow-hidden cursor-pointer
-                group relative
-                ${isPromoted
-                  ? 'bg-[var(--promoted-tag-bg)]'
-                  : 'bg-[var(--bg-tertiary)]'
-                }
-              `}
-            >
-              {place.thumbnail_img ? (
-                <LazyImage
-                  src={place.thumbnail_img}
-                  alt={place.title}
-                  placeholder="https://placehold.co/100x100/e5e7eb/e5e7eb?text=Loading...&font=raleway"
-                  className="w-full h-full object-cover transition-opacity group-hover:opacity-90"
-                />
-              ) : (
-                <div className={`
-                  w-full h-full flex flex-col items-center justify-center
-                  transition-colors group-hover:bg-opacity-90
-                  ${isPromoted
-                    ? 'bg-[var(--promoted-tag-bg)]'
-                    : 'bg-[var(--bg-tertiary)]'
-                  }
-                `}>
-                  <ImageIcon 
-                    size={20} 
-                    className={`mb-1 ${
-                      isPromoted
-                        ? 'text-[var(--promoted-secondary)]'
-                        : 'text-text-tertiary'
-                    }`}
-                  />
-                  <span className={`
-                    text-xs text-center
-                    ${isPromoted
-                      ? 'text-[var(--promoted-secondary)]'
-                      : 'text-text-tertiary'
-                    }
-                  `}>
-                    No image
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Details */}
-            <div className="flex-1 min-w-0">
-              {/* WiFi Status */}
-              <div className="mb-2">
-                <p className={`text-sm flex items-center ${
+                  title={place.title}
+                  onClick={() => onPhotoClick(place)}
+                >
+                  {place.title}
+                </h2>
+                <p className={`text-sm ${
                   isPromoted 
-                    ? 'text-[var(--promoted-feature-icon)]' 
-                    : 'text-[var(--place-feature-icon)]'
+                    ? 'text-[var(--promoted-secondary)]' 
+                    : isDark && isRecommended
+                      ? 'text-white'
+                      : 'text-text-secondary'
                 }`}>
-                  {place.no_wifi === "1" ? (
-                    <>
-                      <WifiOff size={16} className="mr-1.5 flex-shrink-0" />
-                      <span className="truncate">No WiFi Available</span>
-                    </>
-                  ) : place.download ? (
-                    <>
-                      <Wifi size={16} className="mr-1.5 flex-shrink-0" />
-                      <span className="truncate">WiFi Speed: {Math.round(place.download)} Mbps</span>
-                    </>
-                  ) : (
-                    <>
-                      <Wifi size={16} className="mr-1.5 flex-shrink-0" />
-                      <span className="truncate">WiFi Status Unknown</span>
-                    </>
-                  )}
+                  Distance: {place.distance} miles
                 </p>
               </div>
-
-              {/* Noise Level */}
-              <div className={`text-sm flex items-center ${
-                isPromoted ? 'text-[var--promoted-text)]' : 'text-text-primary'
-              }`}>
-                <span className="mr-1">Noise Levels:</span>
-                <span className="font-medium truncate">
-                  {place.mappedNoise}
-                </span>
+              
+              <div onClick={() => onPhotoClick(place)}
+                className={`
+                  flex items-center cursor-pointer
+                  hover:opacity-80 transition-opacity
+                  font-medium
+                  ${isPromoted 
+                    ? 'text-[var(--promoted-text)]'
+                    : isDark && isRecommended
+                      ? 'text-white'
+                      : 'text-[var(--text-primary)]'
+                  }
+                `}
+              >
+                {place.workabilityScore}/10
               </div>
             </div>
-          </div>
 
-          {/* Actions */}
-          <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
-            {/* Author */}
-            {place.os && (
-              <div className={`text-sm flex items-center flex-shrink truncate ${
-                isPromoted ? 'text-[var(--promoted-secondary)]' : 'text-text-secondary'
-              }`}>
-                <User size={16} className="mr-1 flex-shrink-0" />
-                <span className="truncate">{place.os}</span>
-              </div>
-            )}
-            
-            {/* Action Buttons */}
-            <div className="flex gap-2 flex-shrink-0">
-              <button
-                onClick={() => window.open(getGoogleMapsUrl(
-                  `${place.street}, ${place.city}, ${place.postal}`
-                ), '_blank')}
-                className="text-[var(--action-primary)] hover:text-[var(--action-primary-hover)] 
-                  text-sm flex items-center transition-colors"
+            {/* Image and Details */}
+            <div className="flex space-x-4">
+              <div onClick={() => onPhotoClick(place)}
+                className={`
+                  w-24 h-24 rounded flex-shrink-0 overflow-hidden cursor-pointer
+                  group relative
+                  ${isPromoted
+                    ? 'bg-[var(--promoted-tag-bg)]'
+                    : isRecommended
+                      ? 'bg-[var(--bg-primary)]/10'
+                      : 'bg-[var(--bg-tertiary)]'
+                  }
+                `}
               >
-                <Navigation size={16} className="mr-1 flex-shrink-0" />
-                <span className="hidden sm:inline">Get Directions</span>
-                <span className="sm:hidden">Directions</span>
-              </button>
-
-              <button
-                onClick={() => copyAddressToClipboard(
-                  `${place.street}, ${place.city}, ${place.postal}`
+                {place.thumbnail_img ? (
+                  <img
+                    src={place.thumbnail_img}
+                    alt={place.title}
+                    className="w-full h-full object-cover transition-opacity group-hover:opacity-90"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://placehold.co/96x96/${getPlaceholderBg()}/94a3b8?text=No+image&font=raleway`;
+                    }}
+                  />
+                ) : (
+                  <div className={`
+                    w-full h-full flex flex-col items-center justify-center
+                    transition-colors group-hover:bg-opacity-90
+                    ${isPromoted
+                      ? 'bg-[var(--promoted-tag-bg)]'
+                      : isRecommended
+                        ? 'bg-[var(--bg-primary)]/10'
+                        : 'bg-[var(--bg-tertiary)]'
+                    }
+                  `}>
+                    <ImageIcon 
+                      size={20} 
+                      className={`mb-1 ${
+                        isPromoted
+                          ? 'text-[var(--promoted-secondary)]'
+                          : isDark && isRecommended
+                            ? 'text-white'
+                            : 'text-text-tertiary'
+                      }`} 
+                    />
+                    <span className={`
+                      text-xs text-center
+                      ${isPromoted
+                        ? 'text-[var(--promoted-secondary)]'
+                        : isDark && isRecommended
+                          ? 'text-white'
+                          : 'text-text-tertiary'
+                      }
+                    `}>
+                      No image
+                    </span>
+                  </div>
                 )}
-                className="text-[var(--action-primary)] hover:text-[var(--action-primary-hover)] 
-                  text-sm flex items-center transition-colors"
-              >
-                <Copy size={16} className="mr-1 flex-shrink-0" />
-                <span className="hidden sm:inline">Copy Address</span>
-                <span className="sm:hidden">Copy</span>
-              </button>
+              </div>
+
+              {/* Details */}
+              <div className="flex-1 min-w-0 space-y-2">
+                {/* WiFi Status */}
+                <div className="text-sm flex items-center">
+                  <span className="text-text-primary mr-1">WiFi:</span>
+                  <span className="font-medium truncate text-text-primary">
+                    {getWifiDisplay(place)}
+                  </span>
+                </div>
+
+                {/* Power Status */}
+                <div className="text-sm flex items-center">
+                  <span className="text-text-primary mr-1">Power Outlets:</span>
+                  <span className="font-medium truncate text-text-primary">
+                    {getPowerDisplay(place.power)}
+                  </span>
+                </div>
+
+                {/* Noise Level */}
+                <div className="text-sm flex items-center">
+                  <span className="text-text-primary mr-1">Noise Levels:</span>
+                  <span className="font-medium truncate text-text-primary">
+                    {place.mappedNoise}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+              {place.os && (
+                <div className={`text-sm flex items-center flex-shrink truncate ${
+                  isPromoted 
+                    ? 'text-[var(--promoted-secondary)]' 
+                    : isDark && isRecommended
+                      ? 'text-white'
+                      : 'text-text-secondary'
+                }`}>
+                  <User size={16} className="mr-1 flex-shrink-0" />
+                  <span className="truncate">{place.os}</span>
+                </div>
+              )}
+              
+              <div className="flex gap-2 flex-shrink-0">
+                <button
+                  onClick={() => window.open(getGoogleMapsUrl(
+                    `${place.street}, ${place.city}, ${place.postal}`
+                  ), '_blank')}
+                  className={`
+                    text-sm flex items-center transition-colors
+                    text-[var(--action-primary)] hover:text-[var(--action-primary-hover)]
+                  `}
+                >
+                  <Navigation size={16} className="mr-1 flex-shrink-0" />
+                  <span>Get Directions</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

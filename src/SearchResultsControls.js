@@ -15,7 +15,8 @@ const SearchResultsControls = ({
   
   return (
     <div className={`
-      sticky top-0 z-10 backdrop-blur-sm border-b mb-6 px-4 border border-border-primary rounded-lg
+      sticky top-0 z-30 backdrop-blur-sm border-b mb-6 px-4 
+      border border-border-primary rounded-lg
       ${isDark 
         ? 'bg-[#1a1f2c]/95 border-white/10' 
         : 'bg-white/95 border-gray-200'
@@ -89,4 +90,4 @@ const SearchResultsControls = ({
   );
 };
 
-export default SearchResultsControls;
+export default SearchResultsControls; 

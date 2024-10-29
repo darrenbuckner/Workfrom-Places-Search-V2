@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
 
-export const CustomSelect = ({ 
+const CustomSelect = ({ 
   value, 
   onChange, 
   options, 
@@ -12,6 +13,7 @@ export const CustomSelect = ({
   const [isOpen, setIsOpen] = useState(false);
   const selectRef = useRef(null);
   const selectedOption = options.find(opt => opt.value === value);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -25,18 +27,27 @@ export const CustomSelect = ({
   }, []);
 
   const buttonStyles = variant === 'minimal' 
-    ? `w-full h-10 px-3 bg-bg-secondary border border-border-primary rounded-md
-       text-text-primary hover:border-accent-secondary focus:border-accent-primary 
+    ? `w-full h-8 px-2 text-sm
+       ${isDark 
+         ? 'bg-[#323950] border-white/10 hover:bg-[#3a4259]' 
+         : 'bg-white border-gray-200 hover:bg-gray-50'
+       }
+       border rounded-md text-text-primary 
+       hover:border-accent-secondary focus:border-accent-primary 
        focus:ring-1 focus:ring-accent-primary/50 transition-colors`
     : `w-full h-10 px-3 bg-bg-tertiary border border-border-primary rounded-md
        text-text-primary hover:border-accent-secondary focus:border-accent-primary 
        focus:ring-1 focus:ring-accent-primary/50 transition-colors`;
 
-  const dropdownStyles = variant === 'minimal'
-    ? `absolute z-50 w-full mt-1 py-1 rounded-md shadow-lg overflow-auto
-       bg-bg-secondary border border-border-primary`
-    : `absolute z-50 w-full mt-1 py-1 rounded-md shadow-lg overflow-auto
-       bg-bg-secondary border border-border-primary backdrop-blur-sm`;
+  const dropdownStyles = `
+    absolute z-50 w-full mt-1 py-1 rounded-md shadow-lg overflow-auto
+    backdrop-blur-sm
+    ${isDark 
+      ? 'bg-[#2a3142]/95 border-white/10' 
+      : 'bg-white/95 border-gray-200'
+    }
+    border
+  `;
 
   return (
     <div className={className}>
@@ -52,11 +63,13 @@ export const CustomSelect = ({
           className={buttonStyles}
         >
           <div className="flex items-center justify-between">
-            <span className="truncate">{selectedOption?.label}</span>
+            <span className="truncate text-sm">
+              {selectedOption?.label}
+            </span>
             {isOpen ? (
-              <ChevronUp size={16} className="text-text-secondary flex-shrink-0 ml-2" />
+              <ChevronUp size={14} className="text-text-secondary flex-shrink-0 ml-1" />
             ) : (
-              <ChevronDown size={16} className="text-text-secondary flex-shrink-0 ml-2" />
+              <ChevronDown size={14} className="text-text-secondary flex-shrink-0 ml-1" />
             )}
           </div>
         </button>
@@ -71,15 +84,17 @@ export const CustomSelect = ({
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-3 py-2 text-left transition-colors
+                  className={`
+                    w-full px-3 py-1.5 text-left transition-colors text-sm
                     ${value === option.value 
                       ? 'text-accent-primary bg-accent-primary/10' 
                       : 'text-text-primary hover:bg-bg-tertiary'
-                    }`}
+                    }
+                  `}
                 >
                   <span className="block truncate">{option.label}</span>
                   {option.description && (
-                    <span className="block text-sm text-text-secondary mt-0.5">
+                    <span className="block text-xs text-text-secondary mt-0.5">
                       {option.description}
                     </span>
                   )}

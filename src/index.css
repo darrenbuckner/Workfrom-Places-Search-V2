@@ -118,3 +118,39 @@ code {
 .bg-\[\#1a1f2c\]\/95 {
   backdrop-filter: blur(10px);
 }
+
+/* Theme-aware transitions */
+.transition-theme {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Theme-aware animations */
+@keyframes highlight-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--accent-primary);
+  }
+  50% {
+    box-shadow: 0 0 0 4px var(--accent-primary-light);
+  }
+}
+
+.highlight-pulse {
+  animation: highlight-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}

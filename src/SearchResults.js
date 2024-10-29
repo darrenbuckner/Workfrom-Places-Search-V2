@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Brain } from 'lucide-react';
 import PlaceCard from './PlaceCard';
 import Pagination from './Pagination';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
@@ -7,107 +8,205 @@ const SearchResults = ({
   places, 
   sortBy, 
   filters, 
-  itemsPerPage, 
+  itemsPerPage = 10, 
   viewMode, 
-  onPhotoClick 
+  onPhotoClick,
+  recommendedPlaceName 
 }) => {
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
+  const [highlightRecommended, setHighlightRecommended] = useState(false);
+  const [isRecommendedVisible, setIsRecommendedVisible] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [isPageChanging, setIsPageChanging] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
+
   const controlsRef = useRef(null);
   const resultsRef = useRef(null);
-  
-  // Process and filter places
-  const processedPlaces = useMemo(() => {
-    if (!places.length) return [];
+  const recommendedCardRef = useRef(null);
+
+  const totalPages = Math.max(1, Math.ceil(places.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, places.length);
+  const currentItems = places.slice(startIndex, endIndex);
+
+  const getRecommendedPlaceInfo = useCallback(() => {
+    if (!recommendedPlaceName) return null;
     
-    const filtered = places.filter(place => {
-      // Filter by type
-      if (filters.type !== 'any' && place.type !== filters.type) {
-        return false;
-      }
+    const index = places.findIndex(place => place.title === recommendedPlaceName);
+    if (index === -1) return null;
+    
+    const page = Math.floor(index / itemsPerPage) + 1;
+    return { index, page };
+  }, [places, recommendedPlaceName, itemsPerPage]);
 
-      // Filter by noise level
-      if (filters.noise !== 'any') {
-        const noise = String(place.noise_level || place.noise || '').toLowerCase();
-        if (filters.noise === 'quiet' && !noise.includes('quiet') && !noise.includes('low')) {
-          return false;
-        }
-        if (filters.noise === 'moderate' && !noise.includes('moderate') && !noise.includes('average')) {
-          return false;
-        }
-        if (filters.noise === 'noisy' && !noise.includes('noisy') && !noise.includes('high')) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    // Sort places if needed
-    return sortBy === 'score_high' 
-      ? filtered.sort((a, b) => b.workabilityScore - a.workabilityScore)
-      : filtered;
-  }, [places, sortBy, filters]);
-
-  // Calculate total pages
-  const totalPages = Math.max(1, Math.ceil(processedPlaces.length / itemsPerPage));
-
-  // Keep the current page within bounds when total pages changes
   useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(1);
+    if (!hasInitialized && recommendedPlaceName) {
+      const info = getRecommendedPlaceInfo();
+      if (info) {
+        if (info.page !== currentPage) {
+          setCurrentPage(info.page);
+        }
+        setHasInitialized(true);
+      }
     }
-  }, [totalPages, currentPage]);
+  }, [recommendedPlaceName, hasInitialized, getRecommendedPlaceInfo, currentPage]);
 
-  // Get current page items
-  const currentItems = processedPlaces.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const handlePageChange = useCallback((newPage) => {
+    if (newPage < 1 || newPage > totalPages) {
+      return;
+    }
 
-  // Handle page changes with improved scroll positioning
-  const handlePageChange = (newPage) => {
+    setIsPageChanging(true);
     setCurrentPage(newPage);
-    
-    // Calculate scroll position with increased padding
+
     if (controlsRef.current) {
-      // Get the header height and add padding
-      const headerPadding = 120; // Increased padding for better visibility
+      const headerPadding = 120;
       const controlsTop = controlsRef.current.getBoundingClientRect().top;
       const scrollPosition = window.pageYOffset + controlsTop - headerPadding;
 
-      // Smooth scroll to the new position
       window.scrollTo({
-        top: Math.max(0, scrollPosition), // Ensure we don't scroll past the top
+        top: Math.max(0, scrollPosition),
         behavior: 'smooth'
       });
+
+      setTimeout(() => {
+        setIsPageChanging(false);
+      }, 500);
     }
-  };
+  }, [currentPage, totalPages]);
+
+  const scrollToRecommended = useCallback(() => {
+    if (recommendedCardRef.current && !isPageChanging) {
+      const headerOffset = 100;
+      const elementPosition = recommendedCardRef.current.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+
+      setHighlightRecommended(true);
+      setTimeout(() => setHighlightRecommended(false), 1500);
+    }
+  }, [isPageChanging]);
+
+  useEffect(() => {
+    if (!recommendedPlaceName) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsRecommendedVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0.5,
+        rootMargin: '-100px 0px',
+      }
+    );
+
+    if (recommendedCardRef.current) {
+      observer.observe(recommendedCardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [recommendedPlaceName, currentPage]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const shouldShow = window.pageYOffset > 200 && !isRecommendedVisible && !isPageChanging;
+      setShowScrollButton(shouldShow);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isRecommendedVisible, isPageChanging]);
+
+  // Add keyframe animations
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes buttonGlow {
+        0%, 100% { box-shadow: 0 0 10px var(--accent-primary); }
+        50% { box-shadow: 0 0 20px var(--accent-primary); }
+      }
+      @keyframes brainPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
 
   return (
-    <div ref={resultsRef}>
-      {/* Scroll marker with increased padding */}
-      <div ref={controlsRef} className="scroll-mt-32" /> {/* Increased scroll margin */}
+    <div ref={resultsRef} className="relative">
+      <div ref={controlsRef} className="scroll-mt-32" />
       
       <div className="space-y-6">
-        {currentItems.map((place, index) => (
-          <React.Fragment key={place.ID}>
-            {index > 0 && index % 5 === 0 && <WorkfromVirtualAd />}
-            <PlaceCard
-              place={place}
-              onPhotoClick={() => onPhotoClick(place)}
-            />
-          </React.Fragment>
-        ))}
+        {currentItems.map((place, index) => {
+          const absoluteIndex = startIndex + index;
+          const isRecommended = place.title === recommendedPlaceName;
+
+          return (
+            <React.Fragment key={place.ID}>
+              {index > 0 && index % 5 === 0 && <WorkfromVirtualAd />}
+              <div 
+                ref={isRecommended ? recommendedCardRef : null}
+                className={`transition-transform duration-300 ${
+                  highlightRecommended && isRecommended ? 'scale-[1.02]' : ''
+                }`}
+              >
+                <PlaceCard
+                  place={place}
+                  onPhotoClick={() => onPhotoClick(place)}
+                  isRecommended={isRecommended}
+                  highlight={highlightRecommended && isRecommended}
+                />
+              </div>
+            </React.Fragment>
+          );
+        })}
       </div>
 
-      {processedPlaces.length > itemsPerPage && (
+      {totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
           className="mt-6"
         />
+      )}
+
+      {showScrollButton && recommendedPlaceName && (
+        <button
+          onClick={() => {
+            const info = getRecommendedPlaceInfo();
+            if (info && info.page !== currentPage) {
+              handlePageChange(info.page);
+            } else {
+              scrollToRecommended();
+            }
+          }}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-2.5 rounded-full
+            bg-[var(--accent-primary)] text-white
+            transform transition-all duration-200 hover:scale-105
+            shadow-lg hover:shadow-xl
+            hover:bg-[var(--accent-primary)]/90
+            [animation:buttonGlow_2s_ease-in-out_infinite]"
+          style={{
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          <div className="relative flex-shrink-0">
+            <Brain 
+              size={18} 
+              className="[animation:brainPulse_2s_ease-in-out_infinite]"
+            />
+          </div>
+          <span className="text-sm font-medium whitespace-nowrap">
+            View AI Recommendation
+          </span>
+        </button>
       )}
     </div>
   );

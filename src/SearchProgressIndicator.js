@@ -15,7 +15,7 @@ const SearchProgressIndicator = ({ phase, error, usingSavedLocation }) => {
               <Loader className="w-4 h-4 text-white animate-spin" />
             </div>
             <div className="flex-1">
-              <div className="font-medium text-blue-500">
+              <div className="font-medium text-[var(--action-primary)]">
                 Getting your location
               </div>
               <div className="text-sm text-text-secondary mt-0.5">
@@ -32,7 +32,7 @@ const SearchProgressIndicator = ({ phase, error, usingSavedLocation }) => {
               <Loader className="w-4 h-4 text-white animate-spin" />
             </div>
             <div className="flex-1">
-              <div className="font-medium text-blue-500">
+              <div className="font-medium text-[var(--action-primary)]">
                 Finding places nearby
               </div>
               <div className="text-sm text-text-secondary mt-0.5">
