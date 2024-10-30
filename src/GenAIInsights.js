@@ -8,7 +8,8 @@ import {
   AlertCircle,
   ImageIcon,
   ArrowRight,
-  Loader
+  Loader,
+  Navigation
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import API_CONFIG from './config';
@@ -49,7 +50,6 @@ const GenAIInsights = ({
     setError(null);
 
     try {
-      // Prepare places data for analysis
       const placesForAnalysis = places.slice(0, 10).map(place => ({
         name: place.title,
         distance: place.distance,
@@ -67,7 +67,6 @@ const GenAIInsights = ({
         }
       }));
 
-      // Call the analysis API
       const response = await fetch(`${API_CONFIG.baseUrl}/analyze-workspaces`, {
         method: 'POST',
         headers: { 
@@ -97,9 +96,7 @@ const GenAIInsights = ({
     }
   };
 
-  // Trigger analysis when places are loaded
   useEffect(() => {
-    // Start analysis after a short delay to ensure all states are settled
     const timer = setTimeout(() => {
       if (!isAnalyzing && places.length > 0 && !isSearching && !insights) {
         analyzeNearbyPlaces();
@@ -109,7 +106,6 @@ const GenAIInsights = ({
     return () => clearTimeout(timer);
   }, [places, isSearching, isAnalyzing, insights]);
 
-  // Find the recommended place in our places array
   const getRecommendedPlace = () => {
     if (!insights?.recommendation?.name || !places.length) return null;
     return places.find(p => p.title === insights.recommendation.name) || null;
@@ -117,10 +113,15 @@ const GenAIInsights = ({
 
   const recommendedPlace = getRecommendedPlace();
 
-  // Don't render anything if we have no places or are searching
+  const getGoogleMapsUrl = (place) => {
+    if (!place?.street || !place?.city) return null;
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+      `${place.street}, ${place.city}`
+    )}`;
+  };
+
   if (!places.length || isSearching) return null;
 
-  // Show error state
   if (error) {
     return (
       <div className={`bg-bg-secondary border border-border-primary rounded-lg p-4 ${className}`}>
@@ -147,9 +148,8 @@ const GenAIInsights = ({
   return (
     <div className={className}>
       {/* Header Section */}
-      <div className="relative p-4 bg-[var(--action-primary)]/5">
+      <div className="relative p-4 bg-[var(--action-primary)]/5 rounded-t-lg">
         <div className="flex items-center justify-between w-full gap-4">
-          {/* Sparkles Icon (previously Brain) */}
           <div className="relative flex-shrink-0 w-10">
             <div className="w-10 h-10 rounded-full bg-[var(--action-primary)]/10 flex items-center justify-center">
               {isAnalyzing ? (
@@ -160,7 +160,6 @@ const GenAIInsights = ({
             </div>
           </div>
 
-          {/* Place Image */}
           {recommendedPlace && (
             <div className="relative flex-shrink-0 w-10">
               <div className="w-10 h-10 rounded-md overflow-hidden border border-border-primary">
@@ -182,7 +181,6 @@ const GenAIInsights = ({
             </div>
           )}
 
-          {/* Text Content */}
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-xs font-medium text-text-secondary">
               {isAnalyzing ? 'Analyzing places...' : 'Perfect Match Found'}
@@ -192,7 +190,6 @@ const GenAIInsights = ({
             </span>
           </div>
 
-          {/* Action Button */}
           <button
             onClick={!insights && !isAnalyzing ? analyzeNearbyPlaces : toggleExpand}
             disabled={isAnalyzing}
@@ -210,12 +207,9 @@ const GenAIInsights = ({
           >
             <Sparkles 
               size={16} 
-              className={isExpanded 
-                ? 'text-white' 
-                : 'text-[var(--text-primary)]'
-              } 
+              className={isExpanded ? 'text-white' : 'text-[var(--text-primary)]'} 
             />
-            {isAnalyzing ? 'Analyzing...' : isExpanded ? 'Hide Analysis' : 'See Why'}
+            {isAnalyzing ? 'Analyzing...' : isExpanded ? 'Hide Details' : 'See Details'}
           </button>
         </div>
       </div>
@@ -223,72 +217,82 @@ const GenAIInsights = ({
       {/* Expanded Content */}
       {insights?.recommendation && (
         <div className={`
-          transition-[max-height] duration-300 ease-out overflow-hidden
-          ${isExpanded ? 'max-h-[1000px]' : 'max-h-0'}
+          transition-all duration-300 overflow-hidden
+          ${isExpanded ? 'max-h-[80vh]' : 'max-h-0'}
+          ${isExpanded ? '' : ''}
+          border-border-primary rounded-b-lg
         `}>
-          <div className="p-4 space-y-4 border-t border-border-primary">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-[var(--action-primary)]" />
-              <span className="text-sm font-medium text-[var(--action-primary)]">
-                AI Recommendation
-              </span>
-            </div>
+          <div className="p-4 overflow-y-auto max-h-[calc(80vh-4rem)]">
 
-            <p className="text-sm text-text-primary leading-relaxed">
-              {insights.recommendation.personalNote}
-            </p>
+            {/* Main Content */}
+            <div className="space-y-6">
+              {/* Personal Note */}
+              <p className="text-sm text-text-primary leading-relaxed">
+                {insights.recommendation.personalNote}
+              </p>
 
-            {/* Features */}
-            <div className="space-y-2">
-              {insights.recommendation.standoutFeatures?.map((feature, idx) => (
-                <div 
-                  key={idx}
-                  className="flex items-center gap-3 p-3 rounded-md bg-bg-tertiary border border-border-primary"
-                >
-                  <div className="w-8 h-8 rounded-full bg-[var(--action-primary)]/10 flex items-center justify-center flex-shrink-0">
-                    {feature.category === 'wifi' ? <Wifi className="w-4 h-4 text-[var(--action-primary)]" /> :
-                     feature.category === 'power' ? <Battery className="w-4 h-4 text-[var(--action-primary)]" /> :
-                     feature.category === 'quiet' ? <Volume2 className="w-4 h-4 text-[var(--action-primary)]" /> :
-                     <Coffee className="w-4 h-4 text-[var(--action-primary)]" />}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-medium text-sm text-text-primary">
-                      {feature.title}
+              {/* Features */}
+              <div className="space-y-2">
+                {insights.recommendation.standoutFeatures?.map((feature, idx) => (
+                  <div 
+                    key={idx}
+                    className="flex items-center gap-3 p-3 rounded-md bg-bg-tertiary border border-border-primary"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-[var(--action-primary)]/10 flex items-center justify-center flex-shrink-0">
+                      {feature.category === 'wifi' ? <Wifi className="w-4 h-4 text-[var(--action-primary)]" /> :
+                       feature.category === 'power' ? <Battery className="w-4 h-4 text-[var(--action-primary)]" /> :
+                       feature.category === 'quiet' ? <Volume2 className="w-4 h-4 text-[var(--action-primary)]" /> :
+                       <Coffee className="w-4 h-4 text-[var(--action-primary)]" />}
                     </div>
-                    <div className="text-xs text-text-secondary mt-0.5">
-                      {feature.description}
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm text-text-primary">
+                        {feature.title}
+                      </div>
+                      <div className="text-xs text-text-secondary mt-0.5">
+                        {feature.description}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bottom Section */}
-            <div className="space-y-3">
-              <div className="flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-[var(--action-primary)] mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-text-secondary italic flex-1">
-                  <strong>Bottom line:</strong> {insights.recommendation.finalNote}
-                </p>
+                ))}
               </div>
 
-              {recommendedPlace && (
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => onPhotoClick(recommendedPlace)}
-                    className={`
-                      flex items-center gap-2 px-4 py-2 rounded-full
-                      transition-all duration-300 text-sm font-medium
-                      bg-[var(--action-primary)]/10 hover:bg-[var(--action-primary)]/15 
-                      text-[var(--text-primary)] border-[var(--action-primary)]/20
-                      border whitespace-nowrap
-                    `}
-                  >
-                    <span>View Space Details</span>
-                    <ArrowRight size={16} />
-                  </button>
+              {/* Bottom Line Section (Moved to top) */}
+              <div className="mb-6 p-4 rounded-lg bg-[var(--action-primary)]/5 border border-[var(--action-primary)]/10">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-[var(--action-primary)] mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-text-primary font-medium">
+                    <strong className="block mb-1">Bottom line:</strong>
+                    {insights.recommendation.finalNote}
+                  </p>
                 </div>
-              )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                {recommendedPlace && getGoogleMapsUrl(recommendedPlace) && (
+                  <a
+                    href={getGoogleMapsUrl(recommendedPlace)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md
+                      bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)]
+                      text-white text-sm font-medium transition-colors"
+                  >
+                    <Navigation size={16} />
+                    Get Directions
+                  </a>
+                )}
+                <button
+                  onClick={() => onPhotoClick(recommendedPlace)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md
+                    bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)]
+                    text-text-primary text-sm font-medium transition-colors
+                    border border-border-primary"
+                >
+                  <ArrowRight size={16} />
+                  More Details
+                </button>
+              </div>
             </div>
           </div>
         </div>
