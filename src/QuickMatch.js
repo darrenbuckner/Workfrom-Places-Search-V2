@@ -1,8 +1,12 @@
-import React from 'react';
-import { ArrowRight, Sparkles, Brain } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Sparkles, Brain, ChevronDown, ChevronUp } from 'lucide-react';
 
 const QuickMatch = ({ recommendation, place, onViewDetails }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
   if (!recommendation || !place) return null;
+
+  const shouldShowReadMore = recommendation.personalNote.length > 100;
 
   return (
     <div className="sticky top-0 z-40 p-2 sm:p-4 -mx-2 sm:-mx-4 mb-4 sm:mb-6">
@@ -44,9 +48,31 @@ const QuickMatch = ({ recommendation, place, onViewDetails }) => {
               <h3 className="font-medium text-[var(--text-primary)] truncate">
                 {place.title}
               </h3>
-              <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mt-0.5">
-                {recommendation.personalNote}
-              </p>
+              <div className="relative">
+                <p className={`text-xs text-[var(--text-secondary)] mt-0.5
+                  ${!isExpanded && shouldShowReadMore ? 'line-clamp-2' : ''}`}>
+                  {recommendation.personalNote}
+                </p>
+                {shouldShowReadMore && (
+                  <button
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="mt-1 flex items-center gap-1 text-xs font-medium 
+                      text-[var(--accent-primary)] hover:text-[var(--accent-secondary)] transition-colors"
+                  >
+                    {isExpanded ? (
+                      <>
+                        Show less
+                        <ChevronUp className="w-3 h-3" />
+                      </>
+                    ) : (
+                      <>
+                        Read more
+                        <ChevronDown className="w-3 h-3" />
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Action Button */}
