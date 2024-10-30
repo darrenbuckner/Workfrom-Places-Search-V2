@@ -113,7 +113,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
                     ? 'text-[var(--promoted-secondary)]' 
                     : isDark && isRecommended
                       ? 'text-white'
-                      : 'text-text-secondary'
+                      : 'text-[var(--text-secondary)]'
                 }`}>
                   Distance: {place.distance} miles
                 </p>
@@ -232,7 +232,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
                     ? 'text-[var(--promoted-secondary)]' 
                     : isDark && isRecommended
                       ? 'text-white'
-                      : 'text-text-secondary'
+                      : 'text-[var(--text-secondary)]'
                 }`}>
                   <User size={16} className="mr-1 flex-shrink-0" />
                   <span className="truncate">{place.os}</span>

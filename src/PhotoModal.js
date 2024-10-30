@@ -11,7 +11,12 @@ import {
   Clock,
   WifiOff,
   Users,
-  Info
+  Info,
+  Star, 
+  StarHalf, 
+  StarOff,
+  Coffee,
+  AlertCircle
 } from 'lucide-react';
 import WorkabilityScore from './WorkabilityScore';
 import { useScrollLock } from './useScrollLock';
@@ -145,6 +150,13 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     if (score >= 6) return "good";
     if (score >= 4) return "moderate";
     return "limited";
+  };
+
+  const getScoreQuality = (score) => {
+    if (score >= 8) return { label: 'Excellent', stars: 3 };
+    if (score >= 6) return { label: 'Good', stars: 2 };
+    if (score >= 4) return { label: 'Fair', stars: 1 };
+    return { label: 'Limited', stars: 0 };
   };
 
   const getMissingInfo = (place) => {
@@ -309,46 +321,109 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                     </div>
                   </div>
 
-                  {/* Workability Metrics */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {metrics.map((metric, index) => (
-                      <div key={index} 
-                        className="p-2.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
-                      >
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <metric.icon size={14} className={metric.iconColor} />
-                          <span className="text-xs text-[var(--text-secondary)]">{metric.label}</span>
-                        </div>
-                        <div className={`text-sm font-medium ${metric.color}`}>
-                          {metric.value}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              
+
+                  {/* Add a subtle divider */}
+                  <div className="my-4 border-t border-[var(--border-primary)]" />
 
                   {/* Score Explanation */}
-                  <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-                    <div className="p-3">
-                      <div className="flex items-start gap-2">
-                        <Info size={16} className="text-[var(--text-secondary)] flex-shrink-0 mt-0.5" />
-                        <div className="text-sm text-[var(--text-secondary)]">
-                          <p>
-                            This workspace scores <span className="font-medium text-[var(--text-primary)]">
-                            ({selectedPlace.workabilityScore}/10)</span> indicating {getScoreExplanation(selectedPlace.workabilityScore)} workability 
-                            based on WiFi quality, power availability, noise levels, and amenities.
-                            {getMissingInfo(selectedPlace).length > 0 && (
-                              <p className=" gap-1.5 mb-1 mt-2">
-                                Help the community by adding {formatMissingInfo(getMissingInfo(selectedPlace))}. 
-                                {!fullImg && !selectedPlace.thumbnail_img && (
-                                  <span>&nbsp;Photos are especially helpful for members to recognize the space and find good spots to work.</span>
-                                )}
-                              </p>
-                            )}
-                          </p>
+                  <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] overflow-hidden">
+                    {/* Score Header */}
+                    <div className="p-3 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-bold text-[var(--accent-primary)]">
+                            {selectedPlace.workabilityScore}
+                          </span>
+                          <span className="text-sm text-[var(--text-secondary)]">/10</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {[...Array(3)].map((_, i) => {
+                            const quality = getScoreQuality(selectedPlace.workabilityScore);
+                            const StarIcon = i < quality.stars ? Star : i === quality.stars ? StarHalf : StarOff;
+                            return (
+                              <StarIcon 
+                                key={i} 
+                                size={16} 
+                                className="text-[var(--accent-primary)]"
+                                fill={i < quality.stars ? "currentColor" : "none"}
+                              />
+                            );
+                          })}
                         </div>
                       </div>
+                      <div className="mt-1 text-sm font-medium text-[var(--text-primary)]">
+                        {getScoreQuality(selectedPlace.workabilityScore).label} for Remote Work
+                      </div>
+                    </div>
+
+                    {/* Score Details */}
+                    <div className="p-3">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <span className="text-xs text-[var(--text-secondary)]">Based on:</span>
+                        <div className="h-4 border-l border-[var(--border-primary)]" />
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {[
+                            { icon: Wifi, label: 'WiFi' },
+                            { icon: Battery, label: 'Power' },
+                            { icon: Volume2, label: 'Noise' },
+                            { icon: Coffee, label: 'Amenities' }
+                          ].map((item, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <item.icon size={12} className="text-[var(--accent-primary)]" />
+                              <span className="text-xs text-[var(--text-secondary)]">{item.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Missing Info Alert - More compact version */}
+                      {getMissingInfo(selectedPlace).length > 0 && (
+                        <div className="flex items-start gap-2 pt-2 border-t border-[var(--border-primary)]">
+                          <AlertCircle size={14} className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" />
+                          <p className="text-xs text-[var(--text-secondary)] leading-tight">
+                            Help other members by adding {formatMissingInfo(getMissingInfo(selectedPlace))}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Add a subtle divider */}
+                  <div className="my-4 border-t border-[var(--border-primary)]" />
+
+                  {/* Workability Metrics */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-[var(--text-primary)]">
+                        Essential Workspace Features
+                      </span>
+                      <div className="px-1.5 py-0.5 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs">
+                        Must-haves
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {metrics.map((metric, index) => (
+                        <div key={index} 
+                          className="p-2.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
+                        >
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <metric.icon size={14} className={metric.iconColor} />
+                            <span className="text-xs text-[var(--text-secondary)]">{metric.label}</span>
+                          </div>
+                          <div className={`text-sm font-medium ${metric.color}`}>
+                            {metric.value}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-[var(--text-secondary)]">
+                      These features are crucial for maintaining productivity while working remotely
+                    </p>
+                  </div>
+
+                  {/* Add a subtle divider */}
+                  <div className="my-4 border-t border-[var(--border-primary)]" />
 
                   {/* Description */}
                   {sanitizedDescription && (

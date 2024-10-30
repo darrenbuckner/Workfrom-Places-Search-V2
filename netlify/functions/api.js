@@ -3,6 +3,7 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 const { OpenAI } = require('openai');
+const moment = require('moment-timezone');
 require('dotenv').config();
 
 // Initialize Express app
@@ -17,6 +18,10 @@ const openai = new OpenAI({
 // Default API key if not provided in request
 const DEFAULT_API_KEY = 'RxhYNXu8CyPavHhO';
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+
 // Debug middleware
 app.use((req, res, next) => {
   console.log('Request details:', {
@@ -30,21 +35,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Path normalization middleware
-router.use((req, res, next) => {
-  if (req.path.startsWith('/.netlify/functions/api')) {
-    req.url = req.url.replace('/.netlify/functions/api', '');
-  }
-  if (req.path.startsWith('/api')) {
-    req.url = req.url.replace('/api', '');
-  }
-  next();
-});
-
 // Health check endpoint
 router.get('/health', (req, res) => {
   console.log('Health check endpoint hit');
@@ -55,21 +45,52 @@ router.get('/health', (req, res) => {
   });
 });
 
+// Helper function to get timezone from city/state
+// Timezone mapping helper
+const getCityTimezone = (city = '', state = '') => {
+  const location = `${city} ${state}`.toLowerCase();
+  
+  // US timezone mappings
+  const timezones = {
+    'america/los_angeles': [
+      'portland', 'oregon', 'seattle', 'washington',
+      'los angeles', 'san francisco', 'california'
+    ],
+    'america/denver': ['denver', 'colorado', 'salt lake city', 'utah'],
+    'america/chicago': ['chicago', 'illinois', 'houston', 'texas'],
+    'america/new_york': ['new york', 'boston', 'philadelphia']
+  };
+
+  for (const [timezone, cities] of Object.entries(timezones)) {
+    if (cities.some(city => location.includes(city))) {
+      return timezone;
+    }
+  }
+
+  // Default to Eastern Time if no match
+  return 'America/New_York';
+};
+
+// Get time-appropriate description
+const getTimeContext = (moment) => {
+  const hour = moment.hour();
+  if (hour < 6) return "early morning";
+  if (hour < 12) return "morning";
+  if (hour < 14) return "lunch hour";
+  if (hour < 17) return "afternoon";
+  if (hour < 20) return "evening";
+  return "night";
+};
+
 // Places endpoint
-router.get('/places/ll/:coords', async (req, res) => {
+app.get('/api/places/ll/:coords', async (req, res) => {
   try {
-    console.log('Places endpoint hit. Params:', req.params);
     const { coords } = req.params;
     const radius = req.query.radius || 2;
     const rpp = req.query.rpp || 100;
     const appid = req.query.appid || DEFAULT_API_KEY;
 
     const WORKFROM_API_URL = `https://api.workfrom.co/places/ll/${coords}`;
-    
-    console.log('Calling Workfrom API:', {
-      url: WORKFROM_API_URL,
-      params: { radius, appid, rpp }
-    });
     
     const response = await fetch(
       `${WORKFROM_API_URL}?radius=${radius}&appid=${appid}&rpp=${rpp}`,
@@ -82,16 +103,10 @@ router.get('/places/ll/:coords', async (req, res) => {
     );
 
     const data = await response.json();
-
     if (!response.ok) {
       throw new Error(`Workfrom API error: ${data.meta?.message || response.statusText}`);
     }
 
-    console.log('Workfrom API response received:', {
-      status: response.status,
-      resultCount: data.response?.length
-    });
-    
     res.json(data);
   } catch (error) {
     console.error('Places API error:', error);
@@ -107,19 +122,13 @@ router.get('/places/ll/:coords', async (req, res) => {
 });
 
 // Place details endpoint
-router.get('/places/:id', async (req, res) => {
+app.get('/api/places/:id', async (req, res) => {
   try {
-    console.log('Place details endpoint hit. Params:', req.params);
     const { id } = req.params;
     const appid = req.query.appid || DEFAULT_API_KEY;
 
     const WORKFROM_API_URL = `https://api.workfrom.co/places/${id}`;
     
-    console.log('Calling Workfrom API:', {
-      url: WORKFROM_API_URL,
-      params: { appid }
-    });
-
     const response = await fetch(
       `${WORKFROM_API_URL}?appid=${appid}`,
       {
@@ -131,7 +140,6 @@ router.get('/places/:id', async (req, res) => {
     );
 
     const data = await response.json();
-
     if (!response.ok) {
       throw new Error(`Workfrom API error: ${data.meta?.message || response.statusText}`);
     }
@@ -151,9 +159,8 @@ router.get('/places/:id', async (req, res) => {
 });
 
 // Analyze workspaces endpoint
-router.post('/analyze-workspaces', async (req, res) => {
+app.post('/api/analyze-workspaces', async (req, res) => {
   try {
-    console.log('Analyze workspaces endpoint hit');
     const { places } = req.body;
     
     if (!Array.isArray(places) || places.length === 0) {
@@ -162,44 +169,49 @@ router.post('/analyze-workspaces', async (req, res) => {
       });
     }
 
+    const timezone = getCityTimezone(places[0]?.city, places[0]?.state);
+    const localTime = moment().tz(timezone);
+    const timeContext = getTimeContext(localTime);
+    const dayType = localTime.day() >= 1 && localTime.day() <= 5 ? 'workday' : 'weekend';
+
     const prompt = `Hey there! I'm a local remote worker who knows these spots inside and out. 
-	Let me help you find the perfect workspace that matches this exact moment and location.
+    Let me help you find the perfect workspace for ${timeContext} (${localTime.format('h:mm A')}) on this ${dayType} in ${places[0].city || 'your area'}.
 
-	Current context:
-	- Time: ${new Date().toLocaleTimeString()}
-	- Day: ${new Date().toLocaleDateString('en-US', { weekday: 'long' })}
-	- Location: The ${places[0].city || 'local'} area
+    I've checked out these places recently:
+    ${places.map(place => `
+    ${place.name}:
+    - ${place.distance} miles away
+    - Internet: ${place.wifi}
+    - Noise level: ${place.noise}
+    - Power outlets: ${place.power}
+    - Type: ${place.type}
+    - Overall score: ${place.workabilityScore}/10
+    - The extras: ${Object.entries(place.amenities)
+      .filter(([_, value]) => value)
+      .map(([key]) => key)
+      .join(', ')}
+    `).join('\n')}
 
-	I've checked out these places recently:
-	${places.map((place, index) => `
-	${place.name}:
-	- ${place.distance} miles away
-	- Internet: ${place.wifi}
-	- Noise level: ${place.noise}
-	- Power outlets: ${place.power}
-	- Type: ${place.type}
-	- Overall score: ${place.workabilityScore}/10
-	- The extras: ${Object.entries(place.amenities)
-	  .filter(([_, value]) => value)
-	  .map(([key]) => key)
-	  .join(', ')}
-	`).join('\n')}
+    Consider:
+    - Current time: ${localTime.format('h:mm A')} (typical ${timeContext} crowd levels)
+    - Day type: ${dayType} (affects workspace atmosphere)
+    - Local context: ${places[0].city || 'Area'} community vibe
 
-	Please provide your response in JSON format matching this structure:
-	{
-	  "recommendation": {
-	    "name": "The spot you'd recommend to a friend",
-	    "personalNote": "Share what makes this perfect right now - reference the current time of day, day of week, and local context (2-3 conversational sentences)",
-	    "standoutFeatures": [
-	      {
-	        "category": "wifi/power/quiet/amenities",
-	        "title": "What makes this feature special",
-	        "description": "The real deal about this feature, like you're telling a friend"
-	      }
-	    ],
-	    "finalNote": "A friendly wrap-up that helps them feel confident about trying this place"
-	  }
-	}`
+    Please provide your response in JSON format with the following structure:
+    {
+      "recommendation": {
+        "name": "The spot you'd recommend to a friend",
+        "personalNote": "Share what makes this perfect for ${timeContext} on a ${dayType} - mention typical crowds, atmosphere, and local context (2-3 conversational sentences)",
+        "standoutFeatures": [
+          {
+            "category": "wifi/power/quiet/amenities",
+            "title": "What makes this feature special",
+            "description": "The real deal about this feature, like you're telling a friend"
+          }
+        ],
+        "finalNote": "A friendly wrap-up that helps them feel confident about trying this place"
+      }
+    }`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4-0125-preview",
@@ -221,7 +233,13 @@ router.post('/analyze-workspaces', async (req, res) => {
     const analysis = JSON.parse(completion.choices[0].message.content);
     
     res.json({
-      insights: analysis
+      insights: analysis,
+      meta: {
+        timezone,
+        localTime: localTime.format(),
+        timeContext,
+        dayType
+      }
     });
   } catch (error) {
     console.error('Analysis error:', error);
@@ -232,24 +250,6 @@ router.post('/analyze-workspaces', async (req, res) => {
   }
 });
 
-// Error handling middleware
-router.use((err, req, res, next) => {
-  console.error('API Error:', err);
-  res.status(500).json({
-    meta: {
-      code: 500,
-      error: 'Internal server error'
-    },
-    response: null,
-    detail: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
-
-// Use the router
-app.use(cors());
-app.use(express.json());
-app.use('/', router);
 app.use('/.netlify/functions/api', router);
 
-// Export the handler
 exports.handler = serverless(app);

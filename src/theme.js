@@ -92,96 +92,96 @@ export const darkTheme = {
 };
 
 export const lightTheme = {
-  // Base colors - Clean whites with subtle warmth
-  'bg-primary': '#ffffff',            // Pure white for main background
-  'bg-secondary': '#fafafa',          // Soft white for secondary elements
-  'bg-tertiary': '#f5f7fa',          // Light blue-tinted white for depth
+  // Base colors - Natural whites and creams
+  'bg-primary': '#fffcf8',            // Warm white
+  'bg-secondary': '#faf7f2',          // Soft cream
+  'bg-tertiary': '#f5f2ed',          // Light beige
   
-  // Text colors - Balanced blues and grays
-  'text-primary': '#2c3e50',          // Deep blue-gray
-  'text-secondary': '#64748b',        // Medium blue-gray
-  'text-tertiary': '#94a3b8',         // Light blue-gray
+  // Text colors - Rich earth tones
+  'text-primary': '#2d2a26',          // Deep bark brown
+  'text-secondary': '#615c55',        // Warm gray
+  'text-tertiary': '#8c8782',         // Muted stone
   
-  // Action colors - Ocean-inspired blues
-  'action-primary': '#3b82f6',        // Clear ocean blue
-  'action-primary-hover': '#2563eb',  // Deeper ocean blue
-  'action-primary-light': 'rgba(59, 130, 246, 0.1)',
-  'action-primary-border': 'rgba(59, 130, 246, 0.2)',
+  // Action colors - Forest-inspired greens
+  'action-primary': '#2d6a4f',        // Forest green
+  'action-primary-hover': '#1b4332',  // Deep forest
+  'action-primary-light': 'rgba(45, 106, 79, 0.1)',
+  'action-primary-border': 'rgba(45, 106, 79, 0.2)',
   
-  // Border colors - Subtle definition
-  'border-primary': 'rgba(226, 232, 240, 0.8)',
-  'border-secondary': 'rgba(226, 232, 240, 0.5)',
+  // Border colors - Natural definition
+  'border-primary': 'rgba(210, 204, 193, 0.8)',  // Soft sand
+  'border-secondary': 'rgba(210, 204, 193, 0.5)', // Light sand
   
-  // Component specific - Clean and airy
-  'card-bg': '#ffffff',
-  'card-hover': '#f8fafc',
-  'input-bg': '#ffffff',
-  'input-border': '#e2e8f0',
-  'button-text': '#ffffff',
-  'button-text-muted': '#64748b',
+  // Component specific - Natural materials
+  'card-bg': '#fffcf8',               // Warm white
+  'card-hover': '#faf7f2',            // Soft cream
+  'input-bg': '#fffcf8',              // Warm white
+  'input-border': '#e6e2d9',          // Light stone
+  'button-text': '#ffffff',           // Pure white
+  'button-text-muted': '#615c55',     // Warm gray
   
-  // Interactive colors - Natural progression
-  'interactive-text': '#2c3e50',
-  'interactive-hover': '#1e293b',
-  'interactive-muted': '#64748b',
+  // Interactive colors - Organic progression
+  'interactive-text': '#2d2a26',      // Deep bark brown
+  'interactive-hover': '#1b4332',     // Deep forest
+  'interactive-muted': '#615c55',     // Warm gray
   
-  // Accent colors - Coastal palette
-  'accent-primary': '#3b82f6',
-  'accent-secondary': '#60a5fa',
-  'accent-muted': '#dbeafe',
+  // Accent colors - Nature-inspired
+  'accent-primary': '#2d6a4f',        // Forest green
+  'accent-secondary': '#40916c',      // Sage green
+  'accent-muted': '#d8f3dc',          // Mint mist
   
-  // Status colors - Natural and organic
-  'success': '#34d399',               // Fresh sage green
-  'warning': '#fbbf24',               // Warm sunlight
-  'error': '#f87171',                 // Coral red
-  'info': '#60a5fa',                  // Ocean spray
+  // Status colors - Natural alerts
+  'success': '#2d6a4f',               // Forest green
+  'warning': '#cc7722',               // Amber wood
+  'error': '#bc4749',                 // Clay red
+  'info': '#457b9d',                  // River blue
   
-  // Place-specific colors - Airy and spacious
-  'place-highlight-bg': '#f8fafc',    
-  'place-highlight-border': '#e2e8f0',
-  'place-tag-bg': 'rgba(59, 130, 246, 0.08)',
-  'place-tag-text': '#3b82f6',
-  'place-score-high': '#34d399',      
-  'place-score-medium': '#fbbf24',    
-  'place-score-low': '#f87171',       
-  'place-feature-icon': '#3b82f6',    
-  'place-distance': '#64748b',        
-  'place-hours': '#34d399',           
-  'place-hours-closed': '#f87171',    
+  // Place-specific colors - Natural spaces
+  'place-highlight-bg': '#faf7f2',    
+  'place-highlight-border': '#e6e2d9',
+  'place-tag-bg': 'rgba(45, 106, 79, 0.08)',
+  'place-tag-text': '#2d6a4f',
+  'place-score-high': '#2d6a4f',      
+  'place-score-medium': '#cc7722',    
+  'place-score-low': '#bc4749',       
+  'place-feature-icon': '#2d6a4f',    
+  'place-distance': '#615c55',        
+  'place-hours': '#2d6a4f',           
+  'place-hours-closed': '#bc4749',    
 
-  // Promoted place colors - Elevated but natural
-  'promoted-bg': '#f0f9ff',           // Sky blue background
-  'promoted-border': '#bae6fd',       // Soft blue border
-  'promoted-text': '#2c3e50',         
-  'promoted-secondary': '#64748b',    
-  'promoted-highlight': '#3b82f6',    
-  'promoted-tag-bg': 'rgba(59, 130, 246, 0.08)',
-  'promoted-tag-text': '#3b82f6',
-  'promoted-score-bg': '#f0f9ff',     
-  'promoted-score-text': '#2c3e50',   
-  'promoted-feature-icon': '#3b82f6', 
+  // Promoted place colors - Elevated natural
+  'promoted-bg': '#f0f7f4',           // Soft sage
+  'promoted-border': '#b7e4c7',       // Sage border
+  'promoted-text': '#2d2a26',         
+  'promoted-secondary': '#615c55',    
+  'promoted-highlight': '#2d6a4f',    
+  'promoted-tag-bg': 'rgba(45, 106, 79, 0.08)',
+  'promoted-tag-text': '#2d6a4f',
+  'promoted-score-bg': '#f0f7f4',     
+  'promoted-score-text': '#2d2a26',   
+  'promoted-feature-icon': '#2d6a4f', 
   
-  // Scoring colors - Ocean-inspired
-  'promoted-score-high': '#34d399',   
-  'promoted-score-medium': '#fbbf24', 
-  'promoted-score-low': '#f87171',    
+  // Scoring colors - Nature-inspired states
+  'promoted-score-high': '#2d6a4f',   
+  'promoted-score-medium': '#cc7722', 
+  'promoted-score-low': '#bc4749',    
   
   // Navigation - Clear wayfinding
-  'nav-active': '#3b82f6',
-  'nav-inactive': '#64748b',
-  'nav-hover': '#60a5fa',
+  'nav-active': '#2d6a4f',
+  'nav-inactive': '#615c55',
+  'nav-hover': '#40916c',
   
-  // Map elements - Coastal inspiration
-  'map-marker': '#3b82f6',
-  'map-marker-active': '#60a5fa',
-  'map-overlay': 'rgba(255, 255, 255, 0.9)',
+  // Map elements - Natural mapping
+  'map-marker': '#2d6a4f',
+  'map-marker-active': '#40916c',
+  'map-overlay': 'rgba(255, 252, 248, 0.9)',
   
   // Modal - Light and airy
-  'modal-overlay': 'rgba(255, 255, 255, 0.95)',
+  'modal-overlay': 'rgba(255, 252, 248, 0.95)',
   
-  // Gradients - Subtle coastal transitions
-  'gradient-primary': 'linear-gradient(to right, rgba(59, 130, 246, 0.08), rgba(59, 130, 246, 0.04))',
-  'gradient-hover': 'linear-gradient(to right, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.08))',
+  // Gradients - Organic transitions
+  'gradient-primary': 'linear-gradient(to right, rgba(45, 106, 79, 0.08), rgba(45, 106, 79, 0.04))',
+  'gradient-hover': 'linear-gradient(to right, rgba(45, 106, 79, 0.12), rgba(45, 106, 79, 0.08))',
 };
 
 // Helper functions
