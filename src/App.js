@@ -1,44 +1,24 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ThemeProvider } from './ThemeProvider';
+import { List, Map, SlidersHorizontal } from 'lucide-react';
 import API_CONFIG from './config';
 import WorkfromHeader from './WorkfromHeader';
 import HowItWorksModal from './HowItWorksModal';
 import SearchResults from './SearchResults';
 import GenAIInsights from './GenAIInsights';
-import StickyControls from './StickyControls';
 import NearbyPlacesMap from './NearbyPlacesMap';
 import PhotoModal from './PhotoModal';
-import SearchResultsControls from './SearchResultsControls';
-import { calculateWorkabilityScore } from './WorkabilityScore';
 import PostSearchFilters from './PostSearchFilters';
 import SearchButton from './SearchButton';
 import LocationConfirmDialog from './LocationConfirmDialog';
 import { useTheme } from './ThemeProvider';
-import { 
-  Plus,
-  ChevronDown, 
-  ChevronUp,
-  AlertCircle,
-  AlertTriangle,
-  InfoIcon,
-  MapPin,
-  Search,
-  Loader,
-  Check
-} from 'lucide-react';
-
+import WorkabilityControls from './WorkabilityControls';
+import { calculateWorkabilityScore } from './WorkabilityScore';
 import { 
   SearchProgressIndicator, 
-  Message, 
-  LoadingSpinner 
+  Message 
 } from './components/ui/loading';
 
-// Where API calls are made
-// const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.workfrom.co';
-const API_BASE_URL = API_CONFIG.baseUrl;
-const ITEMS_PER_PAGE = 10;
-
-// Helper Functions
 const stripHtml = (html) => {
   if (!html) return '';
   const tmp = document.createElement("DIV");
@@ -58,16 +38,18 @@ const mapNoiseLevel = (noise) => {
   return 'Unknown';
 };
 
-// Main Content Component
+const ITEMS_PER_PAGE = 10;
+
 const WorkfromPlacesContent = () => {
-  // State Management
-  const resultsContainerRef = useRef(null);
+  // Core state
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState('');
   const [radius, setRadius] = useState(2);
   const [places, setPlaces] = useState([]);
   const [error, setError] = useState('');
   const [searchPhase, setSearchPhase] = useState('initial');
+  
+  // UI state
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [fullImg, setFullImg] = useState('');
   const [showPhotoModal, setShowPhotoModal] = useState(false);
@@ -77,8 +59,15 @@ const WorkfromPlacesContent = () => {
   const [sortBy, setSortBy] = useState('score_high');
   const [showLocationConfirm, setShowLocationConfirm] = useState(false);
   const [recommendedPlace, setRecommendedPlace] = useState(null);
-  const { isDark } = useTheme(false);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Refs
+  const resultsContainerRef = useRef(null);
+  
+  // Theme
+  const { isDark } = useTheme();
 
+  // Filters state
   const [postSearchFilters, setPostSearchFilters] = useState({
     type: 'any',
     power: 'any',
@@ -103,7 +92,6 @@ const WorkfromPlacesContent = () => {
     }
   }, [searchPhase]);
 
-  // Location Management
   const getLocation = useCallback(async () => {
     if (!navigator.geolocation) {
       throw new Error('Geolocation is not supported by your browser');
@@ -151,7 +139,6 @@ const WorkfromPlacesContent = () => {
     localStorage.removeItem('savedLocationData');
   }, []);
 
-  // Search Functionality
   const performSearch = async (useExistingLocation = false) => {
     setSearchPhase('locating');
     setPlaces([]);
@@ -174,11 +161,8 @@ const WorkfromPlacesContent = () => {
       
       setSearchPhase('loading');
 
-      const searchUrl = `${API_CONFIG.baseUrl}/places/ll/${searchLocation.latitude},${searchLocation.longitude}`;
-      console.log('Fetching places from:', searchUrl);
-
       const response = await fetch(
-        `${searchUrl}?radius=${radius}&appid=${API_CONFIG.appId}&rpp=100`,
+        `${API_CONFIG.baseUrl}/places/ll/${searchLocation.latitude},${searchLocation.longitude}?radius=${radius}&appid=${API_CONFIG.appId}&rpp=100`,
         {
           headers: {
             'Accept': 'application/json',
@@ -215,7 +199,6 @@ const WorkfromPlacesContent = () => {
     await performSearch(useSaved);
   };
 
-  // Filter and Process Places
   const processedPlaces = useMemo(() => {
     if (!places.length) return [];
     
@@ -241,6 +224,11 @@ const WorkfromPlacesContent = () => {
           return false;
         }
       }
+      if (postSearchFilters.power !== 'any') {
+        if (!place.power || !place.power.includes(postSearchFilters.power)) {
+          return false;
+        }
+      }
       return true;
     });
 
@@ -249,7 +237,6 @@ const WorkfromPlacesContent = () => {
       : filtered;
   }, [places, sortBy, postSearchFilters]);
 
-  // Photo Management
   const fetchPlacePhotos = useCallback(async (placeId) => {
     setIsPhotoLoading(true);
     try {
@@ -274,7 +261,6 @@ const WorkfromPlacesContent = () => {
     }
   }, []);
 
-  // Event Handlers
   const handlePostSearchFilter = (key, value) => {
     setPostSearchFilters(prev => ({ ...prev, [key]: value }));
   };
@@ -289,7 +275,6 @@ const WorkfromPlacesContent = () => {
     fetchPlacePhotos(place.ID);
   }, [fetchPlacePhotos]);
 
-  // Render
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
@@ -298,65 +283,151 @@ const WorkfromPlacesContent = () => {
           className="mb-4"
         />
 
-        {/* Search Controls */}
-        <div className={`
-          border border-[var(--border-primary)] rounded-lg p-4 shadow-sm mb-6
-          bg-[var(--bg-secondary)]
-        `}>
-          <div className="flex items-end gap-4">
-            <div className="flex-1">
-              <label 
-                htmlFor="radius" 
-                className="block text-sm font-medium mb-1.5 text-[var(--text-primary)]"
-              >
-                Distance
-              </label>
-              <div className="relative w-[120px]">
-                <input
-                  type="number"
-                  id="radius"
-                  min="0.5"
-                  max="999"
-                  step="0.1"
-                  value={radius}
-                  onChange={(e) => {
-                    const value = Math.round(Number(e.target.value) * 10) / 10;
-                    const validValue = Math.max(0.5, Math.min(999, value));
-                    setRadius(validValue);
-                  }}
-                  className={`
-                    w-full px-3 rounded-md border pr-8 h-10 
-                    transition-colors duration-200
-                    [appearance:textfield]
-                    [&::-webkit-outer-spin-button]:appearance-none
-                    [&::-webkit-inner-spin-button]:appearance-none
-                    bg-[var(--bg-tertiary)]
-                    border-[var(--border-primary)]
-                    text-[var(--text-primary)]
-                    placeholder-[var(--text-tertiary)]
-                    focus:border-[var(--action-primary)]
-                    focus:ring-1 
-                    focus:ring-[var(--action-primary-light)]
-                    hover:border-[var(--action-primary-border)]
-                  `}
-                  placeholder="2"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none text-[var(--text-tertiary)]">
-                  mi
-                </span>
+        {/* Search Section */}
+        <div className="border border-[var(--border-primary)] rounded-lg shadow-sm mb-6 bg-[var(--bg-secondary)]">
+          {/* Search Controls */}
+          <div className="p-4">
+            <div className="flex items-end gap-4">
+              <div className="flex-1">
+                <label 
+                  htmlFor="radius" 
+                  className="block text-sm font-medium mb-1.5 text-[var(--text-primary)]"
+                >
+                  Distance
+                </label>
+                <div className="relative w-[120px]">
+                  <input
+                    type="number"
+                    id="radius"
+                    min="0.5"
+                    max="999"
+                    step="0.1"
+                    value={radius}
+                    onChange={(e) => {
+                      const value = Math.round(Number(e.target.value) * 10) / 10;
+                      const validValue = Math.max(0.5, Math.min(999, value));
+                      setRadius(validValue);
+                    }}
+                    className={`
+                      w-full px-3 rounded-md border pr-8 h-10 
+                      transition-colors duration-200
+                      [appearance:textfield]
+                      [&::-webkit-outer-spin-button]:appearance-none
+                      [&::-webkit-inner-spin-button]:appearance-none
+                      bg-[var(--bg-tertiary)]
+                      border-[var(--border-primary)]
+                      text-[var(--text-primary)]
+                      placeholder-[var(--text-tertiary)]
+                      focus:border-[var(--action-primary)]
+                      focus:ring-1 
+                      focus:ring-[var(--action-primary-light)]
+                      hover:border-[var(--action-primary-border)]
+                    `}
+                    placeholder="2"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none text-[var(--text-tertiary)]">
+                    mi
+                  </span>
+                </div>
               </div>
+              <SearchButton
+                onClick={handleSearch}
+                disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
+                searchPhase={searchPhase}
+                hasLocation={!!location}
+                locationName={locationName}
+              />
             </div>
-            <SearchButton
-              onClick={handleSearch}
-              disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
-              searchPhase={searchPhase}
-              hasLocation={!!location}
-              locationName={locationName}
-            />
           </div>
+
+          {/* Results Controls */}
+          {places.length > 0 && (
+            <>
+              <div className="border-t border-[var(--border-primary)]">
+                <div className="p-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-medium text-[var(--text-primary)]">
+                        Found {processedPlaces.length} places within {radius} miles
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+                      {/* Sort and Filter Controls Group */}
+                      <div className="flex items-center gap-2">
+                        <WorkabilityControls 
+                          onSortChange={handleSort}
+                          currentSort={sortBy}
+                          showSortControl={true}
+                        />
+                        
+                        {/* Mobile Filter Toggle - Now next to sort control */}
+                        <button
+                          onClick={() => setShowFilters(!showFilters)}
+                          className={`
+                            sm:hidden p-2 rounded transition-colors
+                            ${showFilters
+                              ? 'bg-[var(--action-primary)] text-white'
+                              : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                            }
+                          `}
+                          aria-label="Toggle filters"
+                        >
+                          <SlidersHorizontal size={18} />
+                        </button>
+                      </div>
+
+                      {/* View Mode Toggles - Now in their own group */}
+                      <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
+                        <button
+                          onClick={() => setViewMode('list')}
+                          className={`
+                            p-2 rounded transition-colors
+                            ${viewMode === 'list'
+                              ? 'bg-[var(--action-primary)] text-white'
+                              : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                            }
+                          `}
+                          aria-label="List view"
+                        >
+                          <List size={18} />
+                        </button>
+                        <button
+                          onClick={() => setViewMode('map')}
+                          className={`
+                            p-2 rounded transition-colors
+                            ${viewMode === 'map'
+                              ? 'bg-[var(--action-primary)] text-white'
+                              : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                            }
+                          `}
+                          aria-label="Map view"
+                        >
+                          <Map size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Post-Search Filters - Now conditionally shown on mobile */}
+              <div className={`
+                border-t border-[var(--border-primary)]
+                ${showFilters ? 'block' : 'hidden sm:block'}
+              `}>
+                <div className="p-4">
+                  <PostSearchFilters
+                    onFilterChange={handlePostSearchFilter}
+                    currentFilters={postSearchFilters}
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Search Progress */}
+        {/* Search Progress Indicator */}
         {(searchPhase === 'locating' || searchPhase === 'loading') && places.length === 0 && (
           <SearchProgressIndicator 
             phase={searchPhase} 
@@ -365,33 +436,23 @@ const WorkfromPlacesContent = () => {
           />
         )}
 
-        {/* Search Results (continued) */}
+        {/* Search Results */}
         {places.length > 0 && (
           <div className="mb-12" ref={resultsContainerRef}>
-            {/* Search Results Controls - Includes AI Insights */}
-            <StickyControls 
-              totalPlaces={processedPlaces.length}
-              radius={radius}
-              sortBy={sortBy}
-              onSortChange={handleSort}
-              viewMode={viewMode}
-              setViewMode={setViewMode}
-              currentFilters={postSearchFilters}
-              onFilterChange={handlePostSearchFilter}
+            {/* GenAI Insights */}
+            <GenAIInsights
               places={processedPlaces}
               isSearching={searchPhase !== 'complete'}
-              onPhotoClick={(place) => {
-                setSelectedPlace(place);
-                setShowPhotoModal(true);
-                fetchPlacePhotos(place.ID);
-              }}
+              onPhotoClick={handlePhotoClick}
               onRecommendationMade={(insights) => {
                 if (insights?.recommendation?.name) {
                   setRecommendedPlace(insights.recommendation.name);
                 }
               }}
+              className="mb-6"
             />
-            {/* No Results Message - Using new Message component */}
+
+            {/* Results Display */}
             {processedPlaces.length === 0 ? (
               <Message 
                 variant="info"
@@ -405,26 +466,27 @@ const WorkfromPlacesContent = () => {
                 filters={postSearchFilters}
                 itemsPerPage={ITEMS_PER_PAGE}
                 viewMode={viewMode}
-                onPhotoClick={(place) => {
-                  setSelectedPlace(place);
-                  setShowPhotoModal(true);
-                  fetchPlacePhotos(place.ID);
-                }}
+                onPhotoClick={handlePhotoClick}
                 recommendedPlaceName={recommendedPlace}
               />
             ) : (
               <NearbyPlacesMap 
                 places={processedPlaces}
                 userLocation={location}
-                onPhotoClick={(place) => {
-                  setSelectedPlace(place);
-                  setShowPhotoModal(true);
-                  fetchPlacePhotos(place.ID);
-                }}
+                onPhotoClick={handlePhotoClick}
                 highlightedPlace={recommendedPlace}
               />
             )}
           </div>
+        )}
+
+        {/* Error Message */}
+        {error && searchPhase === 'complete' && (
+          <Message
+            variant="error"
+            message="Error"
+            description={error}
+          />
         )}
 
         {/* Modals */}

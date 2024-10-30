@@ -155,3 +155,18 @@ code {
 .animate-sparkle {
   animation: sparkle 2s ease-in-out infinite;
 }
+
+/* In index.css */
+@layer utilities {
+  .sticky-quick-match {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: linear-gradient(
+      to bottom,
+      var(--bg-primary) 0%,
+      var(--bg-primary) 80%,
+      transparent 100%
+    );
+  }
+}

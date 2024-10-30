@@ -1,3 +1,4 @@
+// SearchResults.js
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Brain } from 'lucide-react';
 import PlaceCard from './PlaceCard';
@@ -61,18 +62,34 @@ const SearchResults = ({
     };
   }, []);
 
-  const scrollToControls = useCallback(() => {
-    if (controlsRef.current) {
-      const headerPadding = 120;
-      const controlsTop = controlsRef.current.getBoundingClientRect().top;
-      const scrollPosition = window.pageYOffset + controlsTop - headerPadding;
+  const scrollToPosition = useCallback((element, offset = 0, retryCount = 0) => {
+    if (!element || retryCount > 5) return;
 
-      window.scrollTo({
-        top: Math.max(0, scrollPosition),
-        behavior: 'smooth'
-      });
-    }
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = window.pageYOffset + elementPosition - offset;
+
+    window.scrollTo({
+      top: Math.max(0, offsetPosition),
+      behavior: 'smooth'
+    });
+
+    // Verify scroll position after animation
+    setTimeout(() => {
+      const newPosition = element.getBoundingClientRect().top;
+      if (Math.abs(newPosition - offset) > 10 && retryCount < 5) {
+        scrollToPosition(element, offset, retryCount + 1);
+      }
+    }, 100);
   }, []);
+
+  const scrollToControls = useCallback((retryCount = 0) => {
+    if (controlsRef.current) {
+      scrollToPosition(controlsRef.current, 120); // 120px header offset
+    } else if (retryCount < 5) {
+      // Retry if controls aren't mounted yet
+      setTimeout(() => scrollToControls(retryCount + 1), 50);
+    }
+  }, [scrollToPosition]);
 
   const handlePageChange = useCallback((newPage) => {
     if (newPage < 1 || newPage > totalPages || newPage === currentPage) {
@@ -82,36 +99,28 @@ const SearchResults = ({
     setIsPageChanging(true);
     setCurrentPage(newPage);
 
-    // Wait for the next render cycle before scrolling
+    // Wait for state update and DOM render
     requestAnimationFrame(() => {
-      // Add a small delay to ensure content has updated
-      scrollTimeoutRef.current = setTimeout(() => {
+      requestAnimationFrame(() => {
         scrollToControls();
         
         // Reset page changing state after scroll completes
         setTimeout(() => {
           setIsPageChanging(false);
         }, 500);
-      }, 50);
+      });
     });
   }, [currentPage, totalPages, scrollToControls]);
 
   const scrollToRecommended = useCallback(() => {
     if (recommendedCardRef.current && !isPageChanging) {
-      const headerOffset = 100;
-      const elementPosition = recommendedCardRef.current.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-
+      scrollToPosition(recommendedCardRef.current, 100);
       setHighlightRecommended(true);
       setTimeout(() => setHighlightRecommended(false), 1500);
     }
-  }, [isPageChanging]);
+  }, [isPageChanging, scrollToPosition]);
 
+  // Watch recommended card visibility
   useEffect(() => {
     if (!recommendedPlaceName) return;
 
@@ -132,6 +141,7 @@ const SearchResults = ({
     return () => observer.disconnect();
   }, [recommendedPlaceName, currentPage]);
 
+  // Handle scroll button visibility
   useEffect(() => {
     const handleScroll = () => {
       const shouldShow = window.pageYOffset > 200 && !isRecommendedVisible && !isPageChanging;
@@ -141,23 +151,6 @@ const SearchResults = ({
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isRecommendedVisible, isPageChanging]);
-
-  // Add keyframe animations
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes buttonGlow {
-        0%, 100% { box-shadow: 0 0 10px var(--accent-primary); }
-        50% { box-shadow: 0 0 20px var(--accent-primary); }
-      }
-      @keyframes brainPulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.8; }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
 
   return (
     <div ref={resultsRef} className="relative pt-6">
@@ -206,6 +199,8 @@ const SearchResults = ({
             const info = getRecommendedPlaceInfo();
             if (info && info.page !== currentPage) {
               handlePageChange(info.page);
+              // After page change and scroll, highlight recommended
+              setTimeout(scrollToRecommended, 600);
             } else {
               scrollToRecommended();
             }

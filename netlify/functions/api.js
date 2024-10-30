@@ -163,38 +163,43 @@ router.post('/analyze-workspaces', async (req, res) => {
     }
 
     const prompt = `Hey there! I'm a local remote worker who knows these spots inside and out. 
-    Let me help you find the perfect workspace that'll feel like your second home office.
+	Let me help you find the perfect workspace that matches this exact moment and location.
 
-    I've checked out these places recently:
-    ${places.map((place, index) => `
-    ${place.name}:
-    - ${place.distance} miles away
-    - Internet: ${place.wifi}
-    - Noise level: ${place.noise}
-    - Power outlets: ${place.power}
-    - Type: ${place.type}
-    - Overall score: ${place.workabilityScore}/10
-    - The extras: ${Object.entries(place.amenities)
-      .filter(([_, value]) => value)
-      .map(([key]) => key)
-      .join(', ')}
-    `).join('\n')}
+	Current context:
+	- Time: ${new Date().toLocaleTimeString()}
+	- Day: ${new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+	- Location: The ${places[0].city || 'local'} area
 
-    Please provide your response in JSON format. The response should be a valid JSON object with the following structure:
-    {
-      "recommendation": {
-        "name": "The spot you'd recommend to a friend",
-        "personalNote": "Share what it's really like working here - the vibe, the regulars, the hidden perks (2-3 conversational sentences)",
-        "standoutFeatures": [
-          {
-            "category": "wifi/power/quiet/amenities",
-            "title": "What makes this feature special",
-            "description": "The real deal about this feature, like you're telling a friend"
-          }
-        ],
-        "finalNote": "A friendly wrap-up that helps them feel confident about trying this place"
-      }
-    }`;
+	I've checked out these places recently:
+	${places.map((place, index) => `
+	${place.name}:
+	- ${place.distance} miles away
+	- Internet: ${place.wifi}
+	- Noise level: ${place.noise}
+	- Power outlets: ${place.power}
+	- Type: ${place.type}
+	- Overall score: ${place.workabilityScore}/10
+	- The extras: ${Object.entries(place.amenities)
+	  .filter(([_, value]) => value)
+	  .map(([key]) => key)
+	  .join(', ')}
+	`).join('\n')}
+
+	Please provide your response in JSON format matching this structure:
+	{
+	  "recommendation": {
+	    "name": "The spot you'd recommend to a friend",
+	    "personalNote": "Share what makes this perfect right now - reference the current time of day, day of week, and local context (2-3 conversational sentences)",
+	    "standoutFeatures": [
+	      {
+	        "category": "wifi/power/quiet/amenities",
+	        "title": "What makes this feature special",
+	        "description": "The real deal about this feature, like you're telling a friend"
+	      }
+	    ],
+	    "finalNote": "A friendly wrap-up that helps them feel confident about trying this place"
+	  }
+	}`
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4-0125-preview",

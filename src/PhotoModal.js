@@ -337,14 +337,12 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                             ({selectedPlace.workabilityScore}/10)</span> indicating {getScoreExplanation(selectedPlace.workabilityScore)} workability 
                             based on WiFi quality, power availability, noise levels, and amenities.
                             {getMissingInfo(selectedPlace).length > 0 && (
-                              <span className="block mt-1">
+                              <p className=" gap-1.5 mb-1 mt-2">
                                 Help the community by adding {formatMissingInfo(getMissingInfo(selectedPlace))}. 
                                 {!fullImg && !selectedPlace.thumbnail_img && (
-                                  <span className="block mt-1">
-                                    Photos are especially helpful for members to recognize the space and find good spots to work.
-                                  </span>
+                                  <span>&nbsp;Photos are especially helpful for members to recognize the space and find good spots to work.</span>
                                 )}
-                              </span>
+                              </p>
                             )}
                           </p>
                         </div>

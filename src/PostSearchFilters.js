@@ -1,59 +1,69 @@
 import React from 'react';
-import { Volume2 } from 'lucide-react';
-import CustomSelect from './CustomSelect';
-import { useTheme } from './ThemeProvider';
+import { 
+  Volume2,
+  Coffee,
+  Clock
+} from 'lucide-react';
 
 const PostSearchFilters = ({ 
   onFilterChange,
   className,
   currentFilters
 }) => {
-  const { isDark } = useTheme();
-  
-  const spaceTypes = [
-    { value: 'any', label: 'All Spaces' },
-    { value: 'commercial', label: 'Cafes & Shops' },
-    { value: 'dedicated', label: 'Dedicated' },
-    { value: 'free', label: 'Free Spaces' }
-  ];
-
-  const noiseLevels = [
-    { value: 'any', label: 'Any Noise Level' },
-    { value: 'quiet', label: 'Quieter' },
-    { value: 'moderate', label: 'Moderate' },
-    { value: 'noisy', label: 'Lively' }
+  const filterOptions = [
+    {
+      id: 'type',
+      label: 'Space Type',
+      icon: Coffee,
+      options: [
+        { value: 'any', label: 'All Spaces' },
+        { value: 'commercial', label: 'Cafes & Shops' },
+        { value: 'dedicated', label: 'Coworking' },
+        { value: 'free', label: 'Free Spaces' }
+      ]
+    },
+    {
+      id: 'noise',
+      label: 'Noise Level',
+      icon: Volume2,
+      options: [
+        { value: 'any', label: 'Any Noise Level' },
+        { value: 'quiet', label: 'Quieter' },
+        { value: 'moderate', label: 'Moderate' },
+        { value: 'noisy', label: 'Lively' }
+      ]
+    }
   ];
 
   return (
-    <div className={`
-      ${className}
-      flex items-center gap-3 px-4 py-2
-      rounded-md border
-      ${isDark 
-        ? 'bg-[#2a3142] border-white/10' 
-        : 'bg-gray-50 border-gray-200'
-      }
-    `}>
-      <div className="text-xs font-medium text-text-secondary">
-        Filters:
-      </div>
-      
-      <div className="flex items-center gap-2">
-        <CustomSelect
-          value={currentFilters.type}
-          onChange={(value) => onFilterChange('type', value)}
-          options={spaceTypes}
-          variant="minimal"
-          className="w-[140px]"
-        />
-
-        <CustomSelect
-          value={currentFilters.noise}
-          onChange={(value) => onFilterChange('noise', value)}
-          options={noiseLevels}
-          variant="minimal"
-          className="w-[140px]"
-        />
+    <div className={className}>
+      {/* Filter Grid - adjusted for two columns */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {filterOptions.map(({ id, label, icon: Icon, options }) => (
+          <div key={id} className="space-y-1.5">
+            <label className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
+              <Icon size={14} />
+              {label}
+            </label>
+            <select
+              value={currentFilters[id] || 'any'}
+              onChange={(e) => onFilterChange(id, e.target.value)}
+              className="w-full h-10 px-3 rounded-md
+                bg-[var(--bg-tertiary)] border border-[var(--border-primary)]
+                text-[var(--text-primary)] text-sm
+                hover:border-[var(--action-primary-border)]
+                focus:border-[var(--action-primary)]
+                focus:ring-1 focus:ring-[var(--action-primary-light)]
+                transition-colors"
+            >
+              {options.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
       </div>
     </div>
   );

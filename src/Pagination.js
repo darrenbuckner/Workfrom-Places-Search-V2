@@ -1,7 +1,7 @@
 // Pagination.js
 import React from 'react';
 
-const Pagination = ({ currentPage, totalPages, onPageChange, className, debug = false }) => {
+const Pagination = ({ currentPage, totalPages, onPageChange, className = '', debug = false }) => {
   const isPaginationDisabled = totalPages <= 1;
 
   if (debug) {

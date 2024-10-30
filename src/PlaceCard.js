@@ -75,22 +75,6 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
       relative group 
       ${isRecommended ? 'pt-8' : ''}
     `}>
-      {/* AI Recommendation Badge */}
-      {isRecommended && (
-        <div className="absolute -top-1 left-4 z-20 flex items-center gap-2 
-          px-3 py-1.5 rounded-full 
-          bg-[var(--accent-primary)] text-white
-          shadow-lg [animation:recommendedPulse_2s_ease-in-out_infinite]"
-        >
-          <Brain 
-            size={14} 
-            className="[animation:recommendedBrainPulse_2s_ease-in-out_infinite]" 
-          />
-          <span className="text-xs font-medium whitespace-nowrap">
-            AI Recommended
-          </span>
-        </div>
-      )}
       {/* Card Container */}
       <div className={`
         relative border rounded shadow-sm 
