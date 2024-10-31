@@ -201,7 +201,7 @@ app.post('/api/analyze-workspaces', async (req, res) => {
     {
       "recommendation": {
         "name": "The spot you'd recommend to a friend",
-        "personalNote": "Share what makes this perfect for ${timeContext} on a ${dayType} - mention typical crowds, atmosphere, and local context (2-3 conversational sentences)",
+        "personalNote": "Share what makes this perfect for remote work and productivity. Also, consider ${timeContext} on a ${dayType} - mention productivity enhancers, typical crowds, atmosphere, vibes, and local context (2-3 conversational sentences)",
         "standoutFeatures": [
           {
             "category": "wifi/power/quiet/amenities",

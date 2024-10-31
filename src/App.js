@@ -449,7 +449,7 @@ const WorkfromPlacesContent = () => {
                   setRecommendedPlace(insights.recommendation.name);
                 }
               }}
-              className="mb-6"
+              className="mb-1"
             />
 
             {/* Results Display */}
@@ -525,8 +525,8 @@ const WorkfromPlacesContent = () => {
       </div>
       
       {/* Footer */}
-      <footer className="py-4 bg-bg-secondary border-t border-border-primary">
-        <div className="container mx-auto px-4 text-center text-sm text-text-secondary">
+      <footer className="py-4 bg-bg-secondary border-t border-[var(--border-primary)]">
+        <div className="container mx-auto px-4 text-center text-xs text-text-secondary">
           <p>&copy; {new Date().getFullYear()} Workfrom. All rights reserved.</p>
         </div>
       </footer>

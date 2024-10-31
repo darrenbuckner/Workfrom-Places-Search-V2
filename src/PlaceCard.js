@@ -73,7 +73,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
   return (
     <div className={`
       relative group 
-      ${isRecommended ? 'pt-8' : ''}
+      ${isRecommended ? '' : ''}
     `}>
       {/* Card Container */}
       <div className={`

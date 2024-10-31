@@ -1,18 +1,35 @@
 import React, { useState } from 'react';
-import { ArrowRight, Sparkles, Brain, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, Sparkles, Brain, ChevronDown, ChevronUp, X } from 'lucide-react';
 
 const QuickMatch = ({ recommendation, place, onViewDetails }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   
-  if (!recommendation || !place) return null;
+  if (!recommendation || !place || !isVisible) return null;
 
   const shouldShowReadMore = recommendation.personalNote.length > 100;
 
+  const handleDismiss = (e) => {
+    e.stopPropagation();
+    setIsVisible(false);
+  };
+
   return (
-    <div className="sticky top-0 z-40 p-2 sm:p-4 -mx-2 sm:-mx-4 mb-4 sm:mb-6">
-      <div className="relative rounded-lg border border-[var(--accent-primary)] bg-[var(--bg-primary)] shadow-md overflow-hidden">
+    <div className="sticky top-0 z-40 p-2 sm:p-4 -mx-2 sm:-mx-4">
+      <div className="relative rounded-lg border border-[var(--accent-primary)] bg-[var(--bg-primary)] shadow-md overflow-hidden group">
         {/* Mobile Design */}
         <div className="sm:hidden">
+          {/* Dismiss Button - Mobile */}
+          <button
+            onClick={handleDismiss}
+            className="absolute right-2 top-2 z-10 p-1.5 rounded-full
+              bg-[var(--bg-primary)]/90 hover:bg-[var(--bg-secondary)]
+              text-[var(--text-secondary)] hover:text-[var(--text-primary)]
+              transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+
           <div className="flex gap-3 p-3">
             {/* Image and Score */}
             <div className="relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden bg-[var(--bg-secondary)]">
@@ -89,6 +106,19 @@ const QuickMatch = ({ recommendation, place, onViewDetails }) => {
 
         {/* Desktop Design */}
         <div className="hidden sm:flex p-4 gap-4">
+          {/* Dismiss Button - Desktop */}
+          <button
+            onClick={handleDismiss}
+            className="absolute right-3 top-3 z-10 items-center gap-1.5 px-2 py-1 rounded
+              opacity-0 group-hover:opacity-100 transition-opacity duration-200
+              text-xs font-medium hidden sm:flex
+              hover:bg-[var(--bg-secondary)]
+              text-[var(--text-secondary)] hover:text-[var--text-primary)]"
+          >
+            <X className="w-3 h-3" />
+            <span>Dismiss</span>
+          </button>
+
           {/* Image Column */}
           <div className="relative flex-shrink-0 w-32 rounded-md overflow-hidden bg-[var(--bg-secondary)]">
             {place.thumbnail_img ? (
@@ -114,7 +144,7 @@ const QuickMatch = ({ recommendation, place, onViewDetails }) => {
               <div className="px-2 py-1 rounded-full bg-[var(--accent-primary)] text-white 
                 text-xs font-medium flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                AI Recommended
+                Best Match
               </div>
               <span className="text-sm text-[var(--text-secondary)]">
                 {place.distance} miles away
