@@ -94,7 +94,7 @@ const getWorkabilityMetrics = (place) => {
   let powerStatus = { value: "Unknown" };
   if (powerValue === 'none' || powerValue === '') {
     powerStatus = { 
-      value: "No outlets", 
+      value: "Not Available", 
       color: "text-red-500",
       iconColor: "text-red-500" 
     };

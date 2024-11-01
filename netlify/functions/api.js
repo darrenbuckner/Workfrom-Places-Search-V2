@@ -18,6 +18,45 @@ const openai = new OpenAI({
 // Default API key if not provided in request
 const DEFAULT_API_KEY = 'RxhYNXu8CyPavHhO';
 
+// LRU Cache Implementation
+class LRUCache {
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.cache = new Map();
+    this.expiryTimes = new Map();
+  }
+
+  get(key) {
+    if (!this.cache.has(key)) return null;
+    
+    // Check expiry
+    if (Date.now() > this.expiryTimes.get(key)) {
+      this.cache.delete(key);
+      this.expiryTimes.delete(key);
+      return null;
+    }
+    
+    // Refresh item by removing and adding back
+    const value = this.cache.get(key);
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
+  }
+
+  set(key, value, ttlMinutes = 60) {
+    if (this.cache.size >= this.capacity) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+      this.expiryTimes.delete(firstKey);
+    }
+    this.cache.set(key, value);
+    this.expiryTimes.set(key, Date.now() + (ttlMinutes * 60 * 1000));
+  }
+}
+
+// Initialize cache with 100 items capacity
+const analysisCache = new LRUCache(100);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -46,7 +85,6 @@ router.get('/health', (req, res) => {
 });
 
 // Helper function to get timezone from city/state
-// Timezone mapping helper
 const getCityTimezone = (city = '', state = '') => {
   const location = `${city} ${state}`.toLowerCase();
   
@@ -82,13 +120,44 @@ const getTimeContext = (moment) => {
   return "night";
 };
 
-// Places endpoint
-app.get('/api/places/ll/:coords', async (req, res) => {
+// Generate cache key from places data and time context
+const generateCacheKey = (places, timezone) => {
+  const localTime = moment().tz(timezone);
+  const timeContext = getTimeContext(localTime);
+  const dayType = localTime.day() >= 1 && localTime.day() <= 5 ? 'workday' : 'weekend';
+  
+  const relevantData = {
+    places: places.map(place => ({
+      name: place.name,
+      wifi: place.wifi,
+      noise: place.noise,
+      power: place.power,
+      type: place.type,
+      workabilityScore: place.workabilityScore,
+      amenities: place.amenities
+    })),
+    timeContext,
+    dayType,
+    hour: localTime.hour()
+  };
+  
+  return JSON.stringify(relevantData);
+};
+
+// Places endpoint - Fixed routing
+app.get('*/places/ll/:coords', async (req, res) => {
   try {
     const { coords } = req.params;
     const radius = req.query.radius || 2;
     const rpp = req.query.rpp || 100;
     const appid = req.query.appid || DEFAULT_API_KEY;
+
+    console.log('Places endpoint hit:', {
+      coords,
+      radius,
+      rpp,
+      appid
+    });
 
     const WORKFROM_API_URL = `https://api.workfrom.co/places/ll/${coords}`;
     
@@ -121,11 +190,16 @@ app.get('/api/places/ll/:coords', async (req, res) => {
   }
 });
 
-// Place details endpoint
-app.get('/api/places/:id', async (req, res) => {
+// Place details endpoint - Fixed routing
+app.get('*/places/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const appid = req.query.appid || DEFAULT_API_KEY;
+
+    console.log('Place details endpoint hit:', {
+      id,
+      appid
+    });
 
     const WORKFROM_API_URL = `https://api.workfrom.co/places/${id}`;
     
@@ -158,9 +232,10 @@ app.get('/api/places/:id', async (req, res) => {
   }
 });
 
-// Analyze workspaces endpoint
-app.post('/api/analyze-workspaces', async (req, res) => {
+// Analyze workspaces endpoint with caching
+router.post('/analyze-workspaces', async (req, res) => {
   try {
+    console.log('Analyze workspaces endpoint hit');
     const { places } = req.body;
     
     if (!Array.isArray(places) || places.length === 0) {
@@ -173,6 +248,25 @@ app.post('/api/analyze-workspaces', async (req, res) => {
     const localTime = moment().tz(timezone);
     const timeContext = getTimeContext(localTime);
     const dayType = localTime.day() >= 1 && localTime.day() <= 5 ? 'workday' : 'weekend';
+
+    // Generate cache key including time context
+    const cacheKey = generateCacheKey(places, timezone);
+    
+    // Check cache first
+    const cachedAnalysis = analysisCache.get(cacheKey);
+    if (cachedAnalysis) {
+      console.log('Cache hit - returning cached analysis');
+      return res.json({
+        insights: cachedAnalysis,
+        meta: {
+          timezone,
+          localTime: localTime.format(),
+          timeContext,
+          dayType
+        },
+        cached: true
+      });
+    }
 
     const prompt = `Hey there! I'm a local remote worker who knows these spots inside and out. 
     Let me help you find the perfect workspace for ${timeContext} (${localTime.format('h:mm A')}) on this ${dayType} in ${places[0].city || 'your area'}.
@@ -225,12 +319,17 @@ app.post('/api/analyze-workspaces', async (req, res) => {
           content: prompt
         }
       ],
-      temperature: 0.8,
-      max_tokens: 1000,
-      response_format: { type: "json_object" }
+      temperature: 0.7, // Slightly reduced for more consistent responses
+      max_tokens: 800, // Optimized token limit
+      response_format: { type: "json_object" },
+      presence_penalty: 0.3, // Encourage focused responses
+      frequency_penalty: 0.3 // Reduce repetition
     });
 
     const analysis = JSON.parse(completion.choices[0].message.content);
+    
+    // Cache the result
+    analysisCache.set(cacheKey, analysis);
     
     res.json({
       insights: analysis,
@@ -239,7 +338,8 @@ app.post('/api/analyze-workspaces', async (req, res) => {
         localTime: localTime.format(),
         timeContext,
         dayType
-      }
+      },
+      cached: false
     });
   } catch (error) {
     console.error('Analysis error:', error);
@@ -250,6 +350,9 @@ app.post('/api/analyze-workspaces', async (req, res) => {
   }
 });
 
+// Mount the router at both paths to handle both URL patterns
 app.use('/.netlify/functions/api', router);
+app.use('/api', router);
 
+// Export the handler
 exports.handler = serverless(app);
