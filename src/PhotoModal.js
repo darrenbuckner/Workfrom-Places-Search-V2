@@ -321,12 +321,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                     </div>
                   </div>
 
-              
-
-                  {/* Add a subtle divider */}
-                  <div className="my-4 border-t border-[var(--border-primary)]" />
-
-                  {/* Score Explanation */}
+                  {/* Combined Score Explanation and Metrics */}
                   <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] overflow-hidden">
                     {/* Score Header */}
                     <div className="p-3 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]">
@@ -355,12 +350,29 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       <div className="mt-1 text-sm font-medium text-[var(--text-primary)]">
                         {getScoreQuality(selectedPlace.workabilityScore).label} for Remote Work
                       </div>
+
+                      {/* Workability Metrics */}
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        {metrics.map((metric, index) => (
+                          <div key={index} 
+                            className="p-2.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
+                          >
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <metric.icon size={14} className={metric.iconColor} />
+                              <span className="text-xs text-[var(--text-secondary)]">{metric.label}</span>
+                            </div>
+                            <div className={`text-sm font-medium ${metric.color}`}>
+                              {metric.value}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     {/* Score Details */}
                     <div className="p-3">
                       <div className="flex items-center gap-1.5 mb-2">
-                        <span className="text-xs text-[var(--text-secondary)]">Based on:</span>
+                        <span className="text-xs text-[var(--text-secondary)]">Score based on:</span>
                         <div className="h-4 border-l border-[var(--border-primary)]" />
                         <div className="flex items-center gap-2 flex-wrap">
                           {[
@@ -377,7 +389,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                         </div>
                       </div>
 
-                      {/* Missing Info Alert - More compact version */}
+                      {/* Missing Info Alert */}
                       {getMissingInfo(selectedPlace).length > 0 && (
                         <div className="flex items-start gap-2 pt-2 border-t border-[var(--border-primary)]">
                           <AlertCircle size={14} className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" />
@@ -387,39 +399,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* Add a subtle divider */}
-                  <div className="my-4 border-t border-[var(--border-primary)]" />
-
-                  {/* Workability Metrics */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-[var(--text-primary)]">
-                        Essential Workspace Features
-                      </span>
-                      <div className="px-1.5 py-0.5 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs">
-                        Must-haves
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {metrics.map((metric, index) => (
-                        <div key={index} 
-                          className="p-2.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <metric.icon size={14} className={metric.iconColor} />
-                            <span className="text-xs text-[var(--text-secondary)]">{metric.label}</span>
-                          </div>
-                          <div className={`text-sm font-medium ${metric.color}`}>
-                            {metric.value}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="text-xs text-[var(--text-secondary)]">
-                      These features are crucial for maintaining productivity while working remotely
-                    </p>
                   </div>
 
                   {/* Add a subtle divider */}

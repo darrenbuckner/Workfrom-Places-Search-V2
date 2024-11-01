@@ -10,32 +10,58 @@ const WorkfromLogo = () => (
     className="w-8 h-8 sm:w-10 sm:h-10"
     aria-label="Workfrom logo"
   >
-    <circle cx="50" cy="50" r="48" fill="#1a1f2c" />
-    <circle cx="50" cy="50" r="46" fill="none" stroke="#2a3142" strokeWidth="4" />
+    {/* Enhanced Background Circle */}
+    <circle cx="50" cy="50" r="48" fill="#1e1b4b" /> {/* Deep purple background */}
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#312e81" strokeWidth="2" /> {/* Rich purple border */}
+    
+    {/* Enhanced Location Pin Base with gradient */}
     <defs>
-      <linearGradient id="mountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#3b82f6" />
-        <stop offset="100%" stopColor="#1d4ed8" />
+      <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#7c3aed" /> {/* Lighter violet */}
+        <stop offset="100%" stopColor="#5340f0" /> {/* Primary purple */}
       </linearGradient>
     </defs>
     <path 
-      d="M50 75 L75 40 A35 35 0 0 0 25 40 Z" 
-      fill="url(#mountainGradient)"
-      opacity="0.9"
-    />
-    <defs>
-      <linearGradient id="innerMountainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#f8fafc" />
-        <stop offset="100%" stopColor="#e2e8f0" />
-      </linearGradient>
-    </defs>
-    <path 
-      d="M50 75 L67 50 A24 24 0 0 0 33 50 Z" 
-      fill="url(#innerMountainGradient)"
+      d="M50 20 C35 20, 25 32, 25 45 C25 58, 35 65, 50 80 C65 65, 75 58, 75 45 C75 32, 65 20, 50 20"
+      fill="url(#pinGradient)"
       opacity="0.95"
     />
-    <circle cx="50" cy="75" r="6" fill="#3b82f6" />
-    <circle cx="50" cy="75" r="7" fill="none" stroke="#60a5fa" strokeWidth="2" opacity="0.5" />
+    
+    {/* Enhanced Laptop Screen with gradient */}
+    <rect 
+      x="38" y="38" width="24" height="16" rx="2" 
+      fill="#f1f5f9" 
+      stroke="#cbd5e1" 
+      strokeWidth="1.5" 
+    />
+    
+    {/* Enhanced Laptop Base with gradient */}
+    <path 
+      d="M35 54 L65 54 L68 58 L32 58 Z" 
+      fill="#e2e8f0" 
+      stroke="#cbd5e1" 
+      strokeWidth="1.5" 
+    />
+    
+    {/* Enhanced Coffee Cup with gradient */}
+    <circle cx="50" cy="45" r="3" fill="#6d28d9" opacity="0.9" /> {/* Rich purple */}
+    <path 
+      d="M47 45 Q50 48, 53 45" 
+      stroke="#6d28d9" 
+      strokeWidth="1.5" 
+      fill="none" 
+    />
+    
+    {/* Enhanced Glow Effect */}
+    <circle cx="50" cy="50" r="44" fill="url(#enhancedGlow)" opacity="0.15" />
+    
+    {/* Enhanced Gradients */}
+    <defs>
+      <radialGradient id="enhancedGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#a78bfa" /> {/* Bright violet glow */}
+        <stop offset="100%" stopColor="#5340f0" stopOpacity="0" />
+      </radialGradient>
+    </defs>
   </svg>
 );
 
