@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Brain, X, Wifi, Battery, Volume2, Coffee, Users, Sparkles } from 'lucide-react';
+import { Brain, ArrowRight, Sparkles } from 'lucide-react';
 
 const AIBadge = ({ className = "" }) => (
   <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
@@ -27,7 +27,7 @@ const LoadingState = ({ progress }) => {
   }, []);
 
   return (
-    <div className="p-4">
+    <div className="p-4 min-h-[144px] flex flex-col">
       {/* Top Progress Bar */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--bg-secondary)]">
         <div 
@@ -36,16 +36,15 @@ const LoadingState = ({ progress }) => {
         />
       </div>
 
-      <div className="flex items-start gap-4">
-        {/* Simple Loading Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-3">
-            <AIBadge />
-            <span className="text-xs text-[var(--text-secondary)]">
-              AI Assistant
-            </span>
-          </div>
-          
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center gap-2 mb-3">
+          <AIBadge />
+          <span className="text-xs text-[var(--text-secondary)]">
+            AI Assistant
+          </span>
+        </div>
+        
+        <div className="flex-1 flex flex-col justify-between">
           <p className="text-sm font-medium text-[var(--text-primary)] transition-opacity duration-300">
             {messages[currentMessage]}
           </p>
@@ -65,7 +64,6 @@ const LoadingState = ({ progress }) => {
         </div>
       </div>
 
-      {/* Add required keyframe animation */}
       <style>
         {`
           @keyframes shimmer {
@@ -82,34 +80,10 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
   const contentRef = useRef(null);
   const description = recommendation.headline || recommendation.context;
 
-  useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.style.opacity = '0';
-      contentRef.current.style.transform = 'translateY(10px)';
-      
-      requestAnimationFrame(() => {
-        if (contentRef.current) {
-          contentRef.current.style.opacity = '1';
-          contentRef.current.style.transform = 'translateY(0)';
-        }
-      });
-    }
-  }, []);
-
   if (isMobile) {
     return (
-      <div className="p-4" ref={contentRef}>
-        {/* Dismiss button moved to top right */}
-        <div className="absolute top-3 right-3">
-          <button
-            onClick={onDismiss}
-            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]
-              transition-colors"
-          >
-            Dismiss
-          </button>
-        </div>
-
+      <div className="p-4 min-h-[144px]" ref={contentRef}>
+        {/* Score and Basic Info */}
         <div className="flex gap-3">
           <div className="flex-shrink-0 w-12 h-12 rounded-md relative
             bg-[var(--accent-primary)] text-white
@@ -134,18 +108,41 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
             </h3>
 
             {description && (
-              <p className="text-sm text-[var(--text-primary)] mt-1 line-clamp-1 font-medium">
+              <p className="text-sm text-[var(--text-primary)] mt-1 font-medium">
                 {description}
               </p>
             )}
-            
-            <p className="text-sm text-[var(--text-secondary)] mt-1 line-clamp-1">
-              {recommendation.personalNote}
-            </p>
           </div>
         </div>
 
-        <div className="mt-3 flex justify-end">
+        {/* Personal Note */}
+        <p className="text-sm text-[var(--text-secondary)] mt-3">
+          {recommendation.personalNote}
+        </p>
+
+        {/* Standout Features */}
+        {recommendation.standoutFeatures?.length > 0 && (
+          <div className="mt-3 space-y-1.5 border-t border-[var(--border-primary)] pt-3">
+            {recommendation.standoutFeatures.map((feature, index) => (
+              <div key={index} className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] flex-shrink-0 mt-1.5" />
+                <span className="text-xs text-[var(--text-secondary)]">
+                  {feature.description}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="mt-4 flex items-center justify-between gap-3 pt-2 border-t border-[var(--border-primary)]">
+          <button
+            onClick={onDismiss}
+            className="px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+          >
+            Dismiss
+          </button>
+          
           <button
             onClick={onViewDetails}
             className="flex items-center gap-2 px-4 py-1.5 rounded-md
@@ -160,10 +157,10 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
     );
   }
 
+  // Desktop layout remains the same
   return (
-    <div className="p-4" ref={contentRef}>
+    <div className="p-4 min-h-[144px]" ref={contentRef}>
       <div className="flex gap-4">
-        {/* Score badge section remains the same */}
         <div className="flex-shrink-0 w-14 h-14 rounded-md relative
           bg-[var(--accent-primary)] text-white
           flex items-center justify-center font-bold text-xl
@@ -177,7 +174,6 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
         </div>
 
         <div className="flex-1 min-w-0">
-          {/* Header remains the same */}
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
               <AIBadge />
@@ -198,7 +194,6 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
             {place.title}
           </h3>
 
-          {/* Description */}
           {description && (
             <p className="text-sm font-medium text-[var(--text-primary)] mb-2">
               {description}
@@ -209,12 +204,11 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
             {recommendation.personalNote}
           </p>
 
-          {/* Simplified Standout Features */}
           {recommendation.standoutFeatures?.length > 0 && (
-            <div className="text-xs text-[var(--text-secondary)] space-y-1">
+            <div className="text-xs text-[var(--text-secondary)] space-y-1.5">
               {recommendation.standoutFeatures.map((feature, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <span className="w-1 h-1 rounded-full bg-[var(--accent-primary)]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
                   <span>{feature.description}</span>
                 </div>
               ))}
@@ -245,16 +239,14 @@ const QuickMatch = ({
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [showContent, setShowContent] = useState(false);
   const isMobileRef = useRef(window.innerWidth < 640);
-  const containerRef = useRef(null);
 
-  // Handle loading progress animation
   useEffect(() => {
     if (isAnalyzing) {
       setLoadingProgress(0);
       setShowContent(false);
       
       const startTime = Date.now();
-      const duration = 8000; // 8 seconds total for analysis
+      const duration = 8000;
       
       const interval = setInterval(() => {
         const elapsed = Date.now() - startTime;
@@ -292,22 +284,21 @@ const QuickMatch = ({
 
   return (
     <div className="sticky top-1 z-40 -mx-1 sm:-mx-4 sm:p-4">
-      <div ref={containerRef} 
-        className="relative bg-[var(--bg-primary)] border border-[var(--accent-primary)] 
-          rounded-lg shadow-md overflow-hidden transition-all duration-300">
+      <div className="relative bg-[var(--bg-primary)] border border-[var(--accent-primary)] 
+        rounded-lg shadow-md overflow-hidden">
         
         {/* Loading State */}
-        <div className={`transition-opacity duration-500 ${
-          isAnalyzing ? 'opacity-100 visible' : 'opacity-0 invisible absolute inset-0'
+        <div className={`absolute inset-0 transition-opacity duration-500 ${
+          isAnalyzing ? 'opacity-100' : 'opacity-0'
         }`}>
           <LoadingState progress={loadingProgress} />
         </div>
 
         {/* Result Content */}
         <div className={`transition-opacity duration-500 ${
-          showContent ? 'opacity-100 visible' : 'opacity-0 invisible absolute inset-0'
+          showContent ? 'opacity-100' : 'opacity-0'
         }`}>
-          {showContent && recommendation && place && (
+          {(showContent || !isAnalyzing) && recommendation && place && (
             <ResultContent 
               place={place}
               recommendation={recommendation}
