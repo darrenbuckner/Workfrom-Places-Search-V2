@@ -10,127 +10,70 @@ const AIBadge = ({ className = "" }) => (
 );
 
 const LoadingState = ({ progress }) => {
-  const [currentMetric, setCurrentMetric] = useState(0);
-  const [loadingPhase, setLoadingPhase] = useState(0);
-  const progressBarRef = useRef(null);
-  
-  const metrics = [
-    { 
-      icon: Wifi, 
-      label: "Analyzing connectivity",
-      detail: "Evaluating WiFi speeds and reliability"
-    },
-    { 
-      icon: Volume2, 
-      label: "Checking atmosphere",
-      detail: "Assessing noise levels and ambiance"
-    },
-    { 
-      icon: Battery, 
-      label: "Reviewing facilities",
-      detail: "Checking power availability"
-    },
-    { 
-      icon: Users, 
-      label: "Processing feedback",
-      detail: "Reading community insights"
-    }
+  const [currentMessage, setCurrentMessage] = useState(0);
+  const messages = [
+    "Finding your perfect workspace...",
+    "Analyzing local options...",
+    "Checking community insights...",
+    "Almost ready..."
   ];
 
   useEffect(() => {
-    const metricInterval = setInterval(() => {
-      setCurrentMetric(prev => (prev + 1) % metrics.length);
+    const interval = setInterval(() => {
+      setCurrentMessage(prev => (prev + 1) % messages.length);
     }, 2000);
 
-    const phaseInterval = setInterval(() => {
-      setLoadingPhase(prev => (prev + 1) % 4);
-    }, 500);
-
-    return () => {
-      clearInterval(metricInterval);
-      clearInterval(phaseInterval);
-    };
+    return () => clearInterval(interval);
   }, []);
-
-  const currentIcon = metrics[currentMetric].icon;
-  const Icon = currentIcon;
 
   return (
     <div className="p-4">
       {/* Top Progress Bar */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--bg-secondary)]">
         <div 
-          ref={progressBarRef}
           className="absolute top-0 left-0 h-full bg-[var(--accent-primary)] transition-all duration-300 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       <div className="flex items-start gap-4">
-        {/* Animated Icon Container */}
-        <div className="relative flex-shrink-0 w-12 h-12 rounded-lg 
-          bg-[var(--accent-primary)]/10 flex items-center justify-center group">
-          <Icon 
-            className="w-6 h-6 text-[var(--accent-primary)] 
-              transition-all duration-300 transform group-hover:scale-110" 
-          />
-          <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full 
-            bg-[var(--accent-primary)] flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-white animate-pulse" />
-          </div>
-        </div>
-
-        {/* Content Section */}
+        {/* Simple Loading Content */}
         <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3">
             <AIBadge />
             <span className="text-xs text-[var(--text-secondary)]">
-              Finding your perfect spot
+              AI Assistant
             </span>
           </div>
           
-          {/* Current Action */}
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-[var(--text-primary)]">
-              {metrics[currentMetric].label}{'.'.repeat(loadingPhase)}
-            </p>
-            <p className="text-xs text-[var(--text-secondary)]">
-              {metrics[currentMetric].detail}
-            </p>
-          </div>
+          <p className="text-sm font-medium text-[var(--text-primary)] transition-opacity duration-300">
+            {messages[currentMessage]}
+          </p>
 
-          {/* Progress Indicators */}
-          <div className="grid grid-cols-4 gap-2 mt-3">
-            {metrics.map((metric, index) => {
-              const isCurrent = index === currentMetric;
-              const isComplete = index < currentMetric;
-              
-              return (
-                <div key={index} className="space-y-1">
-                  <div className={`h-1 rounded-full overflow-hidden transition-colors duration-300
-                    ${isCurrent ? 'bg-[var(--accent-primary)]/20' : 'bg-[var(--bg-secondary)]'}`}>
-                    <div 
-                      className={`h-full rounded-full transition-all duration-300 
-                        ${isComplete ? 'bg-[var(--accent-primary)]' : 
-                          isCurrent ? 'bg-[var(--accent-primary)] animate-pulse' : ''}`}
-                      style={{ 
-                        width: isComplete ? '100%' : 
-                               isCurrent ? `${progress}%` : '0%'
-                      }}
-                    />
-                  </div>
-                  <div className={`flex items-center justify-center transition-colors duration-300
-                    ${isComplete ? 'text-[var(--accent-primary)]' : 
-                      isCurrent ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
-                    <metric.icon className="w-3 h-3" />
-                  </div>
-                </div>
-              );
-            })}
+          {/* Subtle Loading Bar */}
+          <div className="mt-4 h-1 rounded-full overflow-hidden bg-[var(--bg-secondary)]">
+            <div 
+              className="h-full bg-[var(--accent-primary)]/20 rounded-full"
+              style={{
+                width: '100%',
+                backgroundSize: '200% 100%',
+                backgroundImage: 'linear-gradient(90deg, transparent 0%, var(--accent-primary) 50%, transparent 100%)',
+                animation: 'shimmer 2s infinite linear'
+              }}
+            />
           </div>
         </div>
       </div>
+
+      {/* Add required keyframe animation */}
+      <style>
+        {`
+          @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+        `}
+      </style>
     </div>
   );
 };
@@ -196,7 +139,7 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
               </p>
             )}
             
-            <p className="text-sm text-[var(--text-secondary)] mt-1 line-clamp-2">
+            <p className="text-sm text-[var(--text-secondary)] mt-1 line-clamp-1">
               {recommendation.personalNote}
             </p>
           </div>
