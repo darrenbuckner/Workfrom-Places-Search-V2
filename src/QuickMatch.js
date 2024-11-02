@@ -156,6 +156,17 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
   if (isMobile) {
     return (
       <div className="p-4" ref={contentRef}>
+        {/* Dismiss button moved to top right */}
+        <div className="absolute top-3 right-3">
+          <button
+            onClick={onDismiss}
+            className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]
+              transition-colors"
+          >
+            Dismiss
+          </button>
+        </div>
+
         <div className="flex gap-3">
           <div className="flex-shrink-0 w-12 h-12 rounded-md relative
             bg-[var(--accent-primary)] text-white
@@ -179,7 +190,6 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
               {place.title}
             </h3>
 
-            {/* Added Description */}
             {description && (
               <p className="text-sm text-[var(--text-primary)] mt-1 line-clamp-1 font-medium">
                 {description}
@@ -192,14 +202,7 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <button
-            onClick={onDismiss}
-            className="px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-          >
-            Dismiss
-          </button>
-          
+        <div className="mt-3 flex justify-end">
           <button
             onClick={onViewDetails}
             className="flex items-center gap-2 px-4 py-1.5 rounded-md
