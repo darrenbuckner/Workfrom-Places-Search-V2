@@ -7,42 +7,22 @@ import {
   Wifi,
   WifiOff,
   ImageIcon,
-  Brain,
-  Sparkles
+  Brain
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
+
+const AIBadge = ({ className = "" }) => (
+  <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
+    bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium ${className}`}>
+    <Brain className="w-3 h-3" />
+    <span>AI Pick</span>
+  </div>
+);
 
 const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
   const isPromoted = place.owner_promoted_flag === "1";
   const { isDark } = useTheme();
-
-  // Add animation keyframes effect
-  React.useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes recommendedPulse {
-        0%, 100% { opacity: 0.9; }
-        50% { opacity: 1; }
-      }
-      @keyframes recommendedBrainPulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
   
-  const copyAddressToClipboard = (address) => {
-    navigator.clipboard.writeText(address).then(
-      () => alert('Address copied to clipboard!'),
-      (err) => console.error('Could not copy text: ', err)
-    );
-  };
-
-  const getGoogleMapsUrl = (address) => 
-    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-
   const getPlaceholderBg = () => {
     if (isPromoted) return 'e5e7eb';
     if (isRecommended) return 'e2e8f0';
@@ -70,6 +50,9 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
     return 'Unknown';
   };
 
+  const getGoogleMapsUrl = (address) => 
+    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+
   return (
     <div className={`
       relative group 
@@ -82,18 +65,20 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
         ${isPromoted 
           ? 'border-[var(--promoted-border)] bg-[var(--promoted-bg)]' 
           : isRecommended
-            ? `border-[var(--accent-primary)] border-2 bg-[var(--bg-primary)] 
-               shadow-lg hover:shadow-xl
-               ${highlight ? 'ring-2 ring-[var(--accent-primary)] ring-opacity-50' : ''}`
+            ? `border-[var(--border-primary)] bg-[var(--bg-primary)] 
+               shadow-lg hover:shadow-xl`
             : 'border-[var(--border-primary)] hover:shadow-md'
         }
-        ${isRecommended ? 'transform scale-[1.02]' : ''}
       `}>
         <div className="p-4">
           <div className="flex flex-col space-y-4">
-            {/* Header with Title and Score */}
-            <div className="flex items-start gap-3">
+            {/* Header with Title, Score, and AI Badge */}
+            <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
+                {/* AI Badge for recommended places */}
+                {isRecommended && (
+                  <AIBadge className="mb-2" />
+                )}
                 <h2 className={`
                   text-xl font-semibold mb-1 cursor-pointer
                   transition-colors
@@ -198,7 +183,6 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
 
               {/* Details */}
               <div className="flex-1 min-w-0 space-y-2">
-                {/* WiFi Status */}
                 <div className="text-sm flex items-center">
                   <span className="text-text-primary mr-1">WiFi:</span>
                   <span className="font-medium truncate text-text-primary">
@@ -206,7 +190,6 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
                   </span>
                 </div>
 
-                {/* Power Status */}
                 <div className="text-sm flex items-center">
                   <span className="text-text-primary mr-1">Power Outlets:</span>
                   <span className="font-medium truncate text-text-primary">
@@ -214,7 +197,6 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
                   </span>
                 </div>
 
-                {/* Noise Level */}
                 <div className="text-sm flex items-center">
                   <span className="text-text-primary mr-1">Noise Levels:</span>
                   <span className="font-medium truncate text-text-primary">

@@ -427,14 +427,14 @@ const WorkfromPlacesContent = () => {
           )}
         </div>
 
-        {/* Search Progress Indicator */}
+        {/* Search Progress Indicator 
         {(searchPhase === 'locating' || searchPhase === 'loading') && places.length === 0 && (
           <SearchProgressIndicator 
             phase={searchPhase} 
             error={error}
             usingSavedLocation={!!location} 
           />
-        )}
+        )} */}
 
         {/* Search Results */}
         {places.length > 0 && (

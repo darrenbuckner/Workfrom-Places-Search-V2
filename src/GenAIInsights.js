@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Loader } from 'lucide-react';
 import { Message } from './components/ui/loading';
+import { AILoadingMessage } from './components/ui//AIComponents';
 import QuickMatch from './QuickMatch';
 import API_CONFIG from './config';
 
@@ -102,52 +103,15 @@ const GenAIInsights = ({
   // Don't render anything if we have no places or are searching
   if (!places.length || isSearching) return null;
 
-  // Show loading state
-  if (isAnalyzing) {
-    return (
-      <div className={`${className} px-4 py-3 -mx-4`}>
-        <Message
-          variant="loading"
-          message={<span className="text-[var(--text-primary)]">Analyzing nearby workspaces...</span>}
-          description={<span className="text-[var(--text-primary)]">Finding the perfect spot for your work style</span>}
-        />
-      </div>
-    );
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <div className={`${className} px-4 py-3 -mx-4`}>
-        <Message
-          variant="error"
-          message="Unable to analyze places"
-          description={error}
-          action="Try Again"
-          onAction={() => {
-            setError(null);
-            setInsights(null);
-            setIsAnalyzing(false);
-          }}
-        />
-      </div>
-    );
-  }
 
   // Show quick match card
-  if (insights?.recommendation && recommendedPlace) {
+  if (isAnalyzing || (insights?.recommendation && recommendedPlace)) {
     return (
       <QuickMatch
-        recommendation={insights.recommendation}
+        recommendation={insights?.recommendation}
         place={recommendedPlace}
         onViewDetails={() => onPhotoClick?.(recommendedPlace)}
-        onGetDirections={() => {
-          const address = `${recommendedPlace.street}, ${recommendedPlace.city}`;
-          window.open(
-            `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`,
-            '_blank'
-          );
-        }}
+        isAnalyzing={isAnalyzing}
       />
     );
   }
