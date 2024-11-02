@@ -268,10 +268,9 @@ router.post('/analyze-workspaces', async (req, res) => {
       });
     }
 
-    const prompt = `Hey there! I'm a local remote worker who knows these spots inside and out. 
-    Let me help you find the perfect workspace for ${timeContext} (${localTime.format('h:mm A')}) on this ${dayType} in ${places[0].city || 'your area'}.
+    const prompt = `As a local remote worker, recommend the best workspace for ${timeContext} (${localTime.format('h:mm A')}) on this ${dayType} in ${places[0].city || 'your area'}.
 
-    I've checked out these places recently:
+    Places to consider:
     ${places.map(place => `
     ${place.name}:
     - ${place.distance} miles away
@@ -287,23 +286,22 @@ router.post('/analyze-workspaces', async (req, res) => {
     `).join('\n')}
 
     Consider:
-    - Current time: ${localTime.format('h:mm A')} (typical ${timeContext} crowd levels)
-    - Day type: ${dayType} (affects workspace atmosphere)
-    - Local context: ${places[0].city || 'Area'} community vibe
+    - Current time: ${localTime.format('h:mm A')} (${timeContext} crowd levels)
+    - Day type: ${dayType}
+    - Local context: ${places[0].city || 'Area'} community
 
-    Please provide your response in JSON format with the following structure:
+    Please provide your response in JSON format:
     {
       "recommendation": {
-        "name": "The spot you'd recommend to a friend",
-        "personalNote": "Share what makes this perfect for remote work and productivity. Also, consider ${timeContext} on a ${dayType} - mention productivity enhancers, typical crowds, atmosphere, vibes, and local context (2-3 conversational sentences)",
+        "name": "The best spot",
+        "headline": "A single crisp sentence (max 12 words) highlighting the key benefit",
+        "context": "One short sentence about why this works for ${timeContext}/${dayType}",
         "standoutFeatures": [
           {
             "category": "wifi/power/quiet/amenities",
-            "title": "What makes this feature special",
-            "description": "The real deal about this feature, like you're telling a friend"
+            "description": "One short phrase, max 6-8 words"
           }
-        ],
-        "finalNote": "A friendly wrap-up that helps them feel confident about trying this place"
+        ]
       }
     }`;
 

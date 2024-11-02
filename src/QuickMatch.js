@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Brain, ChevronDown, ChevronUp, X, Wifi, Battery, Volume2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ArrowRight, Brain, X } from 'lucide-react';
 
 const AIBadge = ({ className = "" }) => (
   <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
@@ -10,159 +10,65 @@ const AIBadge = ({ className = "" }) => (
 );
 
 const LoadingState = () => {
-  const [loadingPhase, setLoadingPhase] = React.useState(0);
+  const [loadingText, setLoadingText] = useState("Finding your best workspace match");
   
-  const phases = [
-    { Icon: Wifi, text: "Checking WiFi speeds..." },
-    { Icon: Battery, text: "Evaluating power access..." },
-    { Icon: Volume2, text: "Analyzing noise levels..." },
-    { Icon: Brain, text: "Finding your perfect match..." }
-  ];
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setLoadingPhase(current => (current + 1) % phases.length);
-    }, 2000);
-    return () => clearInterval(interval);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLoadingText(current => 
+        current.endsWith("...") ? "Finding your best workspace match" : current + "."
+      );
+    }, 500);
+    
+    return () => clearInterval(timer);
   }, []);
 
-  const CurrentIcon = phases[loadingPhase].Icon;
-
   return (
-    <div className="h-[140px] sm:h-[220px] p-4">
-      {/* Mobile Loading State */}
-      <div className="h-full sm:hidden">
-        <div className="flex gap-3 h-full">
-          {/* Animated Thumbnail */}
-          <div className="flex-shrink-0 w-16 h-16 rounded-md bg-[var(--bg-secondary)] relative overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative">
-                <Brain className="w-5 h-5 text-[var(--accent-primary)] animate-pulse" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-secondary)] via-transparent to-transparent" />
-              </div>
-            </div>
-            {/* Animated loading bar */}
-            <div className="absolute bottom-0 left-0 h-1 bg-[var(--accent-primary)] loading-bar" />
-          </div>
-
-          {/* Content Area */}
-          <div className="flex-1 flex flex-col">
-            {/* Top Badge */}
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-5 w-16 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
-                <CurrentIcon className="w-3 h-3 text-[var(--accent-primary)]" />
-              </div>
-              <div className="h-5 w-12 rounded-full bg-[var(--bg-secondary)] animate-pulse" />
-            </div>
-
-            {/* Loading Message */}
-            <div className="text-xs text-[var(--accent-primary)] mb-2 transition-opacity duration-300">
-              {phases[loadingPhase].text}
-            </div>
-
-            {/* Animated Lines */}
-            <div className="space-y-2">
-              <div className="h-4 w-full rounded bg-[var(--bg-secondary)] animate-pulse" />
-              <div className="h-4 w-2/3 rounded bg-[var(--bg-secondary)] animate-pulse" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Desktop Loading State */}
-      <div className="hidden sm:flex gap-6 h-full p-2">
-        {/* Enhanced Thumbnail */}
-        <div className="flex-shrink-0 w-32 aspect-square rounded-md bg-[var(--bg-secondary)] relative overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="relative">
-              <Brain className="w-8 h-8 text-[var(--accent-primary)] animate-pulse" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-secondary)] via-transparent to-transparent" />
-            </div>
-          </div>
-          {/* Circular progress */}
-          <svg className="absolute inset-0 w-full h-full rotating-circle" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="text-[var(--accent-primary)]/10"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              className="text-[var(--accent-primary)] progress-circle"
-            />
-          </svg>
+    <div className="p-4 sm:p-6">
+      <div className="flex items-center gap-4">
+        {/* Animated Score Badge */}
+        <div className="flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-md 
+          bg-[var(--accent-primary)]/10 flex items-center justify-center">
+          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full 
+            border-2 sm:border-3 border-[var(--accent-primary)] border-t-transparent 
+            animate-spin" />
         </div>
 
-        {/* Content Area */}
+        {/* Loading Content */}
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-6 px-3 rounded-full bg-[var(--accent-primary)]/10 flex items-center gap-2">
-              <CurrentIcon className="w-4 h-4 text-[var(--accent-primary)]" />
-              <span className="text-sm text-[var(--accent-primary)] transition-opacity duration-300">
-                {phases[loadingPhase].text}
-              </span>
-            </div>
+          <div className="flex items-center gap-2 mb-2">
+            <AIBadge />
+            <span className="text-xs sm:text-sm text-[var(--text-secondary)] animate-pulse">
+              Analyzing nearby workspaces
+            </span>
           </div>
+          
+          <p className="text-sm sm:text-base text-[var(--text-primary)] font-medium">
+            {loadingText}
+          </p>
 
-          {/* Animated Content */}
-          <div className="space-y-3">
-            <div className="h-6 w-3/4 rounded bg-[var(--bg-secondary)] animate-pulse" />
-            <div className="space-y-2">
-              <div className="h-4 w-full rounded bg-[var(--bg-secondary)] animate-pulse" />
-              <div className="h-4 w-full rounded bg-[var(--bg-secondary)] animate-pulse" />
-              <div className="h-4 w-2/3 rounded bg-[var(--bg-secondary)] animate-pulse" />
-            </div>
+          {/* Loading Bars - Desktop Only */}
+          <div className="hidden sm:grid grid-cols-3 gap-3 mt-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-1 rounded-full overflow-hidden bg-[var(--bg-secondary)]">
+                <div 
+                  className="h-full w-full bg-[var(--accent-primary)]/30 loading-bar"
+                  style={{ animationDelay: `${i * 200}ms` }}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Add required keyframes */}
-      <style>
-        {`
-          .loading-bar {
-            width: 30%;
-            animation: loadingBar 2s ease-in-out infinite;
-          }
-
-          @keyframes loadingBar {
-            0% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-          }
-
-          .rotating-circle {
-            animation: rotate 2s linear infinite;
-          }
-
-          .progress-circle {
-            stroke-dasharray: 283;
-            stroke-dashoffset: 100;
-            transform-origin: 50% 50%;
-            animation: progress 1.4s ease-in-out infinite;
-          }
-
-          @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-
-          @keyframes progress {
-            0% { stroke-dashoffset: 283; }
-            50% { stroke-dashoffset: 100; }
-            100% { stroke-dashoffset: 283; }
-          }
-        `}
-      </style>
+      <style jsx>{`
+        @keyframes loading {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .loading-bar {
+          animation: loading 1.5s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };
@@ -173,46 +79,32 @@ const QuickMatch = ({
   onViewDetails,
   isAnalyzing 
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [contentReady, setContentReady] = useState(false);
   const [initialRender, setInitialRender] = useState(true);
 
-  // Handle initial render and transitions
   useEffect(() => {
     if (initialRender) {
       setInitialRender(false);
-      // If we have cached data, show it immediately
       if (recommendation && place && !isAnalyzing) {
-        requestAnimationFrame(() => {
-          setContentReady(true);
-        });
+        requestAnimationFrame(() => setContentReady(true));
       }
     } else if (!isAnalyzing && recommendation && place) {
-      const timer = setTimeout(() => {
-        setContentReady(true);
-      }, 300);
+      const timer = setTimeout(() => setContentReady(true), 300);
       return () => clearTimeout(timer);
     }
   }, [isAnalyzing, recommendation, place, initialRender]);
 
-  // Reset content ready state when analysis starts
   useEffect(() => {
-    if (isAnalyzing) {
-      setContentReady(false);
-    }
+    if (isAnalyzing) setContentReady(false);
   }, [isAnalyzing]);
 
-  if (!isVisible || (!isAnalyzing && !recommendation && !place)) {
-    return null;
-  }
+  if (!isVisible || (!isAnalyzing && !recommendation && !place)) return null;
 
   return (
-    <div className="sticky top-1 z-40 -mx-2 sm:-mx-4 sm:p-4">
-      <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg 
-        shadow-md transition-all duration-300">
-        {/* Fixed height container - Increased height for desktop */}
-        <div className="relative min-h-[140px] sm:min-h-[220px]">
+    <div className="sticky top-1 z-40 -mx-1 sm:-mx-4 sm:p-4">
+      <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-md">
+        <div className="relative min-h-[120px] sm:min-h-[160px]">
           {/* Loading State */}
           <div className={`absolute inset-0 transition-opacity duration-300 ${
             !contentReady ? 'opacity-100 visible' : 'opacity-0 invisible'
@@ -226,9 +118,8 @@ const QuickMatch = ({
           }`}>
             {recommendation && place && (
               <>
-                {/* Mobile View - Unchanged */}
-                <div className="sm:hidden h-[140px] p-4">
-                  {/* Dismiss Button */}
+                {/* Mobile View */}
+                <div className="sm:hidden p-4">
                   <button
                     onClick={() => setIsVisible(false)}
                     className="absolute right-2 top-2 z-10 p-1.5 rounded-full
@@ -239,75 +130,46 @@ const QuickMatch = ({
                     <X className="w-3.5 h-3.5" />
                   </button>
 
-                  <div className="flex gap-3 h-full">
-                    {/* Image Container */}
-                    <div className="relative flex-shrink-0 w-16 h-16 rounded-md overflow-hidden 
-                      bg-[var(--bg-secondary)]">
-                      {place.thumbnail_img ? (
-                        <img
-                          src={place.thumbnail_img}
-                          alt={place.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center 
-                          bg-[var(--accent-primary)]/5">
-                          <Brain className="w-5 h-5 text-[var(--accent-primary)]" />
-                        </div>
-                      )}
-                      <div className="absolute bottom-0 inset-x-0 py-1 flex items-center justify-center
-                        bg-[var(--accent-primary)] text-white text-xs font-medium">
-                        {place.workabilityScore}/10
-                      </div>
+                  <div className="flex gap-3">
+                    {/* Score Badge */}
+                    <div className="flex-shrink-0 w-12 h-12 rounded-md 
+                      bg-[var(--accent-primary)] text-white
+                      flex items-center justify-center font-bold text-lg">
+                      {place.workabilityScore}
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0 flex flex-col">
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
                         <AIBadge />
                         <span className="text-xs text-[var(--text-secondary)]">
                           {place.distance}mi
                         </span>
                       </div>
-                      <h3 className="font-medium text-[var(--text-primary)] truncate">
+                      
+                      <h3 className="font-medium text-[var(--text-primary)] truncate mb-1.5">
                         {place.title}
                       </h3>
-                      <p className={`text-xs text-[var(--text-secondary)] mt-1 flex-1
-                        ${!isExpanded ? 'line-clamp-2' : ''}`}>
-                        {recommendation.personalNote}
+                      
+                      <p className="text-sm text-[var(--text-secondary)] line-clamp-2">
+                        {recommendation.headline}
                       </p>
-                      {recommendation.personalNote.length > 100 && (
-                        <button
-                          onClick={() => setIsExpanded(!isExpanded)}
-                          className="mt-1 flex items-center gap-1 text-xs font-medium 
-                            text-[var(--accent-primary)] hover:text-[var(--accent-secondary)]
-                            transition-colors"
-                        >
-                          {isExpanded ? (
-                            <>Show less <ChevronUp className="w-3 h-3" /></>
-                          ) : (
-                            <>Read more <ChevronDown className="w-3 h-3" /></>
-                          )}
-                        </button>
-                      )}
                     </div>
-
-                    {/* View Details Button */}
-                    <button
-                      onClick={onViewDetails}
-                      className="flex-shrink-0 self-center p-2 rounded-md
-                        hover:bg-[var(--bg-secondary)] text-[var(--accent-primary)]
-                        transition-colors"
-                      aria-label="View workspace details"
-                    >
-                      <ArrowRight className="w-5 h-5" />
-                    </button>
                   </div>
+                  
+                  <button
+                    onClick={onViewDetails}
+                    className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md
+                      bg-[var(--accent-primary)] hover:bg-[var(--accent-secondary)]
+                      text-white text-sm font-medium transition-colors"
+                  >
+                    View Details
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Desktop View - Adjusted height and padding */}
-                <div className="hidden sm:flex min-h-[220px] p-6 gap-6">
-                  {/* Dismiss Button */}
+                {/* Desktop View */}
+                <div className="hidden sm:block p-6">
                   <button
                     onClick={() => setIsVisible(false)}
                     className="absolute right-4 top-4 z-10 
@@ -315,87 +177,68 @@ const QuickMatch = ({
                       border border-[var(--border-primary)]
                       bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)]
                       text-[var(--text-secondary)] hover:text-[var(--text-primary)]
-                      text-xs font-medium
-                      transition-colors duration-200"
+                      text-xs font-medium transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                     <span>Dismiss</span>
                   </button>
 
-                  {/* Image Container */}
-                  <div className="relative flex-shrink-0 w-36 rounded-md overflow-hidden 
-                    bg-[var(--bg-secondary)]">
-                    <div className="aspect-square">
-                      {place.thumbnail_img ? (
-                        <img
-                          src={place.thumbnail_img}
-                          alt={place.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center 
-                          bg-[var(--accent-primary)]/5">
-                          <Brain className="w-8 h-8 text-[var(--accent-primary)]" />
+                  <div className="flex gap-6">
+                    {/* Score Badge */}
+                    <div className="flex-shrink-0 w-16 h-16 rounded-md 
+                      bg-[var(--accent-primary)] text-white
+                      flex items-center justify-center font-bold text-2xl">
+                      {place.workabilityScore}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-3">
+                        <AIBadge />
+                        <span className="text-sm text-[var(--text-secondary)]">
+                          {place.distance} miles away
+                        </span>
+                      </div>
+
+                      <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
+                        {place.title}
+                      </h3>
+
+                      <p className="text-[var(--text-primary)] mb-1">
+                        {recommendation.headline}
+                      </p>
+                      
+                      <p className="text-sm text-[var(--text-secondary)]">
+                        {recommendation.context}
+                      </p>
+
+                      {recommendation.standoutFeatures && (
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          {recommendation.standoutFeatures.map((feature, index) => (
+                            <div key={index} 
+                              className="px-2 py-1 rounded-md bg-[var(--bg-secondary)] 
+                                text-sm text-[var(--text-primary)]">
+                              {feature.description}
+                            </div>
+                          ))}
                         </div>
                       )}
+
+                      <button
+                        onClick={onViewDetails}
+                        className="mt-4 flex items-center gap-2 text-[var(--accent-primary)]
+                          hover:text-[var(--accent-secondary)] transition-colors text-sm font-medium"
+                      >
+                        View workspace details
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
                     </div>
-                    <div className="absolute bottom-0 inset-x-0 py-1.5 flex items-center justify-center
-                      bg-[var(--accent-primary)] text-white text-sm font-medium">
-                      {place.workabilityScore}/10
-                    </div>
-                  </div>
-
-                  {/* Content - Adjusted spacing */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="px-2 py-1 rounded-full bg-[var(--accent-primary)] 
-                        text-white text-xs font-medium flex items-center gap-1.5">
-                        <Brain className="w-3.5 h-3.5" />
-                        AI Pick
-                      </div>
-                      <span className="text-sm text-[var(--text-secondary)]">
-                        {place.distance} miles away
-                      </span>
-                    </div>
-
-                    <h3 className="text-lg font-medium text-[var(--text-primary)] mb-3">
-                      {place.title}
-                    </h3>
-
-                    <p className="text-sm text-[var(--text-primary)] leading-relaxed mb-4">
-                      {recommendation.personalNote}
-                    </p>
-
-                    <button
-                      onClick={onViewDetails}
-                      className="flex items-center gap-2 text-[var(--accent-primary)]
-                        hover:text-[var(--accent-secondary)] transition-colors text-sm font-medium"
-                    >
-                      View workspace details
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
                   </div>
                 </div>
               </>
             )}
           </div>
         </div>
-
-        {/* Expandable content for mobile */}
-        {isExpanded && contentReady && recommendation?.standoutFeatures && (
-          <div className="sm:hidden px-4 pb-4 animate-in fade-in slide-in-from-top duration-300">
-            <div className="space-y-2">
-              {recommendation.standoutFeatures.map((feature, index) => (
-                <div key={index} className="text-xs text-[var(--text-secondary)]">
-                  <span className="font-medium text-[var(--text-primary)]">
-                    {feature.title}:
-                  </span>{' '}
-                  {feature.description}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
