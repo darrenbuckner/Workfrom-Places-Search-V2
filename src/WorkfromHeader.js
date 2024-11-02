@@ -84,7 +84,7 @@ const WorkfromHeader = ({
       {/* Logo and Title Section */}
       <div className="flex items-center min-w-0">
         <WorkfromLogo />
-        <h1 className="text-lg sm:text-2xl font-bold ml-2 truncate text-text-primary">
+        <h1 className="text-sm font-bold ml-2 truncate text-text-primary">
           {headerTitle}
         </h1>
       </div>

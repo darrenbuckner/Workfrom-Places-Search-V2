@@ -104,20 +104,15 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
                 </p>
               </div>
               
-              <div onClick={() => onPhotoClick(place)}
-                className={`
-                  flex items-center cursor-pointer
-                  hover:opacity-80 transition-opacity
-                  font-medium
-                  ${isPromoted 
-                    ? 'text-[var(--promoted-text)]'
-                    : isDark && isRecommended
-                      ? 'text-white'
-                      : 'text-[var(--text-primary)]'
-                  }
-                `}
+              {/* Updated Score Badge */}
+              <div 
+                onClick={() => onPhotoClick(place)}
+                className="flex-shrink-0 w-12 h-12 rounded-md cursor-pointer
+                  bg-[var(--accent-primary)] text-white
+                  flex items-center justify-center font-bold text-lg
+                  transition-transform hover:scale-105"
               >
-                {place.workabilityScore}/10
+                {place.workabilityScore}
               </div>
             </div>
 

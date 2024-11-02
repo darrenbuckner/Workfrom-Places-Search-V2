@@ -14,6 +14,7 @@ import LocationConfirmDialog from './LocationConfirmDialog';
 import { useTheme } from './ThemeProvider';
 import WorkabilityControls from './WorkabilityControls';
 import { calculateWorkabilityScore } from './WorkabilityScore';
+import WelcomeBanner from './WelcomeBanner';
 import { 
   SearchProgressIndicator, 
   Message 
@@ -171,23 +172,44 @@ const WorkfromPlacesContent = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}`);
-      }
-      
       const data = await response.json();
 
-      if (data.meta.code === 200 && Array.isArray(data.response)) {
-        setPlaces(data.response);
-        if (data.response.length === 0) {
-          setError('No places found in your area. Try increasing the search radius.');
+      // Handle the response based on meta code
+      if (data.meta?.code === 200) {
+        if (Array.isArray(data.response)) {
+          if (data.response.length === 0) {
+            // Check if this is due to cache (304)
+            if (data.meta.message === 'Using cached data') {
+              // Keep existing places data if it's a cache hit
+              if (places.length === 0) {
+                setError('No places found in your area. Try increasing the search radius.');
+              }
+            } else {
+              setPlaces([]);
+              setError('No places found in your area. Try increasing the search radius.');
+            }
+          } else {
+            setPlaces(data.response);
+            setError('');
+          }
+        } else {
+          throw new Error('Invalid response format from server');
         }
       } else {
-        throw new Error('Unexpected response from the server');
+        throw new Error(data.meta?.details || 'Unexpected response from server');
       }
     } catch (err) {
       console.error('Search error:', err);
-      setError(`An error occurred: ${err.message}`);
+      
+      // More user-friendly error messages based on error type
+      if (err.name === 'TypeError' || err.name === 'NetworkError') {
+        setError('Unable to connect to the server. Please check your internet connection and try again.');
+      } else if (err.message.includes('Unexpected response')) {
+        setError('We encountered an issue processing the results. Please try again.');
+      } else {
+        setError(`An error occurred: ${err.message}`);
+      }
+      
       setPlaces([]);
     } finally {
       setSearchPhase('complete');
@@ -278,10 +300,15 @@ const WorkfromPlacesContent = () => {
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
+
+        {/* Header */}
         <WorkfromHeader
           onShowHowItWorks={() => setShowHowItWorks(true)}
           className="mb-4"
         />
+
+        {/* Welcome Banner */}
+        <WelcomeBanner />
 
         {/* Search Section */}
         <div className="border border-[var(--border-primary)] rounded-lg shadow-sm mb-6 bg-[var(--bg-secondary)]">
@@ -361,11 +388,11 @@ const WorkfromPlacesContent = () => {
                           showSortControl={true}
                         />
                         
-                        {/* Mobile Filter Toggle - Now next to sort control */}
+                        {/* Filter Toggle - Now visible on all screen sizes */}
                         <button
                           onClick={() => setShowFilters(!showFilters)}
                           className={`
-                            sm:hidden p-2 rounded transition-colors
+                            p-2 rounded transition-colors
                             ${showFilters
                               ? 'bg-[var(--action-primary)] text-white'
                               : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
@@ -377,7 +404,7 @@ const WorkfromPlacesContent = () => {
                         </button>
                       </div>
 
-                      {/* View Mode Toggles - Now in their own group */}
+                      {/* View Mode Toggles */}
                       <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
                         <button
                           onClick={() => setViewMode('list')}
@@ -411,10 +438,10 @@ const WorkfromPlacesContent = () => {
                 </div>
               </div>
 
-              {/* Post-Search Filters - Now conditionally shown on mobile */}
+              {/* Post-Search Filters - Now hidden by default on all screen sizes */}
               <div className={`
                 border-t border-[var(--border-primary)]
-                ${showFilters ? 'block' : 'hidden sm:block'}
+                ${showFilters ? 'block' : 'hidden'}
               `}>
                 <div className="p-4">
                   <PostSearchFilters
@@ -527,7 +554,7 @@ const WorkfromPlacesContent = () => {
       {/* Footer */}
       <footer className="py-4 bg-bg-secondary border-t border-[var(--border-primary)]">
         <div className="container mx-auto px-4 text-center text-xs text-text-secondary">
-          <p>&copy; {new Date().getFullYear()} Workfrom. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Workfrom</p>
         </div>
       </footer>
     </div>

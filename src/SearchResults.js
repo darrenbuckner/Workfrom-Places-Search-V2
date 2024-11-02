@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Brain } from 'lucide-react';
 import PlaceCard from './PlaceCard';
 import Pagination from './Pagination';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
@@ -175,7 +175,7 @@ const SearchResults = ({
         0%, 100% { box-shadow: 0 0 10px var(--accent-primary); }
         50% { box-shadow: 0 0 20px var(--accent-primary); }
       }
-      @keyframes sparklesPulse {
+      @keyframes brainPulse {
         0%, 100% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.1); opacity: 0.8; }
       }
@@ -252,13 +252,13 @@ const SearchResults = ({
           }}
         >
           <div className="relative flex-shrink-0">
-            <Sparkles 
+            <Brain 
               size={18} 
-              className="[animation:sparklesPulse_2s_ease-in-out_infinite]"
+              className="[animation:brainPulse_2s_ease-in-out_infinite]"
             />
           </div>
           <span className="text-sm font-medium whitespace-nowrap">
-            View Best Match
+            AI Pick
           </span>
         </button>
       )}

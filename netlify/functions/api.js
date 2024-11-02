@@ -144,13 +144,68 @@ const generateCacheKey = (places, timezone) => {
   return JSON.stringify(relevantData);
 };
 
+// Places utility function
+const validatePlacesResponse = (data) => {
+  if (!data) {
+    throw new Error('Empty response received from server');
+  }
+  
+  // Check if response has the expected structure
+  if (!data.meta || typeof data.meta.code !== 'number') {
+    throw new Error('Invalid response structure: missing meta.code');
+  }
+  
+  // Check if response code indicates an error
+  if (data.meta.code !== 200) {
+    throw new Error(`API Error: ${data.meta.message || 'Unknown error'}`);
+  }
+  
+  // Check if response has the expected data array
+  if (!Array.isArray(data.response)) {
+    throw new Error('Invalid response structure: missing or invalid response array');
+  }
+  
+  return data;
+};
+
+// Places utility function
+const createErrorResponse = (error, statusCode = 500) => {
+  // Log the full error for debugging
+  console.error('Places API Error:', {
+    message: error.message,
+    stack: error.stack,
+    statusCode
+  });
+
+  // Determine if this is a known error type we want to expose to the client
+  const isKnownError = error.message.includes('Invalid response structure') || 
+                      error.message.includes('API Error');
+
+  return {
+    meta: {
+      code: statusCode,
+      error: isKnownError ? error.message : 'An unexpected error occurred',
+      errorCode: isKnownError ? 'INVALID_RESPONSE' : 'INTERNAL_ERROR',
+      timestamp: new Date().toISOString()
+    },
+    response: null
+  };
+};
+
 // Places endpoint - Fixed routing
 app.get('*/places/ll/:coords', async (req, res) => {
+  const startTime = Date.now();
+  
   try {
     const { coords } = req.params;
     const radius = req.query.radius || 2;
     const rpp = req.query.rpp || 100;
     const appid = req.query.appid || DEFAULT_API_KEY;
+
+    // Validate coordinates format
+    if (!coords.match(/^-?\d+\.?\d*,-?\d+\.?\d*$/)) {
+      throw new Error('Invalid coordinates format');
+    }
 
     console.log('Places endpoint hit:', {
       coords,
@@ -167,26 +222,44 @@ app.get('*/places/ll/:coords', async (req, res) => {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        }
+        },
+        // Add timeout to prevent hanging requests
+        timeout: 10000
       }
     );
 
-    const data = await response.json();
+    // Handle non-200 responses
     if (!response.ok) {
-      throw new Error(`Workfrom API error: ${data.meta?.message || response.statusText}`);
+      throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
     }
 
-    res.json(data);
+    let data;
+    try {
+      data = await response.json();
+    } catch (parseError) {
+      throw new Error('Failed to parse JSON response');
+    }
+
+    // Validate response structure
+    const validatedData = validatePlacesResponse(data);
+
+    // Add response time to meta
+    validatedData.meta.responseTime = Date.now() - startTime;
+
+    res.json(validatedData);
   } catch (error) {
-    console.error('Places API error:', error);
-    res.status(500).json({
-      meta: {
-        code: 500,
-        error: 'Failed to fetch places',
-        details: error.message
-      },
-      response: null
-    });
+    // Determine appropriate status code
+    let statusCode = 500;
+    if (error.message.includes('Invalid coordinates')) {
+      statusCode = 400;
+    } else if (error.message.includes('HTTP Error: 404')) {
+      statusCode = 404;
+    } else if (error.message.includes('HTTP Error: 429')) {
+      statusCode = 429;
+    }
+
+    const errorResponse = createErrorResponse(error, statusCode);
+    res.status(statusCode).json(errorResponse);
   }
 });
 

@@ -47,12 +47,12 @@ const SearchButton = ({
           {isSearching ? (
             <>
               <LoadingSpinner size={20} />
-              <span>{searchPhase === 'locating' ? 'Getting Location...' : 'Searching...'}</span>
+              <span>{searchPhase === 'locating' ? 'Getting Location...' : 'Searching Nearby...'}</span>
             </>
           ) : (
             <>
               <MapPin size={20} />
-              <span>Find Places Nearby</span>
+              <span>See What's Nearby</span>
             </>
           )}
         </button>
@@ -78,12 +78,12 @@ const SearchButton = ({
               {isSearching ? (
                 <>
                   <LoadingSpinner size={20} />
-                  <span>{searchPhase === 'locating' ? 'Getting Location...' : 'Searching...'}</span>
+                  <span>{searchPhase === 'locating' ? 'Getting Location...' : 'Searching Nearby...'}</span>
                 </>
               ) : (
                 <>
                   <Search size={20} />
-                  <span>Search Places</span>
+                  <span>Search Again</span>
                 </>
               )}
             </div>
