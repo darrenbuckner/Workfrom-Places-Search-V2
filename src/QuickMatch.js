@@ -27,7 +27,7 @@ const LoadingState = ({ progress }) => {
   }, []);
 
   return (
-    <div className="p-4 min-h-[144px] flex flex-col">
+    <div className="h-full">
       {/* Top Progress Bar */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--bg-secondary)]">
         <div 
@@ -36,7 +36,7 @@ const LoadingState = ({ progress }) => {
         />
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="p-4 h-full flex flex-col">
         <div className="flex items-center gap-2 mb-3">
           <AIBadge />
           <span className="text-xs text-[var(--text-secondary)]">
@@ -137,14 +137,20 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
         {/* Action Buttons */}
         <div className="mt-4 flex items-center justify-between gap-3 pt-2 border-t border-[var(--border-primary)]">
           <button
-            onClick={onDismiss}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDismiss();
+            }}
             className="px-3 py-1.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
           >
             Dismiss
           </button>
           
           <button
-            onClick={onViewDetails}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails();
+            }}
             className="flex items-center gap-2 px-4 py-1.5 rounded-md
               bg-[var(--accent-primary)] hover:bg-[var(--accent-secondary)]
               text-white text-sm font-medium transition-colors"
@@ -157,7 +163,7 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
     );
   }
 
-  // Desktop layout remains the same
+  // Desktop layout
   return (
     <div className="p-4 min-h-[144px]" ref={contentRef}>
       <div className="flex gap-4">
@@ -182,7 +188,10 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
               </span>
             </div>
             <button
-              onClick={onDismiss}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDismiss();
+              }}
               className="text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)]
                 transition-colors"
             >
@@ -216,7 +225,10 @@ const ResultContent = ({ place, recommendation, onViewDetails, onDismiss, isMobi
           )}
 
           <button
-            onClick={onViewDetails}
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails();
+            }}
             className="mt-4 flex items-center gap-2 text-[var(--accent-primary)]
               hover:text-[var(--accent-secondary)] transition-colors text-sm font-medium"
           >
@@ -233,17 +245,17 @@ const QuickMatch = ({
   recommendation, 
   place, 
   onViewDetails,
-  isAnalyzing 
+  isAnalyzing,
+  isUsingSavedLocation = false // New prop to determine if using saved location
 }) => {
   const [isVisible, setIsVisible] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [showContent, setShowContent] = useState(false);
   const isMobileRef = useRef(window.innerWidth < 640);
+  const shouldShowLoading = isAnalyzing && !isUsingSavedLocation;
 
   useEffect(() => {
-    if (isAnalyzing) {
+    if (shouldShowLoading) {
       setLoadingProgress(0);
-      setShowContent(false);
       
       const startTime = Date.now();
       const duration = 8000;
@@ -262,14 +274,8 @@ const QuickMatch = ({
       return () => clearInterval(interval);
     } else if (recommendation && place) {
       setLoadingProgress(100);
-      
-      const timer = setTimeout(() => {
-        setShowContent(true);
-      }, 500);
-
-      return () => clearTimeout(timer);
     }
-  }, [isAnalyzing, recommendation, place]);
+  }, [shouldShowLoading, recommendation, place]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -280,33 +286,40 @@ const QuickMatch = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  if (!isVisible || (!isAnalyzing && !recommendation && !place)) return null;
+  // Don't render anything during initial load with saved location
+  if (!isVisible || (!shouldShowLoading && !recommendation && !place)) return null;
 
   return (
     <div className="sticky top-1 z-40 -mx-1 sm:-mx-4 sm:p-4">
       <div className="relative bg-[var(--bg-primary)] border border-[var(--accent-primary)] 
-        rounded-lg shadow-md overflow-hidden">
+        rounded-lg shadow-md overflow-hidden min-h-[144px]">
         
-        {/* Loading State */}
-        <div className={`absolute inset-0 transition-opacity duration-500 ${
-          isAnalyzing ? 'opacity-100' : 'opacity-0'
-        }`}>
-          <LoadingState progress={loadingProgress} />
-        </div>
+        <div className="relative w-full h-full">
+          {/* Loading State - Only show for new location searches */}
+          <div 
+            className={`w-full h-full transition-all duration-500 ${
+              shouldShowLoading ? 'opacity-100 visible' : 'opacity-0 invisible absolute inset-0'
+            }`}
+          >
+            <LoadingState progress={loadingProgress} />
+          </div>
 
-        {/* Result Content */}
-        <div className={`transition-opacity duration-500 ${
-          showContent ? 'opacity-100' : 'opacity-0'
-        }`}>
-          {(showContent || !isAnalyzing) && recommendation && place && (
-            <ResultContent 
-              place={place}
-              recommendation={recommendation}
-              onViewDetails={onViewDetails}
-              onDismiss={() => setIsVisible(false)}
-              isMobile={isMobileRef.current}
-            />
-          )}
+          {/* Result Content */}
+          <div 
+            className={`w-full transition-all duration-500 ${
+              (!shouldShowLoading && recommendation && place) ? 'opacity-100 visible' : 'opacity-0 invisible absolute inset-0'
+            }`}
+          >
+            {recommendation && place && (
+              <ResultContent 
+                place={place}
+                recommendation={recommendation}
+                onViewDetails={onViewDetails}
+                onDismiss={() => setIsVisible(false)}
+                isMobile={isMobileRef.current}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -49,6 +49,7 @@ const WorkfromPlacesContent = () => {
   const [places, setPlaces] = useState([]);
   const [error, setError] = useState('');
   const [searchPhase, setSearchPhase] = useState('initial');
+  const [usingSavedLocation, setUsingSavedLocation] = useState(false);
   
   // UI state
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -144,6 +145,9 @@ const WorkfromPlacesContent = () => {
     setSearchPhase('locating');
     setPlaces([]);
     setRecommendedPlace(null);
+    if (!useExistingLocation) {
+      setUsingSavedLocation(false);
+    }
     setPostSearchFilters({
       type: 'any',
       power: 'any',
@@ -218,6 +222,7 @@ const WorkfromPlacesContent = () => {
 
   const handleSearch = async ({ useSaved }) => {
     setError('');
+    setUsingSavedLocation(useSaved);
     await performSearch(useSaved);
   };
 
@@ -471,6 +476,7 @@ const WorkfromPlacesContent = () => {
               places={processedPlaces}
               isSearching={searchPhase !== 'complete'}
               onPhotoClick={handlePhotoClick}
+              isUsingSavedLocation={usingSavedLocation}
               onRecommendationMade={(insights) => {
                 if (insights?.recommendation?.name) {
                   setRecommendedPlace(insights.recommendation.name);
