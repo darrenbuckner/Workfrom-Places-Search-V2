@@ -9,21 +9,21 @@ const WelcomeBanner = () => {
   const getTimeBasedContent = () => {
     if (hour < 12) {
       return {
-        greeting: "Good morning",
+        greeting: "Hello",
         Icon: Sun,
-        message: "Ready to find your perfect morning workspace?"
+        message: "Let's find your perfect morning workspace."
       };
     } else if (hour < 17) {
       return {
-        greeting: "Good afternoon",
+        greeting: "Hi",
         Icon: Sunset,
-        message: "Looking for a productive afternoon spot?"
+        message: "Let's find a productive afternoon spot."
       };
     } else {
       return {
-        greeting: "Good evening",
+        greeting: "Welcome",
         Icon: Moon,
-        message: "Need a calm evening workspace?"
+        message: "Let's find a calm evening workspace."
       };
     }
   };
@@ -40,7 +40,7 @@ const WelcomeBanner = () => {
         </div>
         <div>
           <h2 className="text-xl font-medium text-[var(--text-primary)]">
-            {greeting}, remote worker! 👋
+            {greeting}, friend! 👋
           </h2>
           <p className="text-[var(--text-secondary)] mt-1">
             {message}

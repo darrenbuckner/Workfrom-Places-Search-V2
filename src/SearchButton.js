@@ -83,7 +83,7 @@ const SearchButton = ({
               ) : (
                 <>
                   <Search size={20} />
-                  <span>Search Again</span>
+                  <span>New Search</span>
                 </>
               )}
             </div>
