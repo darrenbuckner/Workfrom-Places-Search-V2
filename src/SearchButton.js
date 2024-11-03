@@ -120,7 +120,7 @@ const SearchButton = ({
                     <MapPin size={15} className="text-[var(--action-primary)]" />
                   </div>
                   <div>
-                    <div className="font-medium text-sm text-text-primary">Search new location</div>
+                    <div className="font-medium text-sm text-text-primary">Search new area</div>
                     <div className="text-xs text-text-secondary mt-0.5">Use your current location</div>
                   </div>
                 </button>
