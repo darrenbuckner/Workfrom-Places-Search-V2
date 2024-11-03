@@ -1,7 +1,12 @@
 import React from 'react';
 import { Coffee, Sun, Moon, Sunset } from 'lucide-react';
 
-const WelcomeBanner = () => {
+const WelcomeBanner = ({ isSearchPerformed = false }) => {
+  // If search is performed, don't render the banner
+  if (isSearchPerformed) {
+    return null;
+  }
+
   // Get current hour to show appropriate greeting
   const hour = new Date().getHours();
   
@@ -31,8 +36,25 @@ const WelcomeBanner = () => {
   const { greeting, Icon, message } = getTimeBasedContent();
 
   return (
-    <div className="mb-6 animate-fade-in">
-      <div className="flex items-start gap-3">
+    <div className="mb-6">
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          .welcome-banner-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+          }
+        `
+      }} />
+      <div className="flex items-start gap-3 welcome-banner-fade-in">
         <div className="flex-shrink-0">
           <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
             <Icon className="w-5 h-5 text-[var(--accent-primary)]" />
@@ -47,22 +69,6 @@ const WelcomeBanner = () => {
           </p>
         </div>
       </div>
-      
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 };

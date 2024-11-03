@@ -89,7 +89,7 @@ const SearchResults = ({
   }, [currentPage, totalPages, scrollToControls]);
 
   return (
-    <div ref={resultsRef} className="relative pt-2">      
+    <div className="relative">      
       <div ref={controlsRef} className="scroll-mt-32" />
       
       <div className="space-y-6">

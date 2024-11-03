@@ -12,7 +12,8 @@ const SearchButton = ({
   const [showLocationOptions, setShowLocationOptions] = useState(false);
   
   useEffect(() => {
-    if (searchPhase !== 'initial' && searchPhase !== 'complete') {
+    // Only close location options during actual search phases
+    if (searchPhase === 'locating' || searchPhase === 'loading') {
       setShowLocationOptions(false);
     }
   }, [searchPhase]);
@@ -31,14 +32,14 @@ const SearchButton = ({
         // New user flow - single button
         <button
           onClick={() => handleSearch(false)}
-          disabled={disabled}
+          disabled={isSearching}
           className={`
             w-full min-w-[180px] sm:min-w-[220px] h-12 px-6 rounded-lg
             font-medium transition-all duration-200
             flex items-center justify-center gap-3 sm:gap-4
             focus-visible:outline-none focus-visible:ring-2 
             focus-visible:ring-[var(--action-primary)] focus-visible:ring-offset-2
-            ${disabled
+            ${isSearching
               ? 'bg-bg-secondary text-text-tertiary cursor-not-allowed'
               : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white shadow-md'
             }
@@ -61,14 +62,14 @@ const SearchButton = ({
         <div className="relative w-full min-w-[180px] sm:min-w-[220px] z-50">
           <button
             onClick={() => setShowLocationOptions(!showLocationOptions)}
-            disabled={disabled}
+            disabled={isSearching}
             className={`
               w-full h-12 px-6 rounded-lg
               font-medium transition-all duration-200
               flex items-center justify-between
               focus-visible:outline-none focus-visible:ring-2 
               focus-visible:ring-[var(--action-primary)] focus-visible:ring-offset-2
-              ${disabled
+              ${isSearching
                 ? 'bg-bg-secondary text-text-tertiary cursor-not-allowed'
                 : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white shadow-md'
               }
@@ -96,7 +97,7 @@ const SearchButton = ({
           </button>
 
           {/* Location Options Dropdown */}
-          {showLocationOptions && !disabled && (
+          {showLocationOptions && !isSearching && (
             <div className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-border-primary shadow-lg overflow-hidden backdrop-blur-sm">
               <div className="bg-bg-secondary/95 py-1">
                 <button
