@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Brain, Loader, Sparkles } from 'lucide-react';
+import { Brain, ArrowRight, Sparkles } from 'lucide-react';
 import PlaceCard from './PlaceCard';
 import Pagination from './Pagination';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
 
+// AI Badge subcomponent
 const AIBadge = ({ className = "" }) => (
   <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
     bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium ${className}`}>
@@ -12,74 +13,7 @@ const AIBadge = ({ className = "" }) => (
   </div>
 );
 
-const LoadingState = ({ progress }) => {
-  const [currentMessage, setCurrentMessage] = useState(0);
-  const messages = [
-    "Finding your perfect workspace...",
-    "Analyzing local options...",
-    "Checking community insights...",
-    "Almost ready..."
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentMessage(prev => (prev + 1) % messages.length);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="mb-6 animate-fade-in">
-      <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-md overflow-hidden relative">
-        {/* Top Progress Bar */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--bg-secondary)]">
-          <div 
-            className="absolute top-0 left-0 h-full bg-[var(--accent-primary)] transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="p-4">
-          <div className="flex items-center gap-2">
-            <AIBadge />
-          </div>
-          
-          <div className="flex items-center gap-3 mt-3">
-            <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
-              <Loader className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />
-            </div>
-            <p className="text-sm font-medium text-[var(--text-primary)] transition-opacity duration-300">
-              {messages[currentMessage]}
-            </p>
-          </div>
-
-          {/* Subtle Loading Bar */}
-          <div className="mt-4 h-1 rounded-full overflow-hidden bg-[var(--bg-secondary)]">
-            <div 
-              className="h-full bg-[var(--accent-primary)]/20 rounded-full"
-              style={{
-                width: '100%',
-                backgroundSize: '200% 100%',
-                backgroundImage: 'linear-gradient(90deg, transparent 0%, var(--accent-primary) 50%, transparent 100%)',
-                animation: 'shimmer 2s infinite linear'
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
-    </div>
-  );
-};
-
-const SearchResults = ({ 
+const IntegratedSearchResults = ({ 
   places, 
   sortBy, 
   filters, 
@@ -89,10 +23,8 @@ const SearchResults = ({
   recommendedPlaceName,
   recommendation,
   recommendedPlace,
-  isAnalyzing,
-  isUsingSavedLocation
+  isAnalyzing
 }) => {
-  const [loadingProgress, setLoadingProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [isPageChanging, setIsPageChanging] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
@@ -103,35 +35,10 @@ const SearchResults = ({
   const recommendedCardRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
 
-  // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(places.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, places.length);
   const currentItems = places.slice(startIndex, endIndex);
-
-  const shouldShowLoading = isAnalyzing && !isUsingSavedLocation;
-
-  // Loading progress effect
-  useEffect(() => {
-    if (shouldShowLoading) {
-      setLoadingProgress(0);
-      const startTime = Date.now();
-      const duration = 8000;
-      
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min((elapsed / duration) * 100, 90);
-        
-        if (progress >= 90) {
-          clearInterval(interval);
-        }
-        
-        setLoadingProgress(progress);
-      }, 100);
-
-      return () => clearInterval(interval);
-    }
-  }, [shouldShowLoading]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -182,36 +89,10 @@ const SearchResults = ({
     });
   }, [currentPage, totalPages, scrollToControls]);
 
-  // Reset to first page when filters or sort changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sortBy, filters]);
-
-  const getRecommendedPlaceInfo = useCallback(() => {
-    if (!recommendedPlaceName) return null;
-    
-    const index = places.findIndex(place => place.title === recommendedPlaceName);
-    if (index === -1) return null;
-    
-    const page = Math.floor(index / itemsPerPage) + 1;
-    return { index, page };
-  }, [places, recommendedPlaceName, itemsPerPage]);
-
-  useEffect(() => {
-    if (!hasInitialized && recommendedPlaceName) {
-      const info = getRecommendedPlaceInfo();
-      if (info) {
-        if (info.page !== currentPage) {
-          setCurrentPage(info.page);
-        }
-        setHasInitialized(true);
-      }
-    }
-  }, [recommendedPlaceName, hasInitialized, getRecommendedPlaceInfo, currentPage]);
-
   const RecommendedCard = () => {
-    if (!recommendation?.recommendation || !recommendedPlace) return null;
+    if (!recommendation?.recommendation || !recommendedPlace || isAnalyzing) return null;
 
+    // Get the recommendation data from the insights
     const recData = recommendation.recommendation;
     const description = recData.headline || recData.context;
 
@@ -259,17 +140,11 @@ const SearchResults = ({
                     {recData.standoutFeatures.map((feature, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                        <span>{typeof feature === 'string' ? feature : feature.description}</span>
+                        <span>{feature}</span>
                       </div>
                     ))}
                   </div>
                 )}
-
-                <div onClick={() => onPhotoClick(recommendedPlace)} 
-                  className="mt-4 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-secondary)] 
-                    cursor-pointer transition-colors">
-                  View Details
-                </div>
               </div>
             </div>
           </div>
@@ -283,12 +158,8 @@ const SearchResults = ({
       <div ref={controlsRef} className="scroll-mt-32" />
       
       <div className="space-y-6">
-        {/* Loading State or Recommendation */}
-        {shouldShowLoading ? (
-          <LoadingState progress={loadingProgress} />
-        ) : recommendation?.recommendation && recommendedPlace ? (
-          <RecommendedCard />
-        ) : null}
+        {/* Recommended Card - Always show first if available */}
+        <RecommendedCard />
 
         {/* Regular Results */}
         {currentItems.map((place, index) => {
@@ -335,14 +206,9 @@ const SearchResults = ({
         .animate-fade-in {
           animation: fadeIn 0.3s ease-out forwards;
         }
-
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
       `}</style>
     </div>
   );
 };
 
-export default SearchResults;
+export default IntegratedSearchResults;

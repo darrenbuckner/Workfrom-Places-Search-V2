@@ -289,7 +289,7 @@ const QuickMatch = ({
   if (!isVisible || (!shouldShowLoading && !recommendation && !place)) return null;
 
   return (
-    <div className="sticky top-1 z-40 -mx-1 sm:-mx-4 sm:p-4">
+    <div className="sticky top-1 z-40 -mx-1 sm:-mx-1 sm:p-2">
       <div className="relative bg-[var(--bg-primary)] border border-[var(--accent-primary)] 
         rounded-lg shadow-md overflow-hidden min-h-[144px]">
         

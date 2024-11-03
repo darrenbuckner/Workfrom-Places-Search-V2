@@ -58,22 +58,34 @@ const WorkfromPlacesContent = () => {
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [viewMode, setViewMode] = useState('list');
   const [showLocationConfirm, setShowLocationConfirm] = useState(false);
-  const [recommendedPlace, setRecommendedPlace] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
-  const [isFiltering, setIsFiltering] = useState(false);
+  const [aiRecommendation, setAiRecommendation] = useState(null);
+  const [recommendedPlace, setRecommendedPlace] = useState(null);
+  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
 
   // Refs
   const resultsContainerRef = useRef(null);
 
-  const performInitialSearch = async (useExistingLocation = false) => {
+  // Search functionality
+  const performSearch = async (useExistingLocation = false) => {
     setSearchPhase('locating');
     setPlaces([]);
+    setAiRecommendation(null);
     setRecommendedPlace(null);
+    setIsAiAnalyzing(false);
+    
     if (!useExistingLocation) {
       setUsingSavedLocation(false);
     }
     
+    setPostSearchFilters({
+      type: 'any',
+      power: 'any',
+      noise: 'any',
+      openNow: false
+    });
+
     try {
       let searchLocation;
       if (useExistingLocation) {
@@ -86,16 +98,13 @@ const WorkfromPlacesContent = () => {
       setSearchPhase('loading');
       await fetchPlaces(searchLocation, radius);
       setIsSearchPerformed(true);
-      // Reset filters after successful search
-      setPostSearchFilters({
-        type: 'any',
-        power: 'any',
-        noise: 'any',
-        openNow: false
-      });
+      
+      // Start AI analysis after places are loaded
+      if (!useExistingLocation) {
+        setIsAiAnalyzing(true);
+      }
     } catch (err) {
       console.error('Search failed:', err);
-      setError(err.message);
     } finally {
       setSearchPhase('complete');
     }
@@ -104,19 +113,11 @@ const WorkfromPlacesContent = () => {
   const handleSearch = async ({ useSaved }) => {
     setError('');
     setUsingSavedLocation(useSaved);
-    await performInitialSearch(useSaved);
+    await performSearch(useSaved);
   };
 
   const handlePostSearchFilter = (key, value) => {
-    setPostSearchFilters(prev => {
-      const newFilters = { ...prev, [key]: value };
-      if (location) {
-        setIsFiltering(true);
-        fetchPlaces(location, radius, newFilters)
-          .finally(() => setIsFiltering(false));
-      }
-      return newFilters;
-    });
+    setPostSearchFilters(prev => ({ ...prev, [key]: value }));
   };
 
   return (
@@ -179,66 +180,62 @@ const WorkfromPlacesContent = () => {
             </div>
             <SearchButton
               onClick={handleSearch}
-              disabled={searchPhase !== 'initial' && searchPhase !== 'complete' || isFiltering}
+              disabled={searchPhase !== 'initial' && searchPhase !== 'complete'}
               searchPhase={searchPhase}
               hasLocation={!!location}
               locationName={locationName}
             />
           </div>
 
-          {/* GenAI Insights Section - Don't hide during filtering */}
-          {places.length > 0 && !isFiltering && (
-            <GenAIInsights
-              places={places}
-              isSearching={searchPhase !== 'complete'}
-              onPhotoClick={handlePhotoClick}
-              isUsingSavedLocation={usingSavedLocation}
-              onRecommendationMade={(insights) => {
-                if (insights?.recommendation?.name) {
-                  setRecommendedPlace(insights.recommendation.name);
-                }
-              }}
-            />
-          )}
+          {/* GenAI Insights Section - Hidden but functional */}
+          <div className="sr-only">
+		    <GenAIInsights
+		      places={places}
+		      isSearching={searchPhase !== 'complete'}
+		      onPhotoClick={handlePhotoClick}
+		      isUsingSavedLocation={usingSavedLocation}
+		      onRecommendationMade={(insights) => {
+		        if (insights?.recommendation) {
+		          setAiRecommendation(insights);
+		          const recommendedPlaceData = places.find(
+		            place => place.title === insights.recommendation.name
+		          );
+		          setRecommendedPlace(recommendedPlaceData);
+		          setIsAiAnalyzing(false); // Mark AI analysis as complete
+		        }
+		      }}
+		    />
+		  </div>
 
-          {/* Controls and Filters Section */}
-          {isSearchPerformed && (
-            <>
+          {/* Results Section */}
+          {places.length > 0 && (
+            <div>
               {/* Controls */}
               <div className="border-t border-[var(--border-primary)]">
                 <div className="p-4">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="flex items-center gap-4">
                       <span className="text-sm font-medium text-[var(--text-primary)]">
-                        {isFiltering 
-                          ? "Updating results..."
-                          : places.length > 0 
-                            ? `Found ${places.length} places within ${radius} miles`
-                            : 'No places match your current filters'}
+                        Found {places.length} places within {radius} miles
                       </span>
                     </div>
                     
                     <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-                      {/* Sort and Filter Controls Group */}
                       <div className="flex items-center gap-2">
-                        {places.length > 0 && (
-                          <WorkabilityControls 
-                            onSortChange={setSortBy}
-                            currentSort={sortBy}
-                            showSortControl={!isFiltering}
-                          />
-                        )}
+                        <WorkabilityControls 
+                          onSortChange={setSortBy}
+                          currentSort={sortBy}
+                          showSortControl={true}
+                        />
                         
                         <button
                           onClick={() => setShowFilters(!showFilters)}
-                          disabled={isFiltering}
                           className={`
                             p-2 rounded transition-colors
                             ${showFilters
                               ? 'bg-[var(--action-primary)] text-white'
                               : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                             }
-                            ${isFiltering ? 'opacity-50 cursor-not-allowed' : ''}
                           `}
                           aria-label="Toggle filters"
                         >
@@ -246,41 +243,34 @@ const WorkfromPlacesContent = () => {
                         </button>
                       </div>
 
-                      {/* View Mode Toggles */}
-                      {places.length > 0 && (
-                        <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
-                          <button
-                            onClick={() => setViewMode('list')}
-                            disabled={isFiltering}
-                            className={`
-                              p-2 rounded transition-colors
-                              ${viewMode === 'list'
-                                ? 'bg-[var(--action-primary)] text-white'
-                                : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                              }
-                              ${isFiltering ? 'opacity-50 cursor-not-allowed' : ''}
-                            `}
-                            aria-label="List view"
-                          >
-                            <List size={18} />
-                          </button>
-                          <button
-                            onClick={() => setViewMode('map')}
-                            disabled={isFiltering}
-                            className={`
-                              p-2 rounded transition-colors
-                              ${viewMode === 'map'
-                                ? 'bg-[var(--action-primary)] text-white'
-                                : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                              }
-                              ${isFiltering ? 'opacity-50 cursor-not-allowed' : ''}
-                            `}
-                            aria-label="Map view"
-                          >
-                            <Map size={18} />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
+                        <button
+                          onClick={() => setViewMode('list')}
+                          className={`
+                            p-2 rounded transition-colors
+                            ${viewMode === 'list'
+                              ? 'bg-[var(--action-primary)] text-white'
+                              : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                            }
+                          `}
+                          aria-label="List view"
+                        >
+                          <List size={18} />
+                        </button>
+                        <button
+                          onClick={() => setViewMode('map')}
+                          className={`
+                            p-2 rounded transition-colors
+                            ${viewMode === 'map'
+                              ? 'bg-[var(--action-primary)] text-white'
+                              : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                            }
+                          `}
+                          aria-label="Map view"
+                        >
+                          <Map size={18} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -288,13 +278,11 @@ const WorkfromPlacesContent = () => {
 
               {/* Post-Search Filters */}
               {showFilters && (
-                <div className="border-t border-[var(--border-primary)] bg-[var(--bg-tertiary)]">
+                <div className="border-t border-[var(--border-primary)]">
                   <div className="p-4">
                     <PostSearchFilters
                       onFilterChange={handlePostSearchFilter}
                       currentFilters={postSearchFilters}
-                      className="max-w-2xl mx-auto"
-                      disabled={isFiltering}
                     />
                   </div>
                 </div>
@@ -303,41 +291,38 @@ const WorkfromPlacesContent = () => {
               {/* Results Display */}
               <div className="border-t border-[var(--border-primary)]">
                 <div className="p-4">
-                  {isFiltering ? (
-                    <div className="flex justify-center py-8">
-                      <span className="text-sm text-[var(--text-secondary)]">
-                        Updating results...
-                      </span>
-                    </div>
-                  ) : places.length === 0 ? (
+                  {places.length === 0 ? (
                     <Message 
                       variant="info"
                       message="No places match your current filters"
                       description="Try adjusting your criteria"
                     />
                   ) : viewMode === 'list' ? (
-                    <div className="space-y-6">
-                      <SearchResults
-                        places={places}
-                        sortBy={sortBy}
-                        filters={postSearchFilters}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                        viewMode={viewMode}
-                        onPhotoClick={handlePhotoClick}
-                        recommendedPlaceName={recommendedPlace}
-                      />
-                    </div>
+                    <SearchResults
+					    places={places}
+					    sortBy={sortBy}
+					    filters={postSearchFilters}
+					    itemsPerPage={ITEMS_PER_PAGE}
+					    viewMode={viewMode}
+					    onPhotoClick={handlePhotoClick}
+					    recommendedPlaceName={recommendedPlace?.title}
+					    recommendation={aiRecommendation}
+					    recommendedPlace={recommendedPlace}
+					    isAnalyzing={isAiAnalyzing}
+					    searchPhase={searchPhase}
+					    isUsingSavedLocation={usingSavedLocation}
+					  />
                   ) : (
                     <NearbyPlacesMap 
                       places={places}
                       userLocation={location}
                       onPhotoClick={handlePhotoClick}
-                      highlightedPlace={recommendedPlace}
+                      highlightedPlace={recommendedPlace?.title}
                     />
                   )}
                 </div>
               </div>
-            </>
+            </div>
           )}
         </SearchResultsContainer>
 
@@ -370,13 +355,13 @@ const WorkfromPlacesContent = () => {
             onUseExisting={() => {
               setShowLocationConfirm(false);
               setPlaces([]);
-              performInitialSearch(true);
+              performSearch(true);
             }}
             onSearchNew={() => {
               clearLocation();
               setShowLocationConfirm(false);
               setPlaces([]);
-              performInitialSearch(false);
+              performSearch(false);
             }}
             onCancel={() => {
               setShowLocationConfirm(false);
