@@ -186,14 +186,14 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
                 </div>
 
                 <div className="text-sm flex items-center">
-                  <span className="text-text-primary mr-1">Power Outlets:</span>
+                  <span className="text-text-primary mr-1">Power:</span>
                   <span className="font-medium truncate text-text-primary">
                     {getPowerDisplay(place.power)}
                   </span>
                 </div>
 
                 <div className="text-sm flex items-center">
-                  <span className="text-text-primary mr-1">Noise Levels:</span>
+                  <span className="text-text-primary mr-1">Noise:</span>
                   <span className="font-medium truncate text-text-primary">
                     {place.mappedNoise}
                   </span>

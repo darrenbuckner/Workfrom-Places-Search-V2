@@ -83,7 +83,7 @@ const SearchButton = ({
               ) : (
                 <>
                   <Search size={20} />
-                  <span>New Search</span>
+                  <span>Search</span>
                 </>
               )}
             </div>
@@ -100,8 +100,20 @@ const SearchButton = ({
             <div className="absolute top-full left-0 right-0 mt-1 rounded-lg border border-border-primary shadow-lg overflow-hidden backdrop-blur-sm">
               <div className="bg-bg-secondary/95 py-1">
                 <button
-                  onClick={() => handleSearch(true)}
+                  onClick={() => handleSearch(false)}
                   className="w-full px-3 py-2 flex items-center gap-2.5 hover:bg-bg-tertiary/80 transition-colors text-left"
+                >
+                  <div className="w-7 h-7 rounded-full bg-[var(--action-primary)] bg-opacity-10 flex items-center justify-center flex-shrink-0">
+                    <MapPin size={15} className="text-[var(--action-primary)]" />
+                  </div>
+                  <div>
+                    <div className="font-medium text-sm text-text-primary">New area</div>
+                    <div className="text-xs text-text-secondary mt-0.5">Use your current location</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => handleSearch(true)}
+                  className="w-full px-3 py-2 flex items-center gap-2.5 hover:bg-bg-tertiary/80 transition-colors text-left border-t border-border-primary"
                 >
                   <div className="w-7 h-7 rounded-full bg-[var(--action-primary)] bg-opacity-10 flex items-center justify-center flex-shrink-0">
                     <MapPin size={15} className="text-[var(--action-primary)]" />
@@ -109,19 +121,6 @@ const SearchButton = ({
                   <div>
                     <div className="font-medium text-sm text-text-primary">Use saved location</div>
                     <div className="text-xs text-text-secondary mt-0.5">{locationName}</div>
-                  </div>
-                </button>
-                
-                <button
-                  onClick={() => handleSearch(false)}
-                  className="w-full px-3 py-2 flex items-center gap-2.5 hover:bg-bg-tertiary/80 transition-colors text-left border-t border-border-primary"
-                >
-                  <div className="w-7 h-7 rounded-full bg-[var(--action-primary)] bg-opacity-10 flex items-center justify-center flex-shrink-0">
-                    <MapPin size={15} className="text-[var(--action-primary)]" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-sm text-text-primary">Search new area</div>
-                    <div className="text-xs text-text-secondary mt-0.5">Use your current location</div>
                   </div>
                 </button>
               </div>
