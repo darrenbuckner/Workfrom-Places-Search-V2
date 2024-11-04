@@ -1,64 +1,139 @@
-import React from 'react';
-import { MapPin, Search } from 'lucide-react';
-import { LoadingSpinner } from './components/ui/loading';  // Adjust this path to match your project structure
+import React, { useState } from 'react';
+import { MapPin, Search, Loader, ChevronDown } from 'lucide-react';
 
-export const SearchPhases = {
-  INITIAL: 'initial',
-  LOCATING: 'locating',
-  LOADING: 'loading',
-  COMPLETE: 'complete'
-};
-
-const SearchButton = ({ 
-  onClick, 
+const SearchControls = ({ 
+  radius, 
+  setRadius,
+  onSearch, 
   disabled, 
-  searchPhase 
+  searchPhase = 'initial',
+  className = '' 
 }) => {
-  const isSearching = searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING;
-  const isInitialSearch = !isSearching && searchPhase === SearchPhases.INITIAL;
-  
+  const [showRadiusMenu, setShowRadiusMenu] = useState(false);
+  const isSearching = searchPhase === 'locating' || searchPhase === 'loading';
+  const isInitialSearch = !isSearching && searchPhase === 'initial';
+
+  const handleRadiusChange = (value) => {
+    const validValue = Math.max(0.5, Math.min(999, value));
+    setRadius(validValue);
+    setShowRadiusMenu(false);
+  };
+
   return (
-    <div className="flex flex-col gap-2">
-      <button
-        onClick={() => onClick()}
-        disabled={disabled}
-        className={`
-          w-full min-w-[180px] sm:min-w-[220px] h-12 px-6 rounded-lg
-          font-medium transition-all duration-200
-          flex items-center justify-center gap-3 sm:gap-4
-          focus-visible:outline-none focus-visible:ring-2 
-          focus-visible:ring-[var(--action-primary)] focus-visible:ring-offset-2
-          ${disabled
-            ? 'bg-bg-secondary text-text-tertiary cursor-not-allowed'
-            : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white shadow-md'
-          }
-        `}
-      >
-        {isSearching ? (
-          <>
-            <LoadingSpinner size={20} />
-            <span>
-              {searchPhase === SearchPhases.LOCATING ? 'Finding Your Location...' : 'Discovering Spaces...'}
-            </span>
-          </>
-        ) : (
-          <>
-            {isInitialSearch ? (
+    <div className={`flex flex-col gap-4 ${className}`}>
+      <div className="relative">
+        <div className="flex">
+          {/* Main Search Button */}
+          <button
+            onClick={onSearch}
+            disabled={disabled}
+            className={`
+              flex-1 h-10 px-4 sm:px-6 rounded-l-md
+              font-medium transition-all duration-200
+              flex items-center justify-center gap-2
+              focus:outline-none focus:ring-2 
+              focus:ring-[var(--action-primary-light)]
+              ${disabled
+                ? 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'
+                : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white shadow-sm'
+              }
+            `}
+          >
+            {isSearching ? (
               <>
-                <MapPin size={20} />
-                <span>Find Spaces Near Me</span>
+                <Loader className="w-4 h-4 animate-spin" />
+                <span className="whitespace-nowrap">
+                  {searchPhase === 'locating' ? 'Getting Location...' : 'Finding Places...'}
+                </span>
+              </>
+            ) : isInitialSearch ? (
+              <>
+                <MapPin className="w-4 h-4" />
+                <span className="whitespace-nowrap">Find Places Nearby</span>
               </>
             ) : (
               <>
-                <Search size={20} />
-                <span>Search This Location</span>
+                <Search className="w-4 h-4" />
+                <span className="whitespace-nowrap">Search This Area</span>
               </>
             )}
-          </>
+          </button>
+
+          {/* Radius Toggle Button */}
+          <button
+            onClick={() => setShowRadiusMenu(!showRadiusMenu)}
+            disabled={disabled}
+            className={`
+              px-2 h-10 rounded-r-md border-l
+              flex items-center justify-center
+              transition-all duration-200
+              ${disabled
+                ? 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed border-l-[var(--border-primary)]'
+                : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white shadow-sm border-l-[var(--action-primary-hover)]'
+              }
+            `}
+          >
+            <ChevronDown 
+              className={`w-4 h-4 transition-transform duration-200 ${showRadiusMenu ? 'rotate-180' : ''}`}
+            />
+          </button>
+        </div>
+
+        {/* Radius Dropdown Menu */}
+        {showRadiusMenu && (
+          <div className="absolute top-full mt-2 right-0 w-64 bg-[var(--bg-primary)] rounded-lg shadow-lg border border-[var(--border-primary)] p-4 z-50">
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                Search Radius
+              </label>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="range"
+                  min="0.5"
+                  max="10"
+                  step="0.5"
+                  value={radius}
+                  onChange={(e) => handleRadiusChange(Number(e.target.value))}
+                  className="flex-1"
+                />
+                <span className="text-sm text-[var(--text-secondary)] w-12 text-right">
+                  {radius}mi
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              {[1, 2, 5, 10].map((preset) => (
+                <button
+                  key={preset}
+                  onClick={() => handleRadiusChange(preset)}
+                  className={`px-3 py-1 rounded-md text-sm transition-colors
+                    ${radius === preset 
+                      ? 'bg-[var(--action-primary)] text-white' 
+                      : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                    }
+                  `}
+                >
+                  {preset}mi
+                </button>
+              ))}
+            </div>
+          </div>
         )}
-      </button>
+      </div>
+
+      {/* Help Text / Current Radius */}
+      {isInitialSearch ? (
+        <p className="text-sm text-[var(--text-secondary)] sm:hidden">
+          We'll find workspaces near your current location
+        </p>
+      ) : (
+        <p className="text-xs text-[var(--text-secondary)] text-center">
+          Searching within {radius} miles
+        </p>
+      )}
     </div>
   );
 };
 
-export default SearchButton;
+export default SearchControls;
