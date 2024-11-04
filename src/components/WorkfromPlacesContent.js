@@ -66,6 +66,7 @@ const WorkfromPlacesContent = () => {
     setPlaces([]);
     setRecommendedPlace(null);
     setError('');
+    setLocationError('');
     setPostSearchFilters({
       type: 'any',
       power: 'any',
@@ -80,10 +81,10 @@ const WorkfromPlacesContent = () => {
       setSearchPhase(SearchPhases.LOADING);
       await fetchPlaces(searchLocation, radius);
       setIsSearchPerformed(true);
+      setSearchPhase(SearchPhases.COMPLETE);
     } catch (err) {
       console.error('Search failed:', err);
       setError(err.message);
-    } finally {
       setSearchPhase(SearchPhases.COMPLETE);
     }
   };
@@ -108,13 +109,13 @@ const WorkfromPlacesContent = () => {
 
         {/* Search Controls */}
         <SearchControls
-		  radius={radius}
-		  setRadius={setRadius}
-		  onSearch={performSearch}
-		  disabled={searchPhase !== SearchPhases.INITIAL && searchPhase !== SearchPhases.COMPLETE}
-		  searchPhase={searchPhase}
-		  className="mb-8"
-		/>
+          onSearch={performSearch}
+          disabled={searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING}
+          searchPhase={searchPhase}
+          radius={radius}
+          setRadius={setRadius}
+          className="mb-8"
+        />
 
         {/* Quick Match - AI Recommendation */}
         <QuickMatch

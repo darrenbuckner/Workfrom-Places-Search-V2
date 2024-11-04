@@ -10,124 +10,104 @@ const QuickMatch = ({
 }) => {
   const [recommendation, setRecommendation] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiInsights, setAiInsights] = useState(null);
 
+  // Reset when search starts
   useEffect(() => {
     if (searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING) {
       setRecommendation(null);
+      setAiInsights(null);
       setIsAnalyzing(true);
     }
   }, [searchPhase]);
 
+  // Analyze when places are loaded
   useEffect(() => {
-    if (places.length > 0 && searchPhase === SearchPhases.COMPLETE && isAnalyzing) {
+    if (places?.length > 0 && searchPhase === SearchPhases.COMPLETE && isAnalyzing) {
       analyzeAndRecommend();
     }
   }, [places, searchPhase, isAnalyzing]);
 
-  const generateRecommendation = (place) => {
-    // Helper to craft personality-driven recommendations
-    const { type, noise_level, power, download, coffee, outdoor_seating, food, alcohol } = place;
-    
-    // Determine the vibe of the space
-    let vibe = "";
-    if (noise_level?.toLowerCase().includes('quiet')) {
-      vibe = "productivity-focused sanctuary";
-    } else if (noise_level?.toLowerCase().includes('moderate')) {
-      vibe = "balanced workspace";
-    } else {
-      vibe = "vibrant community hub";
-    }
+  const analyzeAndRecommend = async () => {
+    const bestPlace = places.reduce((best, current) => {
+      return (current.workabilityScore > best.workabilityScore) ? current : best;
+    }, places[0]);
 
-    // Craft main headline
-    let headline = "";
-    if (type === 'dedicated') {
-      headline = `A ${vibe} designed for serious remote work`;
-    } else if (coffee === "1" && food === "1") {
-      headline = `Your next favorite ${vibe} with all the essentials`;
-    } else {
-      headline = `A welcoming ${vibe} in your neighborhood`;
-    }
+    try {
+      // Use correct development URL
+      const baseUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:8888/.netlify/functions/api'
+        : '/.netlify/functions/api';
 
-    // Create compelling context
-    let context = "";
-    if (power === "ample" && download > 50) {
-      context = `Perfect for those long work sessions with reliable power and fast ${download}Mbps WiFi throughout.`;
-    } else if (power === "ample") {
-      context = "Plenty of accessible power outlets mean you can stay productive all day.";
-    } else if (download > 50) {
-      context = `Rock-solid ${download}Mbps WiFi keeps you connected and productive.`;
-    }
+      const response = await fetch(`${baseUrl}/analyze-workspaces`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          places: places.slice(0, 10).map(place => ({
+            name: place.title,
+            distance: place.distance,
+            wifi: place.download ? `${Math.round(place.download)} Mbps` : 
+                  place.no_wifi === "1" ? "No WiFi" : "Unknown",
+            noise: place.noise_level || place.noise || 'Unknown',
+            power: place.power || 'Unknown',
+            type: place.type || 'Unknown',
+            workabilityScore: place.workabilityScore || 0,
+            amenities: {
+              coffee: Boolean(place.coffee),
+              food: Boolean(place.food),
+              alcohol: Boolean(place.alcohol),
+              outdoorSeating: place.outdoor_seating === '1' || Boolean(place.outside)
+            }
+          }))
+        })
+      });
 
-    // Add personality notes
-    const notes = [];
-    if (coffee === "1") {
-      notes.push("quality coffee flows freely");
-    }
-    if (food === "1") {
-      notes.push("diverse food options on hand");
-    }
-    if (outdoor_seating === "1" || place.outside) {
-      notes.push("fresh air workspace option");
-    }
-    if (alcohol === "1") {
-      notes.push("great for after-hours networking");
-    }
-
-    const personalNote = notes.length > 0
-      ? `Plus, ${notes.join(", ")} - what's not to love?`
-      : "";
-
-    // Craft standout features
-    const standoutFeatures = [];
-    
-    if (noise_level?.toLowerCase().includes('quiet')) {
-      standoutFeatures.push("Ideal noise levels for deep focus work");
-    }
-    
-    if (power === "ample" && download > 50) {
-      standoutFeatures.push("Tech-friendly setup with reliable power and fast internet");
-    }
-    
-    if (coffee === "1" && food === "1") {
-      standoutFeatures.push("No need to pack up - food and coffee at your fingertips");
-    }
-    
-    if (outdoor_seating === "1" || place.outside) {
-      standoutFeatures.push("Switch up your environment with outdoor seating options");
-    }
-
-    return {
-      place,
-      distance: place.distance,
-      recommendation: {
-        name: place.title,
-        headline,
-        context,
-        personalNote,
-        standoutFeatures: standoutFeatures.slice(0, 3)
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Response:', errorText);
+        throw new Error('Failed to get AI insights');
       }
-    };
-  };
 
-  const analyzeAndRecommend = () => {
-    setTimeout(() => {
-      if (places.length > 0) {
-        const bestPlace = places.reduce((best, current) => {
-          const currentScore = current.workabilityScore || 0;
-          const bestScore = best.workabilityScore || 0;
-          return (currentScore > bestScore) ? current : best;
-        }, places[0]);
-
-        const newRecommendation = generateRecommendation(bestPlace);
-        setRecommendation(newRecommendation);
-        onRecommendationMade?.(bestPlace.title);
-      }
+      const data = await response.json();
+      setAiInsights(data.insights);
+      
+      setRecommendation({
+        place: bestPlace,
+        aiRecommendation: data.insights.recommendation
+      });
+      
+      onRecommendationMade?.(bestPlace.title);
+    } catch (error) {
+      console.error('Analysis error:', error);
+      // Fallback to basic recommendation without AI insights
+      const basicRecommendation = {
+        place: bestPlace,
+        reasons: [
+          bestPlace.workabilityScore ? `Workability score: ${bestPlace.workabilityScore}` : null,
+          bestPlace.noise_level ? `Noise level: ${bestPlace.noise_level}` : null,
+          bestPlace.power ? `Power availability: ${bestPlace.power}` : null,
+          bestPlace.wifi ? `Wifi: ${bestPlace.wifi}` : null
+        ].filter(Boolean)
+      };
+      setRecommendation(basicRecommendation);
+      onRecommendationMade?.(bestPlace.title);
+    } finally {
       setIsAnalyzing(false);
-    }, 1500);
+    }
   };
 
-  if (searchPhase === SearchPhases.INITIAL) return null;
-  if (!isAnalyzing && !recommendation && places.length === 0) return null;
+  // Don't render anything if no search has been performed or if we're in initial state
+  if (searchPhase === SearchPhases.INITIAL || (!places?.length && !isAnalyzing)) {
+    return null;
+  }
+
+  // Don't render if no recommendation and not analyzing
+  if (!recommendation && !isAnalyzing) {
+    return null;
+  }
 
   return (
     <div className="mb-6">
@@ -141,7 +121,7 @@ const QuickMatch = ({
                   ? 'Finding your location...'
                   : searchPhase === SearchPhases.LOADING
                     ? 'Finding nearby spaces...'
-                    : 'Finding your perfect match...'}
+                    : 'Analyzing spaces...'}
               </span>
             </div>
             <div className="h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
@@ -160,6 +140,7 @@ const QuickMatch = ({
         ) : recommendation ? (
           <div className="p-4">
             <div className="flex gap-4">
+              {/* Score Badge */}
               <div className="flex-shrink-0 w-14 h-14 rounded-md bg-[var(--accent-primary)] text-white flex items-center justify-center font-bold text-xl relative">
                 {recommendation.place.workabilityScore || '?'}
                 <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
@@ -168,6 +149,7 @@ const QuickMatch = ({
               </div>
 
               <div className="flex-1">
+                {/* Header */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium">
@@ -175,40 +157,55 @@ const QuickMatch = ({
                       <span>Best Match</span>
                     </div>
                     <span className="text-sm text-[var(--text-secondary)]">
-                      {recommendation.distance} miles away
+                      {recommendation.place.distance} miles away
                     </span>
                   </div>
                 </div>
 
-                <h3 className="text-lg font-medium text-[var(--text-primary)] mb-1">
+                {/* Place Name & Context */}
+                <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
                   {recommendation.place.title}
                 </h3>
                 
-                <p className="text-sm font-medium text-[var(--text-primary)] mb-2">
-                  {recommendation.recommendation.headline}
-                </p>
+                {/* AI Insights Section */}
+                {recommendation.aiRecommendation && (
+                  <div className="space-y-3 mb-4">
+                    {/* Headline */}
+                    {recommendation.aiRecommendation.headline && (
+                      <p className="text-sm font-medium text-[var(--text-primary)]">
+                        {recommendation.aiRecommendation.headline}
+                      </p>
+                    )}
+                    
+                    {/* Lede */}
+                    {recommendation.aiRecommendation.lede && (
+                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                        {recommendation.aiRecommendation.lede}
+                      </p>
+                    )}
 
-                <p className="text-sm text-[var(--text-secondary)] mb-2">
-                  {recommendation.recommendation.context}
-                </p>
-
-                {recommendation.recommendation.personalNote && (
-                  <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    {recommendation.recommendation.personalNote}
-                  </p>
+                    {/* Personal Note - if available */}
+                    {recommendation.aiRecommendation.personalNote && (
+                      <p className="text-sm text-[var(--text-secondary)] italic">
+                        "{recommendation.aiRecommendation.personalNote}"
+                      </p>
+                    )}
+                  </div>
                 )}
 
-                {recommendation.recommendation.standoutFeatures?.length > 0 && (
-                  <div className="text-xs text-[var(--text-secondary)] space-y-1.5">
-                    {recommendation.recommendation.standoutFeatures.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
+                {/* Standout Features */}
+                {recommendation.aiRecommendation?.standoutFeatures && (
+                  <div className="space-y-1.5">
+                    {recommendation.aiRecommendation.standoutFeatures.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                         <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                        <span>{feature}</span>
+                        <span>{typeof feature === 'string' ? feature : feature.description}</span>
                       </div>
                     ))}
                   </div>
                 )}
 
+                {/* Action Button */}
                 <button
                   onClick={() => onPhotoClick?.(recommendation.place)}
                   className="mt-4 px-4 py-2 rounded-md bg-[var(--accent-primary)] text-white text-sm font-medium

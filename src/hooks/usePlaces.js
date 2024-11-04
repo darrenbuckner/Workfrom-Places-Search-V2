@@ -34,8 +34,13 @@ export const usePlaces = () => {
 
   const fetchPlaces = useCallback(async (searchLocation, radius) => {
     try {
+      // Use the correct base URL for development or production
+      const baseUrl = process.env.NODE_ENV === 'development' 
+        ? 'http://localhost:8888/.netlify/functions/api'
+        : '/api';
+
       const response = await fetch(
-        `${API_CONFIG.baseUrl}/places/ll/${searchLocation.latitude},${searchLocation.longitude}?radius=${radius}&appid=${API_CONFIG.appId}&rpp=100`,
+        `${baseUrl}/places/ll/${searchLocation.latitude},${searchLocation.longitude}?radius=${radius}&appid=${API_CONFIG.appId}&rpp=100`,
         {
           headers: {
             'Accept': 'application/json',
@@ -44,14 +49,18 @@ export const usePlaces = () => {
         }
       );
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
 
       if (data.meta?.code === 200) {
         if (Array.isArray(data.response)) {
           if (data.response.length === 0) {
-            if (data.meta.message === 'Using cached data' && originalPlaces.length === 0) {
-              setError('No places found in your area. Try increasing the search radius.');
-            }
+            setError('No places found in your area. Try increasing the search radius.');
             setOriginalPlaces([]);
           } else {
             const placesWithScores = data.response.map(place => ({
@@ -72,15 +81,13 @@ export const usePlaces = () => {
       console.error('Search error:', err);
       if (err.name === 'TypeError' || err.name === 'NetworkError') {
         setError('Unable to connect to the server. Please check your internet connection and try again.');
-      } else if (err.message.includes('Unexpected response')) {
-        setError('We encountered an issue processing the results. Please try again.');
       } else {
         setError(`An error occurred: ${err.message}`);
       }
       setOriginalPlaces([]);
       throw err;
     }
-  }, [originalPlaces.length]);
+  }, []);
 
   const filteredPlaces = useMemo(() => {
     if (!originalPlaces.length) return [];

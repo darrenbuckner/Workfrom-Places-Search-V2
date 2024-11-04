@@ -2,7 +2,10 @@
 const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 const API_CONFIG = {
-  baseUrl: isDevelopment ? 'http://localhost:8888/api' : '/api',
+  // Update baseUrl to include .netlify/functions for both dev and prod
+  baseUrl: isDevelopment 
+    ? 'http://localhost:8888/.netlify/functions/api' 
+    : '/.netlify/functions/api',
   appId: 'RxhYNXu8CyPavHhO'
 };
 

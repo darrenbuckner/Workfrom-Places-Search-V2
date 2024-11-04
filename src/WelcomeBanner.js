@@ -33,7 +33,7 @@ const WelcomeBanner = ({ isSearchPerformed = false }) => {
   const { greeting, Icon, message } = getTimeBasedContent();
 
   return (
-    <div className="animate-fade-in mb-6">
+    <div className="animate-fadeIn mb-6">
       <div className="relative rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] overflow-hidden">
         {/* Decorative Elements */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent-primary)]/5 rounded-full blur-2xl" />
@@ -63,33 +63,6 @@ const WelcomeBanner = ({ isSearchPerformed = false }) => {
           </div>
         </div>
       </div>
-      
-      <style jsx>{`
-        @keyframes wave {
-          0% { transform: rotate(0deg); }
-          20% { transform: rotate(14deg); }
-          40% { transform: rotate(-8deg); }
-          60% { transform: rotate(14deg); }
-          80% { transform: rotate(-4deg); }
-          100% { transform: rotate(10deg); }
-        }
-        .animate-wave {
-          animation: wave 1.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 };

@@ -68,6 +68,11 @@ const GenAIInsights = ({
       const data = await response.json();
       
       if (data.insights?.recommendation) {
+        // Ensure we have the lede before setting insights
+        if (!data.insights.recommendation.lede) {
+          data.insights.recommendation.lede = data.insights.recommendation.context;
+        }
+        
         setInsights(data.insights);
         onRecommendationMade?.(data.insights);
       } else {
