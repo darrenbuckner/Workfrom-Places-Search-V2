@@ -2,7 +2,7 @@ import React from 'react';
 import { List, Map, SlidersHorizontal } from 'lucide-react';
 import { Message } from './components/ui/loading';
 import PostSearchFilters from './PostSearchFilters';
-import IntegratedSearchResults from './IntegratedSearchResults';
+import GenAIInsights from './GenAIInsights';
 
 const FilteredSearchResults = ({
   places,
@@ -15,54 +15,74 @@ const FilteredSearchResults = ({
   sortBy,
   setSortBy,
   radius,
-  children, // Keep for map view
+  children,
   WorkabilityControls,
   searchPhase,
   onPhotoClick,
-  recommendation,
-  recommendedPlace,
-  isAnalyzing
+  isUsingSavedLocation,
+  onRecommendationMade
 }) => {
   const hasPlaces = places.length > 0;
-  
-  return (
-    <div className="space-y-6">
-      <div className="border border-[var(--border-primary)] rounded-lg shadow-sm bg-[var(--bg-secondary)]">
-        <div className="border-t border-[var(--border-primary)]">
-          <div className="p-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-[var(--text-primary)]">
-                  {hasPlaces 
-                    ? `Found ${places.length} places within ${radius} miles`
-                    : 'No places match your current filters'}
-                </span>
-              </div>
-              
-              <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-                <div className="flex items-center gap-2">
-                  <WorkabilityControls 
-                    onSortChange={setSortBy}
-                    currentSort={sortBy}
-                    showSortControl={hasPlaces}
-                  />
-                  
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`
-                      p-2 rounded transition-colors
-                      ${showFilters
-                        ? 'bg-[var(--action-primary)] text-white'
-                        : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                      }
-                    `}
-                    aria-label="Toggle filters"
-                  >
-                    <SlidersHorizontal size={18} />
-                  </button>
-                </div>
+  const isSearchComplete = searchPhase === 'complete';
+  const isSearching = searchPhase === 'locating' || searchPhase === 'loading';
+  const shouldShowResults = hasPlaces && isSearchComplete;
 
-                {hasPlaces && (
+  // Initial state - show nothing
+  if (searchPhase === 'initial') {
+    return null;
+  }
+
+  // Search in progress - return nothing here as loading states are handled by parent
+  if (isSearching) {
+    return null;
+  }
+
+  // Search complete with results
+  if (shouldShowResults) {
+    return (
+      <div className="space-y-6">
+        <GenAIInsights
+          places={places}
+          isSearching={false}
+          onPhotoClick={onPhotoClick}
+          isUsingSavedLocation={isUsingSavedLocation}
+          onRecommendationMade={onRecommendationMade}
+          className="mb-1"
+        />
+
+        <div className="border border-[var(--border-primary)] rounded-lg shadow-sm bg-[var(--bg-secondary)]">
+          <div className="border-t border-[var(--border-primary)]">
+            <div className="p-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium text-[var(--text-primary)]">
+                    Found {places.length} places within {radius} miles
+                  </span>
+                </div>
+                
+                <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+                  <div className="flex items-center gap-2">
+                    <WorkabilityControls 
+                      onSortChange={setSortBy}
+                      currentSort={sortBy}
+                      showSortControl={true}
+                    />
+                    
+                    <button
+                      onClick={() => setShowFilters(!showFilters)}
+                      className={`
+                        p-2 rounded transition-colors
+                        ${showFilters
+                          ? 'bg-[var(--action-primary)] text-white'
+                          : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                        }
+                      `}
+                      aria-label="Toggle filters"
+                    >
+                      <SlidersHorizontal size={18} />
+                    </button>
+                  </div>
+
                   <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
                     <button
                       onClick={() => setViewMode('list')}
@@ -91,54 +111,46 @@ const FilteredSearchResults = ({
                       <Map size={18} />
                     </button>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {showFilters && (
-          <div className="border-t border-[var(--border-primary)]">
-            <div className="p-4">
-              <PostSearchFilters
-                onFilterChange={handlePostSearchFilter}
-                currentFilters={postSearchFilters}
-              />
-            </div>
-          </div>
-        )}
-
-        {hasPlaces ? (
-          <div className="border-t border-[var(--border-primary)]">
-            <div className="p-4">
-              {viewMode === 'list' ? (
-                <IntegratedSearchResults
-                  places={places}
-                  sortBy={sortBy}
-                  filters={postSearchFilters}
-                  viewMode={viewMode}
-                  onPhotoClick={onPhotoClick}
-                  recommendation={recommendation}
-                  recommendedPlace={recommendedPlace}
-                  isAnalyzing={searchPhase !== 'complete'}
+          {showFilters && (
+            <div className="border-t border-[var(--border-primary)]">
+              <div className="p-4">
+                <PostSearchFilters
+                  onFilterChange={handlePostSearchFilter}
+                  currentFilters={postSearchFilters}
                 />
-              ) : (
-                children
-              )}
+              </div>
             </div>
+          )}
+
+          <div className="border-t border-[var(--border-primary)]">
+            {children}
           </div>
-        ) : (
-          <div className="p-4 border-t border-[var(--border-primary)]">
-            <Message 
-              variant="info"
-              message="No places match your current filters"
-              description="Try adjusting your filter criteria"
-            />
-          </div>
-        )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+
+  // Search complete with no results
+  if (isSearchComplete && !hasPlaces) {
+    return (
+      <div className="space-y-6">
+        <div className="border border-[var(--border-primary)] rounded-lg shadow-sm bg-[var(--bg-secondary)] p-4">
+          <Message 
+            variant="info"
+            message="No places found"
+            description="Try adjusting your search radius or try a different location"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+});
 
 export default FilteredSearchResults;

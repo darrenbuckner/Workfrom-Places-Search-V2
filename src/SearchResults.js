@@ -57,24 +57,11 @@ const LoadingState = ({ progress }) => {
           {/* Subtle Loading Bar */}
           <div className="mt-4 h-1 rounded-full overflow-hidden bg-[var(--bg-secondary)]">
             <div 
-              className="h-full bg-[var(--accent-primary)]/20 rounded-full"
-              style={{
-                width: '100%',
-                backgroundSize: '200% 100%',
-                backgroundImage: 'linear-gradient(90deg, transparent 0%, var(--accent-primary) 50%, transparent 100%)',
-                animation: 'shimmer 2s infinite linear'
-              }}
+              className="h-full bg-[var(--accent-primary)]/20 rounded-full shimmer"
             />
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-      `}</style>
     </div>
   );
 };
@@ -97,11 +84,6 @@ const SearchResults = ({
   const [isPageChanging, setIsPageChanging] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
   const isMobileRef = useRef(window.innerWidth < 640);
-
-  const controlsRef = useRef(null);
-  const resultsRef = useRef(null);
-  const recommendedCardRef = useRef(null);
-  const scrollTimeoutRef = useRef(null);
 
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(places.length / itemsPerPage));
@@ -133,23 +115,9 @@ const SearchResults = ({
     }
   }, [shouldShowLoading]);
 
-  useEffect(() => {
-    const handleResize = () => {
-      isMobileRef.current = window.innerWidth < 640;
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
+  const controlsRef = useRef(null);
+  const resultsRef = useRef(null);
+  const recommendedCardRef = useRef(null);
 
   const scrollToControls = useCallback(() => {
     if (controlsRef.current) {
@@ -173,124 +141,28 @@ const SearchResults = ({
     setCurrentPage(newPage);
 
     requestAnimationFrame(() => {
-      scrollTimeoutRef.current = setTimeout(() => {
-        scrollToControls();
-        setTimeout(() => {
-          setIsPageChanging(false);
-        }, 500);
-      }, 50);
+      scrollToControls();
+      setTimeout(() => {
+        setIsPageChanging(false);
+      }, 500);
     });
   }, [currentPage, totalPages, scrollToControls]);
-
-  // Reset to first page when filters or sort changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [sortBy, filters]);
-
-  const getRecommendedPlaceInfo = useCallback(() => {
-    if (!recommendedPlaceName) return null;
-    
-    const index = places.findIndex(place => place.title === recommendedPlaceName);
-    if (index === -1) return null;
-    
-    const page = Math.floor(index / itemsPerPage) + 1;
-    return { index, page };
-  }, [places, recommendedPlaceName, itemsPerPage]);
-
-  useEffect(() => {
-    if (!hasInitialized && recommendedPlaceName) {
-      const info = getRecommendedPlaceInfo();
-      if (info) {
-        if (info.page !== currentPage) {
-          setCurrentPage(info.page);
-        }
-        setHasInitialized(true);
-      }
-    }
-  }, [recommendedPlaceName, hasInitialized, getRecommendedPlaceInfo, currentPage]);
-
-  const RecommendedCard = () => {
-    if (!recommendation?.recommendation || !recommendedPlace) return null;
-
-    const recData = recommendation.recommendation;
-    const description = recData.headline || recData.context;
-
-    return (
-      <div className="mb-6 animate-fade-in">
-        <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-md overflow-hidden">
-          <div className="p-4">
-            <div className="flex gap-4">
-              <div className="flex-shrink-0 w-14 h-14 rounded-md relative
-                bg-[var(--accent-primary)] text-white
-                flex items-center justify-center font-bold text-xl">
-                {recommendedPlace.workabilityScore}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full 
-                  bg-[var(--accent-primary)] flex items-center justify-center">
-                  <Sparkles className="w-3 h-3 text-white animate-pulse" />
-                </div>
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <AIBadge />
-                  <span className="text-sm text-[var(--text-secondary)]">
-                    {recommendedPlace.distance} miles away
-                  </span>
-                </div>
-
-                <h3 className="text-lg font-medium text-[var(--text-primary)] mb-1">
-                  {recommendedPlace.title}
-                </h3>
-
-                {description && (
-                  <p className="text-sm font-medium text-[var(--text-primary)] mb-2">
-                    {description}
-                  </p>
-                )}
-
-                {recData.personalNote && (
-                  <p className="text-sm text-[var(--text-secondary)] mb-3">
-                    {recData.personalNote}
-                  </p>
-                )}
-
-                {recData.standoutFeatures?.length > 0 && (
-                  <div className="text-xs text-[var(--text-secondary)] space-y-1.5">
-                    {recData.standoutFeatures.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                        <span>{typeof feature === 'string' ? feature : feature.description}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div onClick={() => onPhotoClick(recommendedPlace)} 
-                  className="mt-4 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-secondary)] 
-                    cursor-pointer transition-colors">
-                  View Details
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="relative">      
       <div ref={controlsRef} className="scroll-mt-32" />
       
       <div className="space-y-6">
-        {/* Loading State or Recommendation */}
         {shouldShowLoading ? (
           <LoadingState progress={loadingProgress} />
         ) : recommendation?.recommendation && recommendedPlace ? (
-          <RecommendedCard />
+          <RecommendedCard 
+            recommendation={recommendation} 
+            place={recommendedPlace} 
+            onPhotoClick={onPhotoClick}
+          />
         ) : null}
 
-        {/* Regular Results */}
         {currentItems.map((place, index) => {
           const isRecommended = place.title === recommendedPlaceName;
 
@@ -321,7 +193,17 @@ const SearchResults = ({
         />
       )}
 
-      <style jsx>{`
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .shimmer {
+          width: 100%;
+          background-size: 200% 100%;
+          background-image: linear-gradient(90deg, transparent 0%, var(--accent-primary) 50%, transparent 100%);
+          animation: shimmer 2s infinite linear;
+        }
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -335,12 +217,77 @@ const SearchResults = ({
         .animate-fade-in {
           animation: fadeIn 0.3s ease-out forwards;
         }
-
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
       `}</style>
+    </div>
+  );
+};
+
+// Separate RecommendedCard component
+const RecommendedCard = ({ recommendation, place, onPhotoClick }) => {
+  const recData = recommendation.recommendation;
+  const description = recData.headline || recData.context;
+
+  return (
+    <div className="mb-6 animate-fade-in">
+      <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-md overflow-hidden">
+        <div className="p-4">
+          <div className="flex gap-4">
+            <div className="flex-shrink-0 w-14 h-14 rounded-md relative
+              bg-[var(--accent-primary)] text-white
+              flex items-center justify-center font-bold text-xl">
+              {place.workabilityScore}
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full 
+                bg-[var(--accent-primary)] flex items-center justify-center">
+                <Sparkles className="w-3 h-3 text-white animate-pulse" />
+              </div>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <AIBadge />
+                <span className="text-sm text-[var(--text-secondary)]">
+                  {place.distance} miles away
+                </span>
+              </div>
+
+              <h3 className="text-lg font-medium text-[var(--text-primary)] mb-1">
+                {place.title}
+              </h3>
+
+              {description && (
+                <p className="text-sm font-medium text-[var(--text-primary)] mb-2">
+                  {description}
+                </p>
+              )}
+
+              {recData.personalNote && (
+                <p className="text-sm text-[var(--text-secondary)] mb-3">
+                  {recData.personalNote}
+                </p>
+              )}
+
+              {recData.standoutFeatures?.length > 0 && (
+                <div className="text-xs text-[var(--text-secondary)] space-y-1.5">
+                  {recData.standoutFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
+                      <span>{typeof feature === 'string' ? feature : feature.description}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button
+                onClick={() => onPhotoClick(place)}
+                className="mt-4 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-secondary)] 
+                  transition-colors"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

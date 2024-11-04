@@ -1,34 +1,31 @@
 import React from 'react';
-import { Coffee, Sun, Moon, Sunset } from 'lucide-react';
+import { Sun, Moon, Sunset } from 'lucide-react';
 
 const WelcomeBanner = ({ isSearchPerformed = false }) => {
-  // If search is performed, don't render the banner
   if (isSearchPerformed) {
     return null;
   }
 
-  // Get current hour to show appropriate greeting
   const hour = new Date().getHours();
   
-  // Determine greeting and icon based on time of day
   const getTimeBasedContent = () => {
     if (hour < 12) {
       return {
-        greeting: "Hello",
+        greeting: "Good morning",
         Icon: Sun,
-        message: "Let's find your perfect morning workspace."
+        message: "Find your perfect morning workspace nearby."
       };
     } else if (hour < 17) {
       return {
-        greeting: "Hi",
+        greeting: "Good afternoon",
         Icon: Sunset,
-        message: "Let's find a productive afternoon spot."
+        message: "Discover productive spaces in your area."
       };
     } else {
       return {
-        greeting: "Welcome",
+        greeting: "Good evening",
         Icon: Moon,
-        message: "Let's find a calm evening workspace."
+        message: "Find a calm evening workspace near you."
       };
     }
   };
@@ -36,39 +33,63 @@ const WelcomeBanner = ({ isSearchPerformed = false }) => {
   const { greeting, Icon, message } = getTimeBasedContent();
 
   return (
-    <div className="mb-6">
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: translateY(-10px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          .welcome-banner-fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-          }
-        `
-      }} />
-      <div className="flex items-start gap-3 welcome-banner-fade-in">
-        <div className="flex-shrink-0">
-          <div className="w-10 h-10 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
-            <Icon className="w-5 h-5 text-[var(--accent-primary)]" />
+    <div className="animate-fade-in mb-6">
+      <div className="relative rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] overflow-hidden">
+        {/* Decorative Elements */}
+        <div className="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent-primary)]/5 rounded-full blur-2xl" />
+        <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[var(--accent-primary)]/5 rounded-full blur-xl" />
+        
+        <div className="relative p-4 sm:p-6">
+          <div className="flex items-start gap-3 sm:gap-4">
+            {/* Icon Container */}
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-[var(--accent-primary)]/10 
+                flex items-center justify-center">
+                <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-primary)]" />
+              </div>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-xl font-semibold text-[var(--text-primary)] 
+                mb-1 flex items-center gap-2">
+                {greeting}
+                <span className="inline-block animate-wave origin-bottom-right">👋</span>
+              </h2>
+              <p className="text-sm sm:text-base text-[var(--text-secondary)]">
+                {message}
+              </p>
+            </div>
           </div>
         </div>
-        <div>
-          <h2 className="text-xl font-medium text-[var(--text-primary)]">
-            {greeting}, friend! 👋
-          </h2>
-          <p className="text-[var(--text-secondary)] mt-1">
-            {message}
-          </p>
-        </div>
       </div>
+      
+      <style jsx>{`
+        @keyframes wave {
+          0% { transform: rotate(0deg); }
+          20% { transform: rotate(14deg); }
+          40% { transform: rotate(-8deg); }
+          60% { transform: rotate(14deg); }
+          80% { transform: rotate(-4deg); }
+          100% { transform: rotate(10deg); }
+        }
+        .animate-wave {
+          animation: wave 1.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };

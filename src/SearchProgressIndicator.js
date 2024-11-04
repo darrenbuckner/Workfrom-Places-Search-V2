@@ -2,8 +2,8 @@ import React from 'react';
 import { Search, Loader, AlertCircle } from 'lucide-react';
 
 const SearchProgressIndicator = ({ phase, error, usingSavedLocation }) => {
-  // Don't show anything in initial state
-  if (phase === 'initial') return null;
+  // Don't show anything in initial state or when complete
+  if (phase === 'initial' || phase === 'complete') return null;
 
   return (
     <div className="mt-4 max-w-lg mx-auto">

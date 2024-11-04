@@ -1,18 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 export const useLocation = () => {
   const [location, setLocation] = useState(null);
   const [locationName, setLocationName] = useState('');
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    const savedLocationData = localStorage.getItem('savedLocationData');
-    if (savedLocationData) {
-      const { location, locationName: savedName } = JSON.parse(savedLocationData);
-      setLocation(location);
-      setLocationName(savedName);
-    }
-  }, []);
 
   const getLocation = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -33,29 +24,16 @@ export const useLocation = () => {
             );
             const data = await response.json();
             const friendly = data.address?.city || data.address?.town || data.address?.suburb || 'your area';
-            
-            const locationData = { location: newLocation, locationName: friendly };
-            localStorage.setItem('savedLocationData', JSON.stringify(locationData));
-            
             setLocationName(friendly);
             resolve(newLocation);
           } catch (err) {
-            const friendly = 'your area';
-            const locationData = { location: newLocation, locationName: friendly };
-            localStorage.setItem('savedLocationData', JSON.stringify(locationData));
-            setLocationName(friendly);
+            setLocationName('your area');
             resolve(newLocation);
           }
         },
         () => reject(new Error('Unable to retrieve your location'))
       );
     });
-  }, []);
-
-  const clearLocation = useCallback(() => {
-    setLocation(null);
-    setLocationName('');
-    localStorage.removeItem('savedLocationData');
   }, []);
 
   return {
@@ -65,7 +43,6 @@ export const useLocation = () => {
     setLocationName,
     error,
     setError,
-    getLocation,
-    clearLocation
+    getLocation
   };
 };

@@ -4,74 +4,12 @@ import { useTheme } from './ThemeProvider';
 const WorkabilityControls = ({ 
   onSortChange, 
   currentSort,
-  radius,
-  setRadius,
-  showSortControl = true,
-  onSearch
+  showSortControl = true
 }) => {
   const { isDark } = useTheme();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSearch?.();
-  };
-
-  const handleRadiusChange = (e) => {
-    const value = Math.round(Number(e.target.value) * 10) / 10;
-    const validValue = Math.max(0.5, Math.min(999, value));
-    setRadius(validValue);
-  };
-
   if (!showSortControl) {
-    return (
-      <form onSubmit={handleSubmit} className="flex items-center gap-4">
-        <div className="w-[120px]">
-          <label 
-            htmlFor="radius" 
-            className={`block text-sm font-medium mb-1.5 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}
-          >
-            Search Radius
-          </label>
-          <div className="relative">
-            <input
-              type="number"
-              id="radius"
-              min="1"
-              max="999"
-              step="1"
-              value={radius}
-              onChange={handleRadiusChange}
-              className={`
-                w-full h-10 px-3 pr-8 
-                rounded-md
-                transition-colors duration-200
-                [appearance:textfield]
-                [&::-webkit-outer-spin-button]:appearance-none
-                [&::-webkit-inner-spin-button]:appearance-none
-                ${isDark 
-                  ? 'bg-[#2a3142] border-white/10 text-white placeholder-gray-500'
-                  : 'bg-[var(--bg-primary)] border-[var(--border-primary)] text-gray-900 placeholder-gray-400'
-                }
-                ${isDark
-                  ? 'focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 hover:border-blue-400'
-                  : 'focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 hover:border-gray-300'
-                }
-              `}
-              placeholder="2"
-            />
-            <span className={`
-              absolute right-3 top-1/2 -translate-y-1/2
-              text-sm pointer-events-none
-              ${isDark ? 'text-gray-400' : 'text-gray-500'}
-            `}>
-              mi
-            </span>
-          </div>
-        </div>
-      </form>
-    );
+    return null;
   }
 
   return (
