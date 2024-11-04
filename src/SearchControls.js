@@ -8,7 +8,8 @@ const SearchControls = ({
   onSearch, 
   disabled, 
   searchPhase = SearchPhases.INITIAL,
-  className = '' 
+  className = '',
+  locationName = ''
 }) => {
   const [showRadiusMenu, setShowRadiusMenu] = useState(false);
   const isSearching = searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING;
@@ -17,6 +18,10 @@ const SearchControls = ({
   const handleRadiusChange = (value) => {
     const validValue = Math.max(0.5, Math.min(999, value));
     setRadius(validValue);
+  };
+
+  const handlePresetClick = (value) => {
+    setRadius(value);
     setShowRadiusMenu(false);
   };
 
@@ -83,7 +88,10 @@ const SearchControls = ({
 
         {/* Radius Dropdown Menu */}
         {showRadiusMenu && (
-          <div className="absolute top-full mt-2 right-0 w-64 bg-[var(--bg-primary)] rounded-lg shadow-lg border border-[var(--border-primary)] p-4 z-50">
+          <div 
+            className="absolute top-full mt-2 right-0 w-64 bg-[var(--bg-primary)] rounded-lg shadow-lg border border-[var(--border-primary)] p-4 z-50"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="mb-3">
               <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
                 Search Radius
@@ -108,7 +116,7 @@ const SearchControls = ({
               {[1, 2, 5, 10].map((preset) => (
                 <button
                   key={preset}
-                  onClick={() => handleRadiusChange(preset)}
+                  onClick={() => handlePresetClick(preset)}
                   className={`px-3 py-1 rounded-md text-sm transition-colors
                     ${radius === preset 
                       ? 'bg-[var(--action-primary)] text-white' 
@@ -123,6 +131,17 @@ const SearchControls = ({
           </div>
         )}
       </div>
+
+      {/* Help Text / Current Radius */}
+      {isInitialSearch ? (
+        <p className="text-sm text-[var(--text-secondary)] sm:hidden text-center">
+          We'll find workspaces near your current location
+        </p>
+      ) : (
+        <p className="text-xs text-[var(--text-secondary)] text-center">
+          Searching within {radius} miles{locationName ? ` of ${locationName}` : ''}
+        </p>
+      )}
     </div>
   );
 };
