@@ -40,7 +40,9 @@ const WorkfromPlacesContent = () => {
     setSortBy,
     postSearchFilters,
     setPostSearchFilters,
-    fetchPlaces
+    fetchPlaces,
+    retryWithLargerRadius,
+    searchStateRef
   } = usePlaces();
 
   const {
@@ -62,32 +64,50 @@ const WorkfromPlacesContent = () => {
 
   // Search functionality
   const performSearch = async () => {
-    setSearchPhase(SearchPhases.LOCATING);
-    setPlaces([]);
-    setRecommendedPlace(null);
-    setError('');
-    setLocationError('');
-    setPostSearchFilters({
-      type: 'any',
-      power: 'any',
-      noise: 'any',
-      openNow: false
-    });
+	  setSearchPhase(SearchPhases.LOCATING);
+	  setPlaces([]);
+	  setRecommendedPlace(null);
+	  setError('');
+	  setPostSearchFilters({
+	    type: 'any',
+	    power: 'any',
+	    noise: 'any',
+	    openNow: false
+	  });
 
-    try {
-      const searchLocation = await getLocation();
-      setLocation(searchLocation);
-      
-      setSearchPhase(SearchPhases.LOADING);
-      await fetchPlaces(searchLocation, radius);
-      setIsSearchPerformed(true);
-      setSearchPhase(SearchPhases.COMPLETE);
-    } catch (err) {
-      console.error('Search failed:', err);
-      setError(err.message);
-      setSearchPhase(SearchPhases.COMPLETE);
-    }
-  };
+	  try {
+	    const searchLocation = await getLocation();
+	    setLocation(searchLocation);
+	    
+	    setSearchPhase(SearchPhases.LOADING);
+	    
+	    try {
+	      await fetchPlaces(searchLocation, radius);
+	      setIsSearchPerformed(true);
+	    } catch (err) {
+	      // Handle empty results case
+	      if (err.code === 404 && err.type === 'empty_dataset') {
+	        // Show the user a message about no results and offer to retry with larger radius
+	        setError(err.message);
+	        
+	        // Automatically retry with larger radius
+	        const retryResults = await retryWithLargerRadius();
+	        if (retryResults && retryResults.length > 0) {
+	          setRadius(searchStateRef.current.lastSearchParams.radius);
+	          setError('');
+	          setIsSearchPerformed(true);
+	        }
+	      } else {
+	        setError(err.message);
+	      }
+	    }
+	  } catch (err) {
+	    console.error('Search failed:', err);
+	    setError(err.message || 'Failed to perform search');
+	  } finally {
+	    setSearchPhase(SearchPhases.COMPLETE);
+	  }
+	};
 
   const handlePostSearchFilter = (key, value) => {
     setPostSearchFilters(prev => ({ ...prev, [key]: value }));
@@ -207,14 +227,47 @@ const WorkfromPlacesContent = () => {
             )}
 
             {error ? (
-              <div className="p-4 border-t border-[var(--border-primary)]">
-                <Message
-                  variant="error"
-                  message="Error"
-                  description={error}
-                />
-              </div>
-            ) : (hasPlaces ? (
+			  <div className="p-4 border-t border-[var(--border-primary)]">
+			    <Message
+			      variant="info"
+			      message={error.includes('No workspaces found') ? 'No Results Found' : 'Error'}
+			      description={
+			        error.includes('No workspaces found') ? (
+			          <div className="space-y-2">
+			            <p>{error}</p>
+			            <div className="flex gap-2 mt-2">
+			              <button
+			                onClick={() => setRadius(prev => Math.min(prev * 2, 25))}
+			                className="px-3 py-1.5 rounded-md text-sm bg-[var(--action-primary)] text-white 
+			                  hover:bg-[var(--action-primary-hover)] transition-colors"
+			              >
+			                Increase Search Radius
+			              </button>
+			              <button
+			                onClick={performSearch}
+			                className="px-3 py-1.5 rounded-md text-sm border border-[var(--border-primary)]
+			                  hover:bg-[var(--bg-tertiary)] transition-colors"
+			              >
+			                Try Again
+			              </button>
+			            </div>
+			          </div>
+			        ) : (
+			          <div className="space-y-2">
+			            <p>{error}</p>
+			            <button
+			              onClick={performSearch}
+			              className="px-3 py-1.5 rounded-md text-sm bg-[var(--action-primary)] text-white 
+			                hover:bg-[var(--action-primary-hover)] transition-colors"
+			            >
+			              Try Again
+			            </button>
+			          </div>
+			        )
+			      }
+			    />
+			  </div>
+			) : (hasPlaces ? (
               <div className="p-4 border-t border-[var(--border-primary)]">
                 {viewMode === 'list' ? (
                   <SearchResults

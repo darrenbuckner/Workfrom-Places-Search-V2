@@ -1,10 +1,10 @@
-// src/config.js
-const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// config.js
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 const API_CONFIG = {
-  // Update baseUrl to include .netlify/functions for both dev and prod
+  // In production, use relative path to ensure it works with any domain
   baseUrl: isDevelopment 
-    ? 'http://localhost:8888/.netlify/functions/api' 
+    ? 'http://localhost:8888/.netlify/functions/api'
     : '/.netlify/functions/api',
   appId: 'RxhYNXu8CyPavHhO'
 };
