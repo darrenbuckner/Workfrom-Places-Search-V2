@@ -121,7 +121,7 @@ const QuickMatch = ({
                   ? 'Finding your location...'
                   : searchPhase === SearchPhases.LOADING
                     ? 'Finding nearby spaces...'
-                    : 'Analyzing spaces...'}
+                    : 'Using AI to determine your best option...'}
               </span>
             </div>
             <div className="h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
@@ -154,7 +154,7 @@ const QuickMatch = ({
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium">
                       <Brain className="w-3 h-3" />
-                      <span>Best Match</span>
+                      <span>AI Pick</span>
                     </div>
                     <span className="text-sm text-[var(--text-secondary)]">
                       {recommendation.place.distance} miles away
@@ -174,13 +174,6 @@ const QuickMatch = ({
                     {recommendation.aiRecommendation.headline && (
                       <p className="text-sm font-medium text-[var(--text-primary)]">
                         {recommendation.aiRecommendation.headline}
-                      </p>
-                    )}
-                    
-                    {/* Lede */}
-                    {recommendation.aiRecommendation.lede && (
-                      <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                        {recommendation.aiRecommendation.lede}
                       </p>
                     )}
 
