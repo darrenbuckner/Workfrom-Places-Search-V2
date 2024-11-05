@@ -29,26 +29,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
     return 'e5e7eb';
   };
 
-  const getWifiDisplay = (place) => {
-    if (place.no_wifi === "1") return "No WiFi";
-    if (place.download) {
-      const speed = Math.round(place.download);
-      if (speed >= 50) return "Excellent";
-      if (speed >= 20) return "Very Good";
-      if (speed >= 10) return "Good";
-      return "Basic";
-    }
-    return "Unknown";
-  };
-
-  const getPowerDisplay = (power) => {
-    const powerValue = String(power || '').toLowerCase();
-    if (powerValue === 'none' || powerValue === '') return 'No outlets';
-    if (powerValue.includes('range3') || powerValue.includes('good')) return 'Abundant';
-    if (powerValue.includes('range2')) return 'Good';
-    if (powerValue.includes('range1') || powerValue.includes('little')) return 'Limited';
-    return 'Unknown';
-  };
+  
 
   const getGoogleMapsUrl = (address) => 
     `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
@@ -116,7 +97,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
               </div>
             </div>
 
-            {/* Image and Details */}
+            {/* Image */}
             <div className="flex space-x-4">
               <div onClick={() => onPhotoClick(place)}
                 className={`
@@ -174,30 +155,6 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
                     </span>
                   </div>
                 )}
-              </div>
-
-              {/* Details */}
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="text-sm flex items-center">
-                  <span className="text-text-primary mr-1">WiFi:</span>
-                  <span className="font-medium truncate text-text-primary">
-                    {getWifiDisplay(place)}
-                  </span>
-                </div>
-
-                <div className="text-sm flex items-center">
-                  <span className="text-text-primary mr-1">Power:</span>
-                  <span className="font-medium truncate text-text-primary">
-                    {getPowerDisplay(place.power)}
-                  </span>
-                </div>
-
-                <div className="text-sm flex items-center">
-                  <span className="text-text-primary mr-1">Noise:</span>
-                  <span className="font-medium truncate text-text-primary">
-                    {place.mappedNoise}
-                  </span>
-                </div>
               </div>
             </div>
 

@@ -1,149 +1,171 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, MapPin, Star } from 'lucide-react';
+import { Brain, Star, X } from 'lucide-react';
 import { SearchPhases } from './constants';
+import API_CONFIG from './config';
 
 const QuickMatch = ({ 
   places,
   searchPhase,
   onRecommendationMade,
   onPhotoClick,
+  isHidden,
+  onHide,
 }) => {
-  const [recommendation, setRecommendation] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiInsights, setAiInsights] = useState(null);
+  const [recommendation, setRecommendation] = useState(null);
 
   // Reset when search starts
   useEffect(() => {
     if (searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING) {
       setRecommendation(null);
-      setAiInsights(null);
-      setIsAnalyzing(true);
+      setIsAnalyzing(false);
     }
   }, [searchPhase]);
 
   // Analyze when places are loaded
   useEffect(() => {
-    if (places?.length > 0 && searchPhase === SearchPhases.COMPLETE && isAnalyzing) {
+    if (places?.length > 0 && searchPhase === SearchPhases.COMPLETE && !recommendation && !isHidden) {
       analyzeAndRecommend();
     }
-  }, [places, searchPhase, isAnalyzing]);
+  }, [places, searchPhase, recommendation, isHidden]);
 
   const analyzeAndRecommend = async () => {
-    const bestPlace = places.reduce((best, current) => {
-      return (current.workabilityScore > best.workabilityScore) ? current : best;
-    }, places[0]);
+    if (isAnalyzing || !places.length) return;
+
+    setIsAnalyzing(true);
 
     try {
-      // Use correct development URL
-      const baseUrl = process.env.NODE_ENV === 'development' 
-        ? 'http://localhost:8888/.netlify/functions/api'
-        : '/.netlify/functions/api';
+      // Prepare the closest 10 places for analysis
+      const placesForAnalysis = places.slice(0, 10).map(place => ({
+        name: place.title,
+        distance: place.distance,
+        wifi: place.download ? `${Math.round(place.download)} Mbps` : 
+              place.no_wifi === "1" ? "No WiFi" : "Unknown",
+        noise: place.noise_level || place.noise || 'Unknown',
+        power: place.power || 'Unknown',
+        type: place.type || 'Unknown',
+        workabilityScore: place.workabilityScore || 0,
+        amenities: {
+          coffee: Boolean(place.coffee),
+          food: Boolean(place.food),
+          alcohol: Boolean(place.alcohol),
+          outdoorSeating: place.outdoor_seating === '1' || Boolean(place.outside)
+        }
+      }));
 
-      const response = await fetch(`${baseUrl}/analyze-workspaces`, {
+      const response = await fetch(`${API_CONFIG.baseUrl}/analyze-workspaces`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({
-          places: places.slice(0, 10).map(place => ({
-            name: place.title,
-            distance: place.distance,
-            wifi: place.download ? `${Math.round(place.download)} Mbps` : 
-                  place.no_wifi === "1" ? "No WiFi" : "Unknown",
-            noise: place.noise_level || place.noise || 'Unknown',
-            power: place.power || 'Unknown',
-            type: place.type || 'Unknown',
-            workabilityScore: place.workabilityScore || 0,
-            amenities: {
-              coffee: Boolean(place.coffee),
-              food: Boolean(place.food),
-              alcohol: Boolean(place.alcohol),
-              outdoorSeating: place.outdoor_seating === '1' || Boolean(place.outside)
-            }
-          }))
-        })
+        body: JSON.stringify({ places: placesForAnalysis })
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Response:', errorText);
         throw new Error('Failed to get AI insights');
       }
 
       const data = await response.json();
-      setAiInsights(data.insights);
       
-      setRecommendation({
-        place: bestPlace,
-        aiRecommendation: data.insights.recommendation
-      });
-      
-      onRecommendationMade?.(bestPlace.title);
+      if (data.meta.code === 200 || data.meta.code === 207) {
+        const aiRecommendation = data.insights.recommendation;
+        const contextInfo = data.insights.context;
+        
+        // Find the full place object that matches the recommendation
+        const recommendedPlace = places.find(p => p.title === aiRecommendation.name);
+        
+        if (recommendedPlace) {
+          setRecommendation({
+            place: recommendedPlace,
+            headline: aiRecommendation.headline,
+            lede: aiRecommendation.lede,
+            personalNote: aiRecommendation.personalNote,
+            standoutFeatures: aiRecommendation.standoutFeatures,
+            context: contextInfo
+          });
+          
+          onRecommendationMade?.(recommendedPlace.title);
+        } else {
+          throw new Error('Recommended place not found in dataset');
+        }
+      } else {
+        throw new Error(data.meta?.error || 'Analysis failed');
+      }
     } catch (error) {
       console.error('Analysis error:', error);
-      // Fallback to basic recommendation without AI insights
-      const basicRecommendation = {
+      // Use highest scored place as fallback
+      const bestPlace = places.reduce((best, current) => 
+        current.workabilityScore > best.workabilityScore ? current : best
+      , places[0]);
+
+      setRecommendation({
         place: bestPlace,
-        reasons: [
-          bestPlace.workabilityScore ? `Workability score: ${bestPlace.workabilityScore}` : null,
-          bestPlace.noise_level ? `Noise level: ${bestPlace.noise_level}` : null,
-          bestPlace.power ? `Power availability: ${bestPlace.power}` : null,
-          bestPlace.wifi ? `Wifi: ${bestPlace.wifi}` : null
-        ].filter(Boolean)
-      };
-      setRecommendation(basicRecommendation);
+        headline: `Highest rated workspace with a ${bestPlace.workabilityScore}/10 workability score`,
+        lede: `This workspace offers the highest overall workability score in the area. It's a reliable choice for remote work.`,
+        standoutFeatures: [/* ... */],
+        context: {/* ... */}
+      });
+      
       onRecommendationMade?.(bestPlace.title);
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  // Don't render anything if no search has been performed or if we're in initial state
-  if (searchPhase === SearchPhases.INITIAL || (!places?.length && !isAnalyzing)) {
-    return null;
-  }
-
-  // Don't render if no recommendation and not analyzing
-  if (!recommendation && !isAnalyzing) {
+  if (searchPhase === SearchPhases.INITIAL || (!places?.length && !isAnalyzing) || isHidden) {
     return null;
   }
 
   return (
-    <div className="mb-6">
+    <div className="mb-6 relative">
       <div className="border border-[var(--accent-primary)] rounded-lg shadow-sm bg-[var(--bg-primary)] overflow-hidden">
-        {isAnalyzing ? (
-          <div className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Brain className="w-4 h-4 text-[var(--accent-primary)]" />
-              <span className="text-sm font-medium text-[var(--text-primary)]">
-                {searchPhase === SearchPhases.LOCATING 
-                  ? 'Finding your location...'
-                  : searchPhase === SearchPhases.LOADING
-                    ? 'Finding nearby spaces...'
-                    : 'Using AI to help choose a great option...'}
-              </span>
+        {/* Close Button */}
+        {!isAnalyzing && recommendation && (
+          <button
+            onClick={onHide}
+            className="absolute top-2 right-2 p-1.5 rounded-full 
+              bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] 
+              text-[var(--text-secondary)] transition-colors z-10"
+            aria-label="Hide quick match"
+          >
+            <X size={16} />
+          </button>
+        )}
+        <div className="p-4">
+          {isAnalyzing ? (
+            <div className="animate-pulse space-y-3">
+              <div className="flex items-center gap-2">
+                <Brain className="w-4 h-4 text-[var(--accent-primary)]" />
+                <span className="text-sm font-medium text-[var(--text-primary)]">
+                  {searchPhase === SearchPhases.LOCATING 
+                    ? 'Finding your location...'
+                    : searchPhase === SearchPhases.LOADING
+                      ? 'Finding nearby spaces...'
+                      : 'Using AI to find your best match...'}
+                </span>
+              </div>
+              <div className="h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
+                <div 
+                  className="h-full bg-[var(--accent-primary)] animate-pulse transition-all duration-500" 
+                  style={{ 
+                    width: searchPhase === SearchPhases.LOCATING 
+                      ? '33%' 
+                      : searchPhase === SearchPhases.LOADING 
+                        ? '66%' 
+                        : '90%' 
+                  }} 
+                />
+              </div>
             </div>
-            <div className="h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
-              <div 
-                className="h-full bg-[var(--accent-primary)] animate-pulse transition-all duration-500" 
-                style={{ 
-                  width: searchPhase === SearchPhases.LOCATING 
-                    ? '33%' 
-                    : searchPhase === SearchPhases.LOADING 
-                      ? '66%' 
-                      : '90%' 
-                }} 
-              />
-            </div>
-          </div>
-        ) : recommendation ? (
-          <div className="p-4">
+          ) : recommendation ? (
             <div className="flex gap-4">
               {/* Score Badge */}
-              <div className="flex-shrink-0 w-14 h-14 rounded-md bg-[var(--accent-primary)] text-white flex items-center justify-center font-bold text-xl relative">
-                {recommendation.place.workabilityScore || '?'}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--accent-primary)] flex items-center justify-center">
+              <div className="flex-shrink-0 w-14 h-14 rounded-md bg-[var(--accent-primary)] text-white 
+                flex items-center justify-center font-bold text-xl relative">
+                {recommendation.place.workabilityScore}
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--accent-primary)] 
+                  flex items-center justify-center">
                   <Star className="w-3 h-3 text-white" />
                 </div>
               </div>
@@ -152,9 +174,10 @@ const QuickMatch = ({
                 {/* Header */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium">
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full 
+                      bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium">
                       <Brain className="w-3 h-3" />
-                      <span>AI Pick</span>
+                      <span>Best Match</span>
                     </div>
                     <span className="text-sm text-[var(--text-secondary)]">
                       {recommendation.place.distance} miles away
@@ -167,49 +190,56 @@ const QuickMatch = ({
                   {recommendation.place.title}
                 </h3>
                 
-                {/* AI Insights Section */}
-                {recommendation.aiRecommendation && (
-                  <div className="space-y-3 mb-4">
-                    {/* Headline */}
-                    {recommendation.aiRecommendation.headline && (
-                      <p className="text-sm font-medium text-[var(--text-primary)]">
-                        {recommendation.aiRecommendation.headline}
-                      </p>
-                    )}
+                {/* AI Recommendation */}
+                {recommendation.headline && (
+                  <p className="text-sm text-[var(--text-primary)] mb-2">
+                    {recommendation.headline}
+                  </p>
+                )}
 
-                    {/* Personal Note - if available */}
-                    {recommendation.aiRecommendation.personalNote && (
-                      <p className="text-sm text-[var(--text-secondary)] italic">
-                        "{recommendation.aiRecommendation.personalNote}"
-                      </p>
-                    )}
+                {recommendation.lede && (
+                  <p className="text-sm text-[var(--text-secondary)] italic mb-3">
+                    "{recommendation.lede}"
+                  </p>
+                )}
+
+                {/* Context Info */}
+                {recommendation.context && (
+                  <div className="hidden mb-3 text-sm text-[var(--text-secondary)]">
+                    <p>Best for: {recommendation.context.bestFor} work</p>
+                    <p>Current crowd level: {recommendation.context.crowdLevel}</p>
                   </div>
+                )}
+
+                {/* Personal Note */}
+                {recommendation.personalNote && (
+                  <p className="hidden text-sm text-[var(--text-secondary)] italic mb-3">
+                    "{recommendation.personalNote}"
+                  </p>
                 )}
 
                 {/* Standout Features */}
-                {recommendation.aiRecommendation?.standoutFeatures && (
-                  <div className="space-y-1.5">
-                    {recommendation.aiRecommendation.standoutFeatures.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                        <span>{typeof feature === 'string' ? feature : feature.description}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="space-y-1.5">
+                  {recommendation.standoutFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
+                      <span>{feature.description}</span>
+                    </div>
+                  ))}
+                </div>
 
-                {/* Action Button */}
+                {/* View Details Button */}
                 <button
                   onClick={() => onPhotoClick?.(recommendation.place)}
-                  className="mt-4 px-4 py-2 rounded-md bg-[var(--accent-primary)] text-white text-sm font-medium
-                    hover:bg-[var(--accent-primary-hover)] transition-colors"
+                  className="mt-4 px-4 py-2 rounded-md bg-[var(--accent-primary)] text-white 
+                    text-sm font-medium hover:bg-[var(--accent-primary-hover)] transition-colors"
                 >
                   View Details
                 </button>
               </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </div>
   );

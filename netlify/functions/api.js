@@ -5,7 +5,7 @@ const { OpenAI } = require('openai');
 const moment = require('moment-timezone');
 require('dotenv').config();
 
-// Initialize Express app
+// Initialize Express app and router
 const app = express();
 const router = express.Router();
 
@@ -176,7 +176,10 @@ router.post('/analyze-workspaces', async (req, res) => {
     
     if (!Array.isArray(places) || places.length === 0) {
       return res.status(400).json({ 
-        message: 'Please provide places to analyze'
+        meta: {
+          code: 400,
+          error: 'Please provide places to analyze'
+        }
       });
     }
 
@@ -185,51 +188,55 @@ router.post('/analyze-workspaces', async (req, res) => {
     const timeContext = getTimeContext(localTime);
     const dayType = localTime.day() >= 1 && localTime.day() <= 5 ? 'workday' : 'weekend';
 
-    const prompt = `As a local remote worker, recommend the best workspace for ${timeContext} (${localTime.format('h:mm A')}) on this ${dayType} in ${places[0].city || 'the area'}.
+    const prompt = `As a local creative professional and remote worker, analyze these nearby workspaces and recommend the best option for ${timeContext} (${localTime.format('h:mm A')}) on a ${dayType}. Consider both practical needs and atmosphere.
 
-Places to consider:
-${places.map(place => `
-${place.name}:
-- ${place.distance} miles away
-- Internet: ${place.wifi}
-- Noise level: ${place.noise}
-- Power outlets: ${place.power}
-- Type: ${place.type}
-- Overall score: ${place.workabilityScore}/10
-- The extras: ${Object.entries(place.amenities)
-  .filter(([_, value]) => value)
-  .map(([key]) => key)
-  .join(', ')}
-`).join('\n')}
+    Places to analyze:
+    ${places.map(place => `
+    ${place.name}:
+    - Distance: ${place.distance} miles
+    - WiFi: ${place.wifi}
+    - Noise: ${place.noise}
+    - Power: ${place.power}
+    - Type: ${place.type}
+    - Workability: ${place.workabilityScore}/10
+    - Available amenities: ${Object.entries(place.amenities)
+      .filter(([_, value]) => value)
+      .map(([key]) => key)
+      .join(', ')}
+    `).join('\n')}
 
-Consider:
-- Current time: ${localTime.format('h:mm A')} (${timeContext} crowd levels)
-- Day type: ${dayType}
-- Local context: ${places[0].city || 'Area'} community
+    Context to consider:
+    - Time of day: ${localTime.format('h:mm A')} (${timeContext})
+    - Day type: ${dayType}
+    - Location: ${places[0].city || 'Local area'}
 
-Please provide your response in JSON format:
-{
-  "recommendation": {
-    "name": "The best spot",
-    "lede": "A compelling two-sentence story about what makes this place special. Include specific details about the atmosphere and ideal use case.",
-    "headline": "A single crisp sentence (max 12 words) highlighting the key benefit",
-    "context": "One short sentence about why this works for ${timeContext}/${dayType}",
-    "personalNote": "Optional: A specific tip or insight based on experience",
-    "standoutFeatures": [
-      {
-        "category": "wifi/power/quiet/amenities",
-        "description": "One short phrase, max 6-8 words"
+    Provide your recommendation in this JSON format:
+    {
+      "recommendation": {
+        "name": "(exact name of the best workspace)",
+        "headline": "(one clear sentence about why this is the best choice - max 12 words)",
+        "lede": "A compelling two-sentence story about what makes this place special. Include specific details about the atmosphere and ideal use case.",
+        "personalNote": "(optional: a specific tip from your experience, max 20 words)",
+        "standoutFeatures": [
+          {
+            "category": "(wifi/power/noise/amenities)",
+            "description": "(specific detail about this feature, max 8 words)"
+          }
+        ]
+      },
+      "context": {
+        "timeOfDay": "${timeContext}",
+        "crowdLevel": "(expected crowd level: quiet/moderate/busy)",
+        "bestFor": "(type of work: focused/collaborative/casual)"
       }
-    ]
-  }
-}`;
+    }`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4-0125-preview",
       messages: [
         {
           role: "system",
-          content: "You're a friendly local remote worker who's spent countless hours working from these spaces. Provide recommendations in JSON format."
+          content: "You are an experienced remote worker familiar with these workspaces. Provide practical, specific recommendations based on real workspace needs."
         },
         {
           role: "user",
@@ -242,37 +249,60 @@ Please provide your response in JSON format:
 
     const analysis = JSON.parse(completion.choices[0].message.content);
     
+    // Find the full place data for the recommended workspace
+    const recommendedPlace = places.find(p => p.name === analysis.recommendation.name);
+    
+    if (!recommendedPlace) {
+      throw new Error('Recommended place not found in provided places');
+    }
+
     res.json({
-      insights: {
-        recommendation: {
-          name: places[0].name,
-          headline: analysis.recommendation?.headline || "Great workspace for remote work",
-          lede: analysis.recommendation?.lede || "This space offers an ideal environment for focused work.",
-          context: analysis.recommendation?.context,
-          personalNote: analysis.recommendation?.personalNote,
-          standoutFeatures: analysis.recommendation?.standoutFeatures || []
-        }
-      },
       meta: {
+        code: 200,
         timezone,
         localTime: localTime.format(),
         timeContext,
         dayType
+      },
+      insights: {
+        recommendation: {
+          name: recommendedPlace.name,
+          headline: analysis.recommendation.headline,
+          lede: analysis.recommendation.lede,           // Add lede to response
+          personalNote: analysis.recommendation.personalNote,
+          standoutFeatures: analysis.recommendation.standoutFeatures
+        },
+        context: analysis.context
       }
     });
   } catch (error) {
     console.error('Analysis error:', error);
-    res.status(500).json({ 
-      message: 'Failed to analyze workspaces',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    
+    // Provide a useful fallback response
+    const fallbackPlace = places.reduce((best, current) => 
+      current.workabilityScore > best.workabilityScore ? current : best
+    , places[0]);
+
+    res.status(200).json({
+      meta: {
+        code: 207,
+        error: 'AI analysis unavailable, falling back to score-based recommendation',
+        detail: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
+      insights: {
+        recommendation: {
+          name: fallbackPlace.name,
+          headline: `Highest rated workspace with a ${fallbackPlace.workabilityScore}/10 workability score`,
+          lede: `This workspace offers the highest overall workability score in the area. It's a reliable choice for remote work.`,  // Add fallback lede
+          standoutFeatures: [/* ... */]
+        },
+        context: {/* ... */}
+      }
     });
   }
 });
 
-// Mount the router
+// Mount the router and export the handler
 app.use('/.netlify/functions/api', router);
 
-// Export the handler
-module.exports = {
-  handler: serverless(app)
-};
+module.exports.handler = serverless(app);

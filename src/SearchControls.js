@@ -16,7 +16,7 @@ const SearchControls = ({
   const isInitialSearch = !isSearching && searchPhase === SearchPhases.INITIAL;
 
   const handleRadiusChange = (value) => {
-    const validValue = Math.max(0.5, Math.min(999, value));
+    const validValue = Math.max(0, Math.min(999, value));
     setRadius(validValue);
   };
 
@@ -151,15 +151,6 @@ const SearchControls = ({
           </>
         )}
       </div>
-
-      {/* Help Text / Current Radius */}
-      {isInitialSearch ? (
-        <span></span>
-      ) : (
-        <p className="text-xs text-[var(--text-secondary)] text-center mt-2">
-          Searching within {radius} miles of you
-        </p>
-      )}
     </div>
   );
 };
