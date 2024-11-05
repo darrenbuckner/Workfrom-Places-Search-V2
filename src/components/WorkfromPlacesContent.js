@@ -76,6 +76,7 @@ const WorkfromPlacesContent = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
   const [recommendedPlace, setRecommendedPlace] = useState(null);
+  const [quickMatchHidden, setQuickMatchHidden] = useState(false);
 
   // Search functionality
   const performSearch = async () => {
@@ -84,6 +85,7 @@ const WorkfromPlacesContent = () => {
     setRecommendedPlace(null);
     setError('');
     setLastSearchedRadius(radius); // Update the last searched radius
+    setQuickMatchHidden(false); // Reset the hidden state on new search
     setPostSearchFilters({
       type: 'any',
       power: 'any',
@@ -143,6 +145,8 @@ const WorkfromPlacesContent = () => {
           searchPhase={searchPhase}
           onRecommendationMade={setRecommendedPlace}
           onPhotoClick={handlePhotoClick}
+          isHidden={quickMatchHidden}
+          onHide={() => setQuickMatchHidden(true)}
         />
 
         {/* Results Section - Only show when search is complete */}
