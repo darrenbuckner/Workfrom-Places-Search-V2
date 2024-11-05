@@ -33,13 +33,13 @@ const WelcomeBanner = ({ isSearchPerformed = false }) => {
   const { greeting, Icon, message } = getTimeBasedContent();
 
   return (
-    <div className="animate-fadeIn mb-6">
-      <div className="relative rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] overflow-hidden">
+    <div className="animate-fadeIn mb-4">
+      <div className="relative overflow-hidden">
         {/* Decorative Elements */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent-primary)]/5 rounded-full blur-2xl" />
         <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[var(--accent-primary)]/5 rounded-full blur-xl" />
         
-        <div className="relative p-4 sm:p-6">
+        <div className="relative p-2 sm:p-6">
           <div className="flex items-start gap-3 sm:gap-4">
             {/* Icon Container */}
             <div className="flex-shrink-0">

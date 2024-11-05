@@ -94,7 +94,7 @@ export const usePlaces = () => {
             throw new APIError(
               data.meta.code,
               data.meta.error_type || 'unknown',
-              data.meta.error_detail || 'Unexpected error occurred'
+              data.meta.error_detail || 'Something unexpected occurred. Please try again.'
             );
         }
       } else {

@@ -26,8 +26,9 @@ const SearchControls = ({
   };
 
   return (
-    <div className={`flex flex-col gap-4 ${className}`}>
-      <div className="relative">
+    <div className={`flex flex-col ${className}`}>
+      {/* Added a relative wrapper with high z-index */}
+      <div className="relative z-50">
         <div className="flex">
           {/* Main Search Button */}
           <button
@@ -49,18 +50,18 @@ const SearchControls = ({
               <>
                 <Loader className="w-4 h-4 animate-spin" />
                 <span className="whitespace-nowrap">
-                  {searchPhase === SearchPhases.LOCATING ? 'Getting Location...' : 'Finding Places...'}
+                  {searchPhase === SearchPhases.LOCATING ? 'Getting your location...' : 'Finding places...'}
                 </span>
               </>
             ) : isInitialSearch ? (
               <>
                 <MapPin className="w-4 h-4" />
-                <span className="whitespace-nowrap">Find Places Nearby</span>
+                <span className="whitespace-nowrap">Start searching now</span>
               </>
             ) : (
               <>
                 <Search className="w-4 h-4" />
-                <span className="whitespace-nowrap">Search This Area</span>
+                <span className="whitespace-nowrap">Search your area</span>
               </>
             )}
           </button>
@@ -86,60 +87,77 @@ const SearchControls = ({
           </button>
         </div>
 
-        {/* Radius Dropdown Menu */}
+        {/* Radius Dropdown Menu - Updated positioning */}
         {showRadiusMenu && (
-          <div 
-            className="absolute top-full mt-2 right-0 w-64 bg-[var(--bg-primary)] rounded-lg shadow-lg border border-[var(--border-primary)] p-4 z-50"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
-                Search Radius
-              </label>
-              <div className="flex gap-2 items-center">
-                <input
-                  type="range"
-                  min="0.5"
-                  max="10"
-                  step="0.5"
-                  value={radius}
-                  onChange={(e) => handleRadiusChange(Number(e.target.value))}
-                  className="flex-1"
-                />
-                <span className="text-sm text-[var(--text-secondary)] w-12 text-right">
-                  {radius}mi
-                </span>
+          <>
+            {/* Added overlay to handle clicks outside */}
+            <div 
+              className="fixed inset-0 z-40"
+              onClick={() => setShowRadiusMenu(false)}
+            />
+            <div 
+              className="absolute top-full mt-2 right-0 w-64 bg-[var(--bg-primary)] rounded-lg shadow-lg border border-[var(--border-primary)] p-4 z-50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-3">
+                <label className="block text-sm font-medium text-[var(--text-primary)] mb-2">
+                  Search Radius
+                </label>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="0.5"
+                    value={radius}
+                    onChange={(e) => handleRadiusChange(Number(e.target.value))}
+                    className="flex-1 h-2 bg-[var(--bg-tertiary)] rounded-full appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none
+                      [&::-webkit-slider-thumb]:w-4
+                      [&::-webkit-slider-thumb]:h-4
+                      [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:bg-[var(--action-primary)]
+                      [&::-webkit-slider-thumb]:cursor-pointer
+                      [&::-webkit-slider-thumb]:border-2
+                      [&::-webkit-slider-thumb]:border-[var(--bg-primary)]
+                      [&::-webkit-slider-thumb]:shadow-sm
+                      focus:outline-none
+                      focus:ring-2
+                      focus:ring-[var(--action-primary-light)]"
+                  />
+                  <span className="text-sm text-[var(--text-secondary)] w-12 text-right">
+                    {radius}mi
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                {[1, 2, 5, 10].map((preset) => (
+                  <button
+                    key={preset}
+                    onClick={() => handlePresetClick(preset)}
+                    className={`px-3 py-1 rounded-md text-sm transition-colors
+                      ${radius === preset 
+                        ? 'bg-[var(--action-primary)] text-white' 
+                        : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                      }
+                    `}
+                  >
+                    {preset}mi
+                  </button>
+                ))}
               </div>
             </div>
-            
-            <div className="flex flex-wrap gap-2">
-              {[1, 2, 5, 10].map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => handlePresetClick(preset)}
-                  className={`px-3 py-1 rounded-md text-sm transition-colors
-                    ${radius === preset 
-                      ? 'bg-[var(--action-primary)] text-white' 
-                      : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                    }
-                  `}
-                >
-                  {preset}mi
-                </button>
-              ))}
-            </div>
-          </div>
+          </>
         )}
       </div>
 
       {/* Help Text / Current Radius */}
       {isInitialSearch ? (
-        <p className="text-sm text-[var(--text-secondary)] sm:hidden text-center">
-          We'll find workspaces near your current location
-        </p>
+        <span></span>
       ) : (
-        <p className="text-xs text-[var(--text-secondary)] text-center">
-          Searching within {radius} miles{locationName ? ` of ${locationName}` : ''}
+        <p className="text-xs text-[var(--text-secondary)] text-center mt-2">
+          Searching within {radius} miles of you
         </p>
       )}
     </div>

@@ -95,18 +95,18 @@ export const lightTheme = {
   // Base colors - Natural whites and creams
   'bg-primary': '#fffcf8',            // Warm white
   'bg-secondary': '#faf7f2',          // Soft cream
-  'bg-tertiary': '#f5f2ed',          // Light beige
+  'bg-tertiary': '#f5f2ed',           // Light beige
   
   // Text colors - Rich earth tones
   'text-primary': '#2d2a26',          // Deep bark brown
   'text-secondary': '#615c55',        // Warm gray
   'text-tertiary': '#8c8782',         // Muted stone
   
-  // Action colors - Forest-inspired greens
-  'action-primary': '#2d6a4f',        // Forest green
-  'action-primary-hover': '#1b4332',  // Deep forest
-  'action-primary-light': 'rgba(45, 106, 79, 0.1)',
-  'action-primary-border': 'rgba(45, 106, 79, 0.2)',
+  // Action colors - Deep forest greens
+  'action-primary': '#1a2f25',        // Almost black green
+  'action-primary-hover': '#0f1a15',  // Deeper green
+  'action-primary-light': 'rgba(26, 47, 37, 0.1)',
+  'action-primary-border': 'rgba(26, 47, 37, 0.2)',
   
   // Border colors - Natural definition
   'border-primary': 'rgba(210, 204, 193, 0.8)',  // Soft sand
@@ -122,66 +122,66 @@ export const lightTheme = {
   
   // Interactive colors - Organic progression
   'interactive-text': '#2d2a26',      // Deep bark brown
-  'interactive-hover': '#1b4332',     // Deep forest
+  'interactive-hover': '#1a2f25',     // Almost black green
   'interactive-muted': '#615c55',     // Warm gray
   
-  // Accent colors - Nature-inspired
-  'accent-primary': '#2d6a4f',        // Forest green
-  'accent-secondary': '#40916c',      // Sage green
-  'accent-muted': '#d8f3dc',          // Mint mist
+  // Accent colors - Rich orange and deep green
+  'accent-primary': '#1a2f25',        // Almost black green
+  'accent-secondary': '#dd6b20',      // Rich orange
+  'accent-muted': '#feeddd',          // Soft orange mist
   
   // Status colors - Natural alerts
-  'success': '#2d6a4f',               // Forest green
-  'warning': '#cc7722',               // Amber wood
+  'success': '#1a2f25',               // Almost black green
+  'warning': '#dd6b20',               // Rich orange
   'error': '#bc4749',                 // Clay red
-  'info': '#457b9d',                  // River blue
+  'info': '#1a2f25',                  // Almost black green
   
   // Place-specific colors - Natural spaces
   'place-highlight-bg': '#faf7f2',    
   'place-highlight-border': '#e6e2d9',
-  'place-tag-bg': 'rgba(45, 106, 79, 0.08)',
-  'place-tag-text': '#2d6a4f',
-  'place-score-high': '#2d6a4f',      
-  'place-score-medium': '#cc7722',    
+  'place-tag-bg': 'rgba(26, 47, 37, 0.08)',
+  'place-tag-text': '#1a2f25',
+  'place-score-high': '#1a2f25',      
+  'place-score-medium': '#dd6b20',    
   'place-score-low': '#bc4749',       
-  'place-feature-icon': '#2d6a4f',    
+  'place-feature-icon': '#1a2f25',    
   'place-distance': '#615c55',        
-  'place-hours': '#2d6a4f',           
+  'place-hours': '#1a2f25',           
   'place-hours-closed': '#bc4749',    
 
   // Promoted place colors - Elevated natural
-  'promoted-bg': '#f0f7f4',           // Soft sage
-  'promoted-border': '#b7e4c7',       // Sage border
+  'promoted-bg': '#f0f4f2',           // Soft sage
+  'promoted-border': '#c7d4ce',       // Sage border
   'promoted-text': '#2d2a26',         
   'promoted-secondary': '#615c55',    
-  'promoted-highlight': '#2d6a4f',    
-  'promoted-tag-bg': 'rgba(45, 106, 79, 0.08)',
-  'promoted-tag-text': '#2d6a4f',
-  'promoted-score-bg': '#f0f7f4',     
+  'promoted-highlight': '#1a2f25',    
+  'promoted-tag-bg': 'rgba(26, 47, 37, 0.08)',
+  'promoted-tag-text': '#1a2f25',
+  'promoted-score-bg': '#f0f4f2',     
   'promoted-score-text': '#2d2a26',   
-  'promoted-feature-icon': '#2d6a4f', 
+  'promoted-feature-icon': '#1a2f25', 
   
   // Scoring colors - Nature-inspired states
-  'promoted-score-high': '#2d6a4f',   
-  'promoted-score-medium': '#cc7722', 
+  'promoted-score-high': '#1a2f25',   
+  'promoted-score-medium': '#dd6b20', 
   'promoted-score-low': '#bc4749',    
   
   // Navigation - Clear wayfinding
-  'nav-active': '#2d6a4f',
+  'nav-active': '#1a2f25',
   'nav-inactive': '#615c55',
-  'nav-hover': '#40916c',
+  'nav-hover': '#dd6b20',
   
   // Map elements - Natural mapping
-  'map-marker': '#2d6a4f',
-  'map-marker-active': '#40916c',
-  'map-overlay': 'rgba(255, 252, 248, 0.9)',
+  'map-marker': '#1a2f25',
+  'map-marker-active': '#dd6b20',
+  'map-overlay': 'rgba(255, 252, 248, 0.95)',
   
   // Modal - Light and airy
   'modal-overlay': 'rgba(255, 252, 248, 0.95)',
   
   // Gradients - Organic transitions
-  'gradient-primary': 'linear-gradient(to right, rgba(45, 106, 79, 0.08), rgba(45, 106, 79, 0.04))',
-  'gradient-hover': 'linear-gradient(to right, rgba(45, 106, 79, 0.12), rgba(45, 106, 79, 0.08))',
+  'gradient-primary': 'linear-gradient(to right, rgba(26, 47, 37, 0.08), rgba(26, 47, 37, 0.04))',
+  'gradient-hover': 'linear-gradient(to right, rgba(26, 47, 37, 0.12), rgba(26, 47, 37, 0.08))',
 };
 
 // Helper functions

@@ -18,6 +18,22 @@ import { Message } from '../components/ui/loading';
 
 const ITEMS_PER_PAGE = 10;
 
+const StyledSearchContainer = ({ children }) => {
+  return (
+    <div className="mb-6">
+      <div className="relative rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+        {/* Decorative Elements - Moved outside main container */}
+        <div className="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent-primary)]/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[var(--accent-primary)]/5 rounded-full blur-xl pointer-events-none" />
+        
+        <div className="relative p-4 sm:p-6">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const WorkfromPlacesContent = () => {
   // Custom hooks
   const {
@@ -98,25 +114,28 @@ const WorkfromPlacesContent = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
-      <div className="container mx-auto p-3 sm:p-4 max-w-2xl flex-grow">
+      <div className="container mx-auto px-3 sm:px-4 max-w-2xl flex-grow overflow-x-hidden">
         {/* Header */}
         <WorkfromHeader
           onShowHowItWorks={() => setShowHowItWorks(true)}
-          className="mb-4"
+          className="mt-4 sm:mt-6 md:mt-8 mb-4"
         />
 
         {/* Welcome Banner */}
         <WelcomeBanner isSearchPerformed={isSearchPerformed} />
 
-        {/* Search Controls */}
-        <SearchControls
-          radius={radius}
-          setRadius={setRadius}
-          onSearch={performSearch}
-          disabled={searchPhase !== SearchPhases.INITIAL && searchPhase !== SearchPhases.COMPLETE}
-          searchPhase={searchPhase}
-          className="mb-8"
-        />
+        {/* Search Controls Wrap */}
+        <StyledSearchContainer>
+          {/* Search Controls */}
+          <SearchControls
+            radius={radius}
+            setRadius={setRadius}
+            onSearch={performSearch}
+            disabled={searchPhase !== SearchPhases.INITIAL && searchPhase !== SearchPhases.COMPLETE}
+            searchPhase={searchPhase}
+            locationName={locationName}
+          />
+        </StyledSearchContainer>
 
         {/* Quick Match - AI Recommendation */}
         <QuickMatch

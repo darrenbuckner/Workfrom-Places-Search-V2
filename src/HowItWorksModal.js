@@ -8,9 +8,9 @@ const HowItWorksModal = ({ setShowModal }) => {
   const { isDark } = useTheme();
   
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 overflow-y-auto md:overflow-hidden">
-      <div className="min-h-screen md:flex md:items-center md:justify-center">
-        <div className="bg-[var(--bg-primary)] md:w-[600px] md:rounded-lg overflow-hidden relative border border-[var(--border-primary)]">
+    <div className="fixed inset-0 bg-black/90 z-50 overflow-y-auto">
+      <div className="min-h-screen px-0 md:p-4 flex items-start md:items-center justify-center">
+        <div className="w-full md:w-[600px] bg-[var(--bg-primary)] md:rounded-lg overflow-hidden relative border border-[var(--border-primary)]">
           {/* Close Button - Desktop */}
           <button 
             onClick={() => setShowModal(false)}
@@ -39,95 +39,44 @@ const HowItWorksModal = ({ setShowModal }) => {
             </div>
           </div>
 
-          <div className="p-6">
-            {/* Header - Desktop */}
-            <div className="hidden md:block mb-6">
-              <h2 className="text-2xl font-semibold text-[var(--text-primary)]">
-                How It Works
-              </h2>
-              <p className="text-[var(--text-secondary)]">
-                Find the perfect workspace in your area
-              </p>
-            </div>
+          {/* Modal content with proper mobile padding and scrolling */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-2rem)]">
+            <h2 className="text-xl font-semibold mb-4 pr-8 text-[var(--text-primary)]">
+              How It Works
+            </h2>
+            
+            <div className="space-y-4">
+              <section>
+                <h3 className="font-medium mb-2 text-[var(--text-primary)]">Finding Places</h3>
+                <p className="text-[var(--text-secondary)]">
+                  We use your location to find the best workspaces near you. Adjust the search radius 
+                  to see more or fewer options in your area.
+                </p>
+              </section>
 
-            {/* Steps Section */}
-            <div className="mb-8">
-              <h3 className="font-medium mb-4 text-[var(--text-primary)]">
-                Quick Start Guide
-              </h3>
-              <div className="space-y-4">
-                {[
-                  'Share your location to discover nearby spots',
-                  'Set your preferred search radius (default is 2 miles)',
-                  'View results as a list or interactive map'
-                ].map((step, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium
-                      bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                      {index + 1}
-                    </div>
-                    <span className="mt-0.5 text-[var(--text-primary)]">
-                      {step}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+              <section>
+                <h3 className="font-medium mb-2 text-[var(--text-primary)]">Workability Score</h3>
+                <p className="text-[var(--text-secondary)]">
+                  Each place gets a Workability Score based on factors like WiFi quality, power 
+                  availability, noise levels, and amenities. Higher scores mean better work environments.
+                </p>
+              </section>
 
-            {/* Workability Score Section */}
-            <div className="rounded-lg p-4 mb-6 border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-              <h3 className="font-medium mb-4 text-[var(--text-primary)]">
-                Understanding Workability Scores
-              </h3>
-              <div className="grid gap-4">
-                {[
-                  { 
-                    icon: <Wifi />, 
-                    title: 'WiFi Quality',
-                    description: 'Speed and reliability ratings from real users'
-                  },
-                  {
-                    icon: <Battery />,
-                    title: 'Power Access',
-                    description: 'Availability of power outlets for your devices'
-                  },
-                  {
-                    icon: <Volume2 />,
-                    title: 'Noise Levels',
-                    description: 'Typical ambient sound and workspace atmosphere'
-                  },
-                  {
-                    icon: <Coffee />,
-                    title: 'Amenities',
-                    description: 'Food, drinks, seating options, and other facilities'
-                  }
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-5 h-5 mt-1 text-[var(--accent-primary)]">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <p className="font-medium text-[var(--text-primary)]">
-                        {item.title}
-                      </p>
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+              <section>
+                <h3 className="font-medium mb-2 text-[var(--text-primary)]">AI Recommendations</h3>
+                <p className="text-[var(--text-secondary)]">
+                  Our AI analyzes workspace data to suggest the best match for your needs, considering 
+                  factors like amenities, atmosphere, and community feedback.
+                </p>
+              </section>
 
-            {/* Community Note */}
-            <div className="text-sm rounded-lg p-4 bg-[var(--accent-primary)]/10 text-[var(--text-primary)]">
-              <p>
-                <span className="font-medium text-[var(--accent-primary)]">
-                  Community-Powered:
-                </span>{' '}
-                All listings come from the Workfrom community. See a place that should be listed? 
-                Use the "Add Place" button to share it with others!
-              </p>
+              <section>
+                <h3 className="font-medium mb-2 text-[var(--text-primary)]">Filtering & Sorting</h3>
+                <p className="text-[var(--text-secondary)]">
+                  Use filters to narrow down places by type, noise level, and power availability. 
+                  Sort by workability score to find the most suitable spaces first.
+                </p>
+              </section>
             </div>
           </div>
         </div>

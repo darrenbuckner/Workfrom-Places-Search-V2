@@ -121,7 +121,7 @@ const QuickMatch = ({
                   ? 'Finding your location...'
                   : searchPhase === SearchPhases.LOADING
                     ? 'Finding nearby spaces...'
-                    : 'Using AI to determine your best option...'}
+                    : 'Using AI to help choose a great option...'}
               </span>
             </div>
             <div className="h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
