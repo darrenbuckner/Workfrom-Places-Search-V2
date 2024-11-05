@@ -188,8 +188,7 @@ router.post('/analyze-workspaces', async (req, res) => {
     const timeContext = getTimeContext(localTime);
     const dayType = localTime.day() >= 1 && localTime.day() <= 5 ? 'workday' : 'weekend';
 
-    const prompt = `As a local creative professional and remote worker, analyze these nearby workspaces and recommend the best option for ${timeContext} (${localTime.format('h:mm A')}) on a ${dayType}. Consider both practical needs and atmosphere.
-
+    const prompt = `As a local creative professional and remote worker, analyze these nearby workspaces and recommend the best option for ${timeContext} (${localTime.format('h:mm A')}) on a ${dayType}. Consider both practical needs and atmosphere. Use commonlanguage and a tone that is casual and approachable.
     Places to analyze:
     ${places.map(place => `
     ${place.name}:

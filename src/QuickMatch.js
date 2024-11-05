@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Star, X } from 'lucide-react';
+import { Brain, Star, X, ArrowRight, Navigation } from 'lucide-react';
 import { SearchPhases } from './constants';
 import API_CONFIG from './config';
 
@@ -13,6 +13,10 @@ const QuickMatch = ({
 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
+  const getGoogleMapsUrl = (place) => {
+    const address = `${place.street}, ${place.city}, ${place.postal}`;
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+  };
 
   // Reset when search starts
   useEffect(() => {
@@ -170,7 +174,7 @@ const QuickMatch = ({
                 </div>
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -185,41 +189,31 @@ const QuickMatch = ({
                   </div>
                 </div>
 
-                {/* Place Name & Context */}
-                <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">
+                {/* Clickable Place Name */}
+                <h3 
+                  onClick={() => onPhotoClick?.(recommendation.place)}
+                  className="text-lg font-medium text-[var(--text-primary)] mb-2
+                    hover:text-[var(--action-primary)] cursor-pointer transition-colors
+                    truncate"
+                >
                   {recommendation.place.title}
                 </h3>
                 
                 {/* AI Recommendation */}
                 {recommendation.headline && (
                   <p className="text-sm text-[var(--text-primary)] mb-2">
-                    {recommendation.headline}
+                    <strong>Bottom Line:</strong> {recommendation.headline}
                   </p>
                 )}
 
                 {recommendation.lede && (
-                  <p className="text-sm text-[var(--text-secondary)] italic mb-3">
-                    "{recommendation.lede}"
-                  </p>
-                )}
-
-                {/* Context Info */}
-                {recommendation.context && (
-                  <div className="hidden mb-3 text-sm text-[var(--text-secondary)]">
-                    <p>Best for: {recommendation.context.bestFor} work</p>
-                    <p>Current crowd level: {recommendation.context.crowdLevel}</p>
-                  </div>
-                )}
-
-                {/* Personal Note */}
-                {recommendation.personalNote && (
-                  <p className="hidden text-sm text-[var(--text-secondary)] italic mb-3">
-                    "{recommendation.personalNote}"
+                  <p className="text-sm text-[var(--text-primary)] italic mb-3">
+                    {recommendation.lede}
                   </p>
                 )}
 
                 {/* Standout Features */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 mb-4">
                   {recommendation.standoutFeatures.map((feature, index) => (
                     <div key={index} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                       <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
@@ -228,14 +222,35 @@ const QuickMatch = ({
                   ))}
                 </div>
 
-                {/* View Details Button */}
-                <button
-                  onClick={() => onPhotoClick?.(recommendation.place)}
-                  className="mt-4 px-4 py-2 rounded-md bg-[var(--accent-primary)] text-white 
-                    text-sm font-medium hover:bg-[var(--accent-primary-hover)] transition-colors"
-                >
-                  View Details
-                </button>
+                {/* Mobile-First Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                  {/* Primary Action - See Details */}
+                  <button
+                    onClick={() => onPhotoClick?.(recommendation.place)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5
+                      bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)]
+                      text-white font-medium rounded-md transition-colors
+                      text-sm"
+                  >
+                    See Details
+                    <ArrowRight size={16} />
+                  </button>
+
+                  {/* Secondary Action - Get Directions */}
+                  <a
+                    href={getGoogleMapsUrl(recommendation.place)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5
+                      border border-[var(--border-primary)] 
+                      hover:bg-[var(--bg-secondary)]
+                      text-[var(--text-primary)] font-medium rounded-md
+                      transition-colors text-sm"
+                  >
+                    <Navigation size={16} />
+                    Get Directions
+                  </a>
+                </div>
               </div>
             </div>
           ) : null}
