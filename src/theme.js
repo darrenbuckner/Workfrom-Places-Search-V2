@@ -22,7 +22,7 @@ export const darkTheme = {
   
   // Accent colors - Modernist palette
   'accent-primary': '#5340f0',        // New primary purple
-  'accent-secondary': '#8b5cf6',      // New bright violet accent
+  'accent-secondary': '#f9f2ff',      // New bright violet accent
   'accent-muted': '#2a1f99',         // Deep purple background
   
   // Border colors - Architectural definition
