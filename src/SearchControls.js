@@ -56,12 +56,12 @@ const SearchControls = ({
             ) : isInitialSearch ? (
               <>
                 <MapPin className="w-4 h-4" />
-                <span className="whitespace-nowrap">Start searching now</span>
+                <span className="whitespace-nowrap">Search Now</span>
               </>
             ) : (
               <>
                 <Search className="w-4 h-4" />
-                <span className="whitespace-nowrap">Search your area</span>
+                <span className="whitespace-nowrap">Search Nearby</span>
               </>
             )}
           </button>

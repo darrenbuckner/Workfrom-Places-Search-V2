@@ -7,14 +7,14 @@ import {
   Wifi,
   WifiOff,
   ImageIcon,
-  Brain
+  Sparkles
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
 const AIBadge = ({ className = "" }) => (
   <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
     bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium ${className}`}>
-    <Brain className="w-3 h-3" />
+    <Sparkles className="w-3 h-3" />
     <span>AI Pick</span>
   </div>
 );

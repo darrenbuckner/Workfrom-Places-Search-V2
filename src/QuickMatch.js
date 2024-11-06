@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, Star, X, ArrowRight, Navigation } from 'lucide-react';
+import { Sparkles, Star, X, ArrowRight, Navigation } from 'lucide-react';
 import { SearchPhases } from './constants';
 import API_CONFIG from './config';
 
@@ -123,7 +123,7 @@ const QuickMatch = ({
 
   return (
     <div className="mb-6 relative">
-      <div className="border border-[var(--accent-primary)] rounded-lg shadow-sm bg-[var(--bg-primary)] overflow-hidden">
+      <div className="border border-[var(--accent-secondary)] rounded-lg shadow-sm bg-[var(--bg-primary)] overflow-hidden">
         {/* Close Button */}
         {!isAnalyzing && recommendation && (
           <button
@@ -140,18 +140,18 @@ const QuickMatch = ({
           {isAnalyzing ? (
             <div className="animate-pulse space-y-3">
               <div className="flex items-center gap-2">
-                <Brain className="w-4 h-4 text-[var(--accent-primary)]" />
-                <span className="text-sm font-medium text-[var(--text-primary)]">
+                <Sparkles className="w-4 h-4 text-[var(--accent-secondary)]" />
+                <span className="text-sm font-medium text-[var(--text-secondary)]">
                   {searchPhase === SearchPhases.LOCATING 
                     ? 'Finding your location...'
                     : searchPhase === SearchPhases.LOADING
                       ? 'Finding nearby spaces...'
-                      : 'Using AI to find your best match...'}
+                      : 'Workfrom AI is analyzing the best nearby option...'}
                 </span>
               </div>
               <div className="h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
                 <div 
-                  className="h-full bg-[var(--accent-primary)] animate-pulse transition-all duration-500" 
+                  className="h-full bg-[var(--accent-secondary)] animate-pulse transition-all duration-500" 
                   style={{ 
                     width: searchPhase === SearchPhases.LOCATING 
                       ? '33%' 
@@ -168,9 +168,17 @@ const QuickMatch = ({
               <div className="flex-shrink-0 w-14 h-14 rounded-md bg-[var(--accent-primary)] text-white 
                 flex items-center justify-center font-bold text-xl relative">
                 {recommendation.place.workabilityScore}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--accent-primary)] 
-                  flex items-center justify-center">
-                  <Star className="w-3 h-3 text-white" />
+                <div className="absolute -bottom-1 -right-1 w-5 h-5">
+                  {/* Animated rings */}
+                  <div className="absolute inset-0 rounded-full bg-[var(--accent-primary)] opacity-75">
+                    <div className="absolute inset-0 rounded-full bg-[var(--accent-primary)] animate-ping opacity-40"></div>
+                  </div>
+                  <div className="absolute inset-0 rounded-full bg-[var(--accent-primary)] animate-pulse opacity-75"></div>
+                  {/* Icon container */}
+                  <div className="absolute inset-0 rounded-full bg-[var(--accent-primary)] 
+                    flex items-center justify-center animate-pulse">
+                    <Sparkles className="w-3 h-3 text-white" />
+                  </div>
                 </div>
               </div>
 
@@ -180,8 +188,8 @@ const QuickMatch = ({
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full 
                       bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium">
-                      <Brain className="w-3 h-3" />
-                      <span>Best Match</span>
+                      <Sparkles className="w-3 h-3" />
+                      <span>AI Pick</span>
                     </div>
                     <span className="text-sm text-[var(--text-secondary)]">
                       {recommendation.place.distance} miles away

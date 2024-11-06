@@ -214,7 +214,7 @@ router.post('/analyze-workspaces', async (req, res) => {
       "recommendation": {
         "name": "(exact name of the best workspace)",
         "headline": "(one clear sentence about why this is the best choice - max 12 words)",
-        "lede": "A compelling two-sentence story about what makes this place special. Include specific details about the atmosphere and ideal use case.",
+        "lede": "A compelling one-sentence story about what makes this place special. Include specific details about the atmosphere and ideal use case.",
         "personalNote": "(optional: a specific tip from your experience, max 20 words)",
         "standoutFeatures": [
           {
