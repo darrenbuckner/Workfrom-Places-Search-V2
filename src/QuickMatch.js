@@ -151,7 +151,7 @@ const QuickMatch = ({
               </div>
               <div className="h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
                 <div 
-                  className="h-full bg-[var(--accent-secondary)] animate-pulse transition-all duration-500" 
+                  className="h-full bg-[var(--accent-primary)] animate-pulse transition-all duration-500" 
                   style={{ 
                     width: searchPhase === SearchPhases.LOCATING 
                       ? '33%' 
