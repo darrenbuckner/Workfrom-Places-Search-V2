@@ -127,7 +127,7 @@ export const lightTheme = {
   
   // Accent colors - Rich orange and deep green
   'accent-primary': '#1a2f25',        // Almost black green
-  'accent-secondary': '#8d590f',      // Rich orange
+  'accent-secondary': '#fabf5a',      // Rich orange
   'accent-muted': '#feeddd',          // Soft orange mist
   
   // Status colors - Natural alerts
