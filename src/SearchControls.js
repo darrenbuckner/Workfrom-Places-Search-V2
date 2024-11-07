@@ -199,10 +199,10 @@ const SearchControls = ({
         </div>
 
         {/* Help Text */}
-        <p className="text-sm text-[var(--text-secondary)] text-center">
+        <p className="text-xs text-[var(--text-secondary)] text-center">
           {isInitialSearch 
             ? "We'll find the best workspaces near your current location"
-            : `Within ${radius} miles ${locationName ? `of your location in ${locationName}` : ''}`
+            : `Searching within ${radius} miles ${locationName ? `of your location in ${locationName}` : ''}`
           }
         </p>
 

@@ -92,96 +92,96 @@ export const darkTheme = {
 };
 
 export const lightTheme = {
-  // Base colors - Natural whites and creams
-  'bg-primary': '#fffcf8',            // Warm white
-  'bg-secondary': '#faf7f2',          // Soft cream
-  'bg-tertiary': '#f5f2ed',           // Light beige
+  // Base colors - Warm, professional neutrals
+  'bg-primary': '#FFFFFF',            // Clean white
+  'bg-secondary': '#F8F9FB',          // Soft blue-gray
+  'bg-tertiary': '#F1F4F8',           // Lighter blue-gray
   
-  // Text colors - Rich earth tones
-  'text-primary': '#2d2a26',          // Deep bark brown
-  'text-secondary': '#615c55',        // Warm gray
-  'text-tertiary': '#8c8782',         // Muted stone
+  // Text colors - Rich, readable hierarchy
+  'text-primary': '#1A2B3B',          // Deep blue-gray
+  'text-secondary': '#4A5567',        // Medium blue-gray
+  'text-tertiary': '#6E7A8A',         // Light blue-gray
   
-  // Action colors - Deep forest greens
-  'action-primary': '#1a2f25',        // Almost black green
-  'action-primary-hover': '#0f1a15',  // Deeper green
-  'action-primary-light': 'rgba(26, 47, 37, 0.1)',
-  'action-primary-border': 'rgba(26, 47, 37, 0.2)',
+  // Action colors - Confident blue
+  'action-primary': '#2557A7',        // Professional blue
+  'action-primary-hover': '#1E4687',  // Darker blue
+  'action-primary-light': 'rgba(37, 87, 167, 0.12)',
+  'action-primary-border': 'rgba(37, 87, 167, 0.25)',
   
-  // Border colors - Natural definition
-  'border-primary': 'rgba(210, 204, 193, 0.8)',  // Soft sand
-  'border-secondary': 'rgba(210, 204, 193, 0.5)', // Light sand
+  // Interactive colors - Natural progression
+  'interactive-text': '#1A2B3B',      // Deep blue-gray
+  'interactive-hover': '#2557A7',     // Professional blue
+  'interactive-muted': '#4A5567',     // Medium blue-gray
   
-  // Component specific - Natural materials
-  'card-bg': '#fffcf8',               // Warm white
-  'card-hover': '#faf7f2',            // Soft cream
-  'input-bg': '#fffcf8',              // Warm white
-  'input-border': '#e6e2d9',          // Light stone
-  'button-text': '#ffffff',           // Pure white
-  'button-text-muted': '#615c55',     // Warm gray
+  // Accent colors - Professional palette
+  'accent-primary': '#2557A7',        // Professional blue
+  'accent-secondary': '#1E4687',      // Darker blue
+  'accent-muted': '#EEF4FB',          // Light blue background
   
-  // Interactive colors - Organic progression
-  'interactive-text': '#2d2a26',      // Deep bark brown
-  'interactive-hover': '#1a2f25',     // Almost black green
-  'interactive-muted': '#615c55',     // Warm gray
+  // Border colors - Subtle definition
+  'border-primary': '#E3E8EF',        // Light border
+  'border-secondary': '#D0D7E2',      // Slightly darker border
   
-  // Accent colors - Rich orange and deep green
-  'accent-primary': '#1a2f25',        // Almost black green
-  'accent-secondary': '#2d4f13',      // Forest green
-  'accent-muted': '#feeddd',          // Soft orange mist
+  // Component specific - Refined spaces
+  'card-bg': '#FFFFFF',
+  'card-hover': '#F8F9FB',
+  'input-bg': '#FFFFFF',
+  'input-border': '#E3E8EF',
+  'button-text': '#FFFFFF',
+  'button-text-muted': '#4A5567',
   
-  // Status colors - Natural alerts
-  'success': '#1a2f25',               // Almost black green
-  'warning': '#dd6b20',               // Rich orange
-  'error': '#bc4749',                 // Clay red
-  'info': '#1a2f25',                  // Almost black green
+  // Status colors - Clear, professional indicators
+  'success': '#0E8A6C',               // Professional green
+  'warning': '#B95000',               // Warm orange
+  'error': '#CC3340',                 // Professional red
+  'info': '#2557A7',                  // Professional blue
   
-  // Place-specific colors - Natural spaces
-  'place-highlight-bg': '#faf7f2',    
-  'place-highlight-border': '#e6e2d9',
-  'place-tag-bg': 'rgba(26, 47, 37, 0.08)',
-  'place-tag-text': '#1a2f25',
-  'place-score-high': '#1a2f25',      
-  'place-score-medium': '#dd6b20',    
-  'place-score-low': '#bc4749',       
-  'place-feature-icon': '#1a2f25',    
-  'place-distance': '#615c55',        
-  'place-hours': '#1a2f25',           
-  'place-hours-closed': '#bc4749',    
+  // Place-specific colors - Workspace oriented
+  'place-highlight-bg': '#F8F9FB',
+  'place-highlight-border': '#E3E8EF',
+  'place-tag-bg': 'rgba(37, 87, 167, 0.08)',
+  'place-tag-text': '#2557A7',
+  'place-score-high': '#0E8A6C',
+  'place-score-medium': '#B95000',
+  'place-score-low': '#CC3340',
+  'place-feature-icon': '#2557A7',
+  'place-distance': '#4A5567',
+  'place-hours': '#0E8A6C',
+  'place-hours-closed': '#CC3340',
 
-  // Promoted place colors - Elevated natural
-  'promoted-bg': '#f0f4f2',           // Soft sage
-  'promoted-border': '#c7d4ce',       // Sage border
-  'promoted-text': '#2d2a26',         
-  'promoted-secondary': '#615c55',    
-  'promoted-highlight': '#1a2f25',    
-  'promoted-tag-bg': 'rgba(26, 47, 37, 0.08)',
-  'promoted-tag-text': '#1a2f25',
-  'promoted-score-bg': '#f0f4f2',     
-  'promoted-score-text': '#2d2a26',   
-  'promoted-feature-icon': '#1a2f25', 
+  // Promoted place colors - Premium feel
+  'promoted-bg': '#F8FAFD',           // Slightly blue-tinted
+  'promoted-border': '#E3E8EF',
+  'promoted-text': '#1A2B3B',
+  'promoted-secondary': '#4A5567',
+  'promoted-highlight': '#2557A7',
+  'promoted-tag-bg': 'rgba(37, 87, 167, 0.08)',
+  'promoted-tag-text': '#2557A7',
+  'promoted-score-bg': '#F8FAFD',
+  'promoted-score-text': '#1A2B3B',
+  'promoted-feature-icon': '#2557A7',
   
-  // Scoring colors - Nature-inspired states
-  'promoted-score-high': '#1a2f25',   
-  'promoted-score-medium': '#dd6b20', 
-  'promoted-score-low': '#bc4749',    
+  // Scoring colors for promoted items - Consistent states
+  'promoted-score-high': '#0E8A6C',
+  'promoted-score-medium': '#B95000',
+  'promoted-score-low': '#CC3340',
   
   // Navigation - Clear wayfinding
-  'nav-active': '#1a2f25',
-  'nav-inactive': '#615c55',
-  'nav-hover': '#dd6b20',
+  'nav-active': '#2557A7',
+  'nav-inactive': '#4A5567',
+  'nav-hover': '#1E4687',
   
-  // Map elements - Natural mapping
-  'map-marker': '#1a2f25',
-  'map-marker-active': '#dd6b20',
-  'map-overlay': 'rgba(255, 252, 248, 0.95)',
+  // Map elements - Professional mapping
+  'map-marker': '#2557A7',
+  'map-marker-active': '#1E4687',
+  'map-overlay': 'rgba(255, 255, 255, 0.95)',
   
-  // Modal - Light and airy
-  'modal-overlay': 'rgba(255, 252, 248, 0.95)',
+  // Modal - Clean overlay
+  'modal-overlay': 'rgba(26, 43, 59, 0.4)',
   
-  // Gradients - Organic transitions
-  'gradient-primary': 'linear-gradient(to right, rgba(26, 47, 37, 0.08), rgba(26, 47, 37, 0.04))',
-  'gradient-hover': 'linear-gradient(to right, rgba(26, 47, 37, 0.12), rgba(26, 47, 37, 0.08))',
+  // Gradients - Subtle transitions
+  'gradient-primary': 'linear-gradient(to right, rgba(37, 87, 167, 0.08), rgba(37, 87, 167, 0.04))',
+  'gradient-hover': 'linear-gradient(to right, rgba(37, 87, 167, 0.12), rgba(37, 87, 167, 0.08))',
 };
 
 // Helper functions
