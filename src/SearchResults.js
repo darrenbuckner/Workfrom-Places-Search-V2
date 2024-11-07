@@ -168,7 +168,7 @@ const SearchResults = ({
         ) : null}
 
         {currentItems.map((place, index) => {
-          const isRecommended = place.ID === recommendedPlaceId;;
+          const isRecommended = recommendedPlace && place.ID === recommendedPlace.ID;
 
           return (
             <React.Fragment key={place.ID}>
