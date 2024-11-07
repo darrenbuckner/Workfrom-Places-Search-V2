@@ -21,7 +21,6 @@ import {
 import WorkabilityScore from './WorkabilityScore';
 import { useScrollLock } from './useScrollLock';
 import { useTheme } from './ThemeProvider';
-import API_CONFIG from './config';
 
 const stripHtml = (html) => {
   if (!html) return '';
@@ -52,7 +51,6 @@ const useScrollPosition = (ref) => {
   return progress;
 };
 
-// Helper function to get workability metrics
 const getWorkabilityMetrics = (place) => {
   const metrics = [];
 
@@ -138,6 +136,44 @@ const getWorkabilityMetrics = (place) => {
   return metrics;
 };
 
+const getMissingInfo = (place) => {
+  const missing = [];
+  
+  // Core workability factors
+  if (!place.download && place.no_wifi !== "1") missing.push("WiFi speed");
+  if (!place.power) missing.push("power outlet availability");
+  if (!place.noise_level && !place.noise) missing.push("noise level");
+  
+  // Visual information
+  if (!place.full_img && !place.thumbnail_img) missing.push("photos");
+  
+  // Additional helpful details
+  if (!place.description) missing.push("workspace description");
+  if (!place.hours) missing.push("operating hours");
+  
+  // Amenity details
+  const missingAmenities = [];
+  if (place.coffee === undefined) missingAmenities.push("coffee availability");
+  if (place.food === undefined) missingAmenities.push("food options");
+  if (place.outdoor_seating === undefined && !place.outside) missingAmenities.push("outdoor seating");
+  
+  if (missingAmenities.length > 0) {
+    missing.push("amenity details (" + missingAmenities.join(", ") + ")");
+  }
+  
+  return missing;
+};
+
+const formatMissingInfo = (missingItems) => {
+  if (missingItems.length === 0) return "";
+  if (missingItems.length === 1) return missingItems[0];
+  if (missingItems.length === 2) return `${missingItems[0]} and ${missingItems[1]}`;
+  
+  const lastItem = missingItems[missingItems.length - 1];
+  const otherItems = missingItems.slice(0, -1).join(", ");
+  return `${otherItems}, and ${lastItem}`;
+};
+
 const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal }) => {
   const { isDark } = useTheme();
   const contentRef = useRef(null);
@@ -157,44 +193,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     if (score >= 6) return { label: 'Good', stars: 2 };
     if (score >= 4) return { label: 'Fair', stars: 1 };
     return { label: 'Limited', stars: 0 };
-  };
-
-  const getMissingInfo = (place) => {
-    const missing = [];
-    
-    // Core workability factors
-    if (!place.download && place.no_wifi !== "1") missing.push("WiFi speed");
-    if (!place.power) missing.push("power outlet availability");
-    if (!place.noise_level && !place.noise) missing.push("noise level");
-    
-    // Visual information
-    if (!fullImg && !place.thumbnail_img) missing.push("photos");
-    
-    // Additional helpful details
-    if (!place.description) missing.push("workspace description");
-    if (!place.hours) missing.push("operating hours");
-    
-    // Amenity details
-    const missingAmenities = [];
-    if (place.coffee === undefined) missingAmenities.push("coffee availability");
-    if (place.food === undefined) missingAmenities.push("food options");
-    if (place.outdoor_seating === undefined && !place.outside) missingAmenities.push("outdoor seating");
-    
-    if (missingAmenities.length > 0) {
-      missing.push("amenity details (" + missingAmenities.join(", ") + ")");
-    }
-    
-    return missing;
-  };
-
-  const formatMissingInfo = (missingItems) => {
-    if (missingItems.length === 0) return "";
-    if (missingItems.length === 1) return missingItems[0];
-    if (missingItems.length === 2) return `${missingItems[0]} and ${missingItems[1]}`;
-    
-    const lastItem = missingItems[missingItems.length - 1];
-    const otherItems = missingItems.slice(0, -1).join(", ");
-    return `${otherItems}, and ${lastItem}`;
   };
 
   useEffect(() => {
@@ -368,43 +366,9 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                         ))}
                       </div>
                     </div>
-
-                    {/* Score Details */}
-                    <div className="p-3">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <span className="text-xs text-[var(--text-secondary)]">Score based on:</span>
-                        <div className="h-4 border-l border-[var(--border-primary)]" />
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {[
-                            { icon: Wifi, label: 'WiFi' },
-                            { icon: Battery, label: 'Power' },
-                            { icon: Volume2, label: 'Noise' },
-                            { icon: Coffee, label: 'Amenities' }
-                          ].map((item, index) => (
-                            <div key={index} className="flex items-center gap-1">
-                              <item.icon size={12} className="text-[var(--accent-primary)]" />
-                              <span className="text-xs text-[var(--text-secondary)]">{item.label}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Missing Info Alert */}
-                      {getMissingInfo(selectedPlace).length > 0 && (
-                        <div className="flex items-start gap-2 pt-2 border-t border-[var(--border-primary)]">
-                          <AlertCircle size={14} className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" />
-                          <p className="text-xs text-[var(--text-secondary)] leading-tight">
-                            Help other members by adding {formatMissingInfo(getMissingInfo(selectedPlace))}
-                          </p>
-                        </div>
-                      )}
-                    </div>
                   </div>
 
-                  {/* Add a subtle divider */}
-                  <div className="my-4 border-t border-[var(--border-primary)]" />
-
-                  {/* Description */}
+                  {/* Community Perspective Section */}
                   {sanitizedDescription && (
                     <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                       <div className="p-4">
@@ -434,6 +398,58 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       </div>
                     </div>
                   )}
+
+                  {/* Score Details Section */}
+                  <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+                    <div className="p-4">
+                      <div className="flex items-start gap-2.5 mb-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
+                            <Info className="w-4 h-4 text-[var(--accent-primary)]" />
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-medium text-[var(--text-primary)]">
+                            Score Details
+                          </h3>
+                          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                            Understanding the workability score
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {/* Score Components */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-[var(--text-secondary)]">Score based on:</span>
+                          <div className="h-4 border-l border-[var(--border-primary)]" />
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {[
+                              { icon: Wifi, label: 'WiFi' },
+                              { icon: Battery, label: 'Power' },
+                              { icon: Volume2, label: 'Noise' },
+                              { icon: Coffee, label: 'Amenities' }
+                            ].map((item, index) => (
+                              <div key={index} className="flex items-center gap-1">
+                                <item.icon size={12} className="text-[var(--accent-primary)]" />
+                                <span className="text-xs text-[var(--text-secondary)]">{item.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Missing Info Alert */}
+                        {getMissingInfo(selectedPlace).length > 0 && (
+                          <div className="flex items-start gap-2 pt-2 border-t border-[var(--border-primary)]">
+                            <AlertCircle size={14} className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" />
+                            <p className="text-xs text-[var(--text-secondary)] leading-tight">
+                              Help other members by adding {formatMissingInfo(getMissingInfo(selectedPlace))}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
