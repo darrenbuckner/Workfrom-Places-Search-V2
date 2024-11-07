@@ -140,7 +140,7 @@ const QuickMatch = ({
   }
 
   return (
-    <div className="relative bg-[var(--bg-primary)] border border-[var(--accent-primary)]/20 rounded-lg overflow-hidden">
+    <div className="relative bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg overflow-hidden">
       {!isAnalyzing && recommendation && (
         <button
           onClick={onHide}
