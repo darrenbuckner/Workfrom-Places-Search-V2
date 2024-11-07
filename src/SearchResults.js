@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Brain, Loader, Sparkles } from 'lucide-react';
+import SearchResultsSkeleton from './SearchResultsSkeleton';
 import PlaceCard from './PlaceCard';
 import Pagination from './Pagination';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
@@ -154,7 +155,10 @@ const SearchResults = ({
       
       <div className="space-y-6">
         {shouldShowLoading ? (
-          <LoadingState progress={loadingProgress} />
+          <>
+            <LoadingState progress={loadingProgress} />
+            <SearchResultsSkeleton />
+          </>
         ) : recommendation?.recommendation && recommendedPlace ? (
           <RecommendedCard 
             recommendation={recommendation} 

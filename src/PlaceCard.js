@@ -1,94 +1,146 @@
 import React from 'react';
 import { 
   Navigation, 
-  Copy, 
-  AlertTriangle,
-  User,
-  Wifi,
-  WifiOff,
+  Wifi, 
+  WifiOff, 
+  Battery,
+  Volume2,
+  Clock,
+  Coffee,
+  Users,
   ImageIcon,
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
-import { useTheme } from './ThemeProvider';
 
-const AIBadge = ({ className = "" }) => (
-  <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
-    bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] text-xs font-medium ${className}`}>
-    <Sparkles className="w-3 h-3" />
-    <span>AI Pick</span>
+const MetricBadge = ({ icon: Icon, label, color, className = "" }) => (
+  <div className={`
+    inline-flex items-center gap-1.5 px-2 py-1 
+    rounded-md border border-[var(--border-primary)]
+    bg-[var(--bg-primary)] whitespace-nowrap
+    ${className}
+  `}>
+    <Icon size={14} className={color} />
+    <span className={`text-xs font-medium ${color}`}>{label}</span>
   </div>
 );
 
-const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
-  const isPromoted = place.owner_promoted_flag === "1";
-  const { isDark } = useTheme();
-  
-  const getPlaceholderBg = () => {
-    if (isPromoted) return 'e5e7eb';
-    if (isRecommended) return 'e2e8f0';
-    return 'e5e7eb';
+const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
+  // Helper function to format WiFi status
+  const getWifiStatus = () => {
+    if (place.no_wifi === "1") {
+      return { 
+        icon: WifiOff,
+        label: "No WiFi",
+        color: "text-red-500"
+      };
+    }
+    if (place.download) {
+      const speed = Math.round(place.download);
+      if (speed >= 50) return { icon: Wifi, label: "Fast WiFi", color: "text-green-500" };
+      if (speed >= 20) return { icon: Wifi, label: "Good WiFi", color: "text-green-500" };
+      if (speed >= 10) return { icon: Wifi, label: "Basic WiFi", color: "text-yellow-500" };
+      return { icon: Wifi, label: `${speed} Mbps`, color: "text-yellow-500" };
+    }
+    return { icon: Wifi, label: "WiFi Available", color: "text-[var(--text-secondary)]" };
   };
 
-  
+  // Helper function for power availability
+  const getPowerStatus = () => {
+    const powerValue = String(place.power || '').toLowerCase();
+    if (powerValue === 'none' || powerValue === '') {
+      return { label: "No Power", color: "text-red-500" };
+    }
+    if (powerValue.includes('range3') || powerValue.includes('good')) {
+      return { label: "Many Outlets", color: "text-green-500" };
+    }
+    if (powerValue.includes('range2')) {
+      return { label: "Some Outlets", color: "text-yellow-500" };
+    }
+    return { label: "Limited Power", color: "text-yellow-500" };
+  };
 
-  const getGoogleMapsUrl = (address) => 
-    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+  // Helper function for noise level
+  const getNoiseLevel = () => {
+    const noise = (place.noise_level || place.noise || "").toLowerCase();
+    if (noise.includes('quiet')) return { label: "Quiet", color: "text-green-500" };
+    if (noise.includes('moderate')) return { label: "Moderate", color: "text-yellow-500" };
+    if (noise.includes('noisy')) return { label: "Lively", color: "text-yellow-500" };
+    return { label: "Unknown", color: "text-[var(--text-secondary)]" };
+  };
+
+  const wifiStatus = getWifiStatus();
+  const powerStatus = getPowerStatus();
+  const noiseLevel = getNoiseLevel();
+
+  // Get amenities array for conditional rendering
+  const amenities = [
+    place.coffee === "1" && { label: "Coffee", icon: Coffee },
+    place.food === "1" && { label: "Food", icon: Coffee },
+    (place.outdoor_seating === "1" || place.outside === "1") && { label: "Outdoor", icon: Coffee }
+  ].filter(Boolean);
 
   return (
     <div className={`
-      relative group 
-      ${isRecommended ? '' : ''}
+      relative rounded-lg border transition-all duration-200
+      ${isRecommended 
+        ? 'border-[var(--accent-primary)] shadow-lg bg-[var(--bg-primary)]' 
+        : 'border-[var(--border-primary)] hover:shadow-md bg-[var(--bg-secondary)]'
+      }
     `}>
-      {/* Card Container */}
-      <div className={`
-        relative border rounded shadow-sm 
-        transition-all duration-300
-        ${isPromoted 
-          ? 'border-[var(--promoted-border)] bg-[var(--promoted-bg)]' 
-          : isRecommended
-            ? `border-[var(--border-primary)] bg-[var(--bg-primary)] 
-               shadow-lg hover:shadow-xl`
-            : 'border-[var(--border-primary)] hover:shadow-md'
-        }
-      `}>
-        <div className="p-4">
-          <div className="flex flex-col space-y-4">
-            {/* Header with Title, Score, and AI Badge */}
+      <div className="p-4">
+        {/* Header with Title and Score */}
+        <div className="flex items-start gap-4 mb-4">
+          {/* Thumbnail */}
+          <div 
+            onClick={() => onPhotoClick(place)}
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer
+              bg-[var(--bg-tertiary)] transition-transform hover:scale-105"
+          >
+            {place.thumbnail_img ? (
+              <img
+                src={place.thumbnail_img}
+                alt={place.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = `/api/placeholder/96/96?text=No+image`;
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                <ImageIcon size={20} className="text-[var(--text-tertiary)] mb-1" />
+                <span className="text-xs text-[var(--text-tertiary)]">No image</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                {/* AI Badge for recommended places */}
                 {isRecommended && (
-                  <AIBadge className="mb-2" />
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full 
+                    bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] 
+                    text-xs font-medium w-fit mb-1"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>AI Pick</span>
+                  </div>
                 )}
-                <h2 className={`
-                  text-xl font-semibold mb-1 cursor-pointer
-                  transition-colors
-                  ${isPromoted 
-                    ? 'text-[var(--promoted-text)] hover:text-[var(--promoted-text)]/90' 
-                    : 'text-text-primary hover:text-[var(--action-primary)]'
-                  }
-                  truncate block
-                `}
-                  title={place.title}
+                <h2 
                   onClick={() => onPhotoClick(place)}
+                  className="text-lg font-semibold text-[var(--text-primary)] 
+                    hover:text-[var(--action-primary)] cursor-pointer truncate"
                 >
                   {place.title}
                 </h2>
-                <p className={`text-sm ${
-                  isPromoted 
-                    ? 'text-[var(--promoted-secondary)]' 
-                    : isDark && isRecommended
-                      ? 'text-white'
-                      : 'text-[var(--text-secondary)]'
-                }`}>
-                  Distance: {place.distance} miles
+                <p className="text-sm text-[var(--text-secondary)] mb-2">
+                  {place.distance} miles away
                 </p>
               </div>
               
-              {/* Updated Score Badge */}
               <div 
                 onClick={() => onPhotoClick(place)}
-                className="flex-shrink-0 w-12 h-12 rounded-md cursor-pointer
+                className="flex-shrink-0 w-12 h-12 rounded-lg cursor-pointer
                   bg-[var(--accent-primary)] text-white
                   flex items-center justify-center font-bold text-lg
                   transition-transform hover:scale-105"
@@ -96,99 +148,74 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended, highlight }) => {
                 {place.workabilityScore}
               </div>
             </div>
-
-            {/* Image */}
-            <div className="flex space-x-4">
-              <div onClick={() => onPhotoClick(place)}
-                className={`
-                  w-24 h-24 rounded flex-shrink-0 overflow-hidden cursor-pointer
-                  group relative
-                  ${isPromoted
-                    ? 'bg-[var(--promoted-tag-bg)]'
-                    : isRecommended
-                      ? 'bg-[var(--bg-primary)]/10'
-                      : 'bg-[var(--bg-tertiary)]'
-                  }
-                `}
-              >
-                {place.thumbnail_img ? (
-                  <img
-                    src={place.thumbnail_img}
-                    alt={place.title}
-                    className="w-full h-full object-cover transition-opacity group-hover:opacity-90"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = `https://placehold.co/96x96/${getPlaceholderBg()}/94a3b8?text=No+image&font=raleway`;
-                    }}
-                  />
-                ) : (
-                  <div className={`
-                    w-full h-full flex flex-col items-center justify-center
-                    transition-colors group-hover:bg-opacity-90
-                    ${isPromoted
-                      ? 'bg-[var(--promoted-tag-bg)]'
-                      : isRecommended
-                        ? 'bg-[var(--bg-primary)]/10'
-                        : 'bg-[var(--bg-tertiary)]'
-                    }
-                  `}>
-                    <ImageIcon 
-                      size={20} 
-                      className={`mb-1 ${
-                        isPromoted
-                          ? 'text-[var(--promoted-secondary)]'
-                          : isDark && isRecommended
-                            ? 'text-white'
-                            : 'text-text-tertiary'
-                      }`} 
-                    />
-                    <span className={`
-                      text-xs text-center
-                      ${isPromoted
-                        ? 'text-[var(--promoted-secondary)]'
-                        : isDark && isRecommended
-                          ? 'text-white'
-                          : 'text-text-tertiary'
-                      }
-                    `}>
-                      No image
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
-              {place.os && (
-                <div className={`text-sm flex items-center flex-shrink truncate ${
-                  isPromoted 
-                    ? 'text-[var(--promoted-secondary)]' 
-                    : isDark && isRecommended
-                      ? 'text-white'
-                      : 'text-[var(--text-secondary)]'
-                }`}>
-                  <User size={16} className="mr-1 flex-shrink-0" />
-                  <span className="truncate">{place.os}</span>
-                </div>
-              )}
-              
-              <div className="flex gap-2 flex-shrink-0">
-                <button
-                  onClick={() => window.open(getGoogleMapsUrl(
-                    `${place.street}, ${place.city}, ${place.postal}`
-                  ), '_blank')}
-                  className={`
-                    text-sm flex items-center transition-colors
-                    text-[var(--action-primary)] hover:text-[var(--action-primary-hover)]
-                  `}
-                >
-                  <Navigation size={16} className="mr-1 flex-shrink-0" />
-                  <span>Get Directions</span>
-                </button>
-              </div>
-            </div>
           </div>
+        </div>
+
+        {/* Metrics Section - Redesigned for better mobile layout */}
+        <div className="space-y-2 mb-4">
+          {/* Top Row - Essential Metrics */}
+          <div className="flex flex-wrap gap-2">
+            <MetricBadge 
+              icon={wifiStatus.icon} 
+              label={wifiStatus.label} 
+              color={wifiStatus.color}
+            />
+            <MetricBadge 
+              icon={Battery} 
+              label={powerStatus.label} 
+              color={powerStatus.color}
+            />
+            <MetricBadge 
+              icon={Volume2} 
+              label={noiseLevel.label} 
+              color={noiseLevel.color}
+            />
+          </div>
+
+          {/* Bottom Row - Amenities */}
+          {amenities.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {amenities.map((amenity, index) => (
+                <div 
+                  key={index}
+                  className="inline-flex items-center gap-1.5 px-2 py-1 
+                    rounded-md bg-[var(--bg-tertiary)]
+                    text-[var(--text-secondary)]"
+                >
+                  <amenity.icon size={14} />
+                  <span className="text-xs">{amenity.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Actions Section */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <button
+            onClick={() => onPhotoClick(place)}
+            className="flex items-center gap-1 text-sm font-medium
+              text-[var(--action-primary)] hover:text-[var(--action-primary-hover)]
+              bg-[var(--action-primary)]/5 hover:bg-[var(--action-primary)]/10
+              px-3 py-1.5 rounded-md transition-colors"
+          >
+            View Details
+            <ArrowRight size={16} />
+          </button>
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+              `${place.street}, ${place.city}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-sm font-medium
+              text-[var(--text-secondary)] hover:text-[var(--text-primary)]
+              bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)]/80
+              px-3 py-1.5 rounded-md transition-colors"
+          >
+            <Navigation size={14} />
+            Directions
+          </a>
         </div>
       </div>
     </div>
