@@ -72,8 +72,6 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
   const wifiStatus = getWifiStatus();
   const powerStatus = getPowerStatus();
   const noiseLevel = getNoiseLevel();
-
-  // Get amenities array for conditional rendering
   const amenities = [
     place.coffee === "1" && { label: "Coffee", icon: Coffee },
     place.food === "1" && { label: "Food", icon: Coffee },
@@ -89,8 +87,8 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
       }
     `}>
       <div className="p-4">
-        {/* Header with Title and Score */}
-        <div className="flex items-start gap-4 mb-4">
+        {/* Header Section */}
+        <div className="flex items-start gap-4">
           {/* Thumbnail */}
           <div 
             onClick={() => onPhotoClick(place)}
@@ -118,7 +116,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 {isRecommended && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full 
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full 
                     bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] 
                     text-xs font-medium w-fit mb-1"
                   >
@@ -133,71 +131,80 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
                 >
                   {place.title}
                 </h2>
-                <p className="text-sm text-[var(--text-secondary)] mb-2">
+                <p className="text-sm text-[var(--text-secondary)]">
                   {place.distance} miles away
                 </p>
               </div>
               
               <div 
                 onClick={() => onPhotoClick(place)}
-                className="flex-shrink-0 w-12 h-12 rounded-lg cursor-pointer
-                  bg-[var(--accent-primary)] text-white
+                className={`
+                  flex-shrink-0 w-12 h-12 rounded-lg cursor-pointer
                   flex items-center justify-center font-bold text-lg
-                  transition-transform hover:scale-105"
+                  transition-transform hover:scale-105
+                  ${isRecommended 
+                    ? 'bg-[var(--accent-primary)] shadow-sm' 
+                    : 'bg-[var(--accent-primary)]'
+                  }
+                  text-white
+                `}
               >
                 {place.workabilityScore}
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Metrics Section - Redesigned for better mobile layout */}
-        <div className="space-y-2 mb-4">
-          {/* Top Row - Essential Metrics */}
-          <div className="flex flex-wrap gap-2">
-            <MetricBadge 
-              icon={wifiStatus.icon} 
-              label={wifiStatus.label} 
-              color={wifiStatus.color}
-            />
-            <MetricBadge 
-              icon={Battery} 
-              label={powerStatus.label} 
-              color={powerStatus.color}
-            />
-            <MetricBadge 
-              icon={Volume2} 
-              label={noiseLevel.label} 
-              color={noiseLevel.color}
-            />
-          </div>
+            {/* Metrics Section - Moved up and adjusted spacing */}
+            <div className="mt-3 space-y-1.5">
+              <div className="flex flex-wrap gap-1.5">
+                <MetricBadge 
+                  icon={wifiStatus.icon} 
+                  label={wifiStatus.label} 
+                  color={wifiStatus.color}
+                />
+                <MetricBadge 
+                  icon={Battery} 
+                  label={powerStatus.label} 
+                  color={powerStatus.color}
+                />
+                <MetricBadge 
+                  icon={Volume2} 
+                  label={noiseLevel.label} 
+                  color={noiseLevel.color}
+                />
+              </div>
 
-          {/* Bottom Row - Amenities */}
-          {amenities.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {amenities.map((amenity, index) => (
-                <div 
-                  key={index}
-                  className="inline-flex items-center gap-1.5 px-2 py-1 
-                    rounded-md bg-[var(--bg-tertiary)]
-                    text-[var(--text-secondary)]"
-                >
-                  <amenity.icon size={14} />
-                  <span className="text-xs">{amenity.label}</span>
+              {/* Amenities */}
+              {amenities.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {amenities.map((amenity, index) => (
+                    <div 
+                      key={index}
+                      className="inline-flex items-center gap-1.5 px-2 py-1 
+                        rounded-md bg-[var(--bg-tertiary)]
+                        text-[var(--text-secondary)]"
+                    >
+                      <amenity.icon size={14} />
+                      <span className="text-xs">{amenity.label}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Actions Section */}
-        <div className="flex items-center gap-3 flex-wrap">
+        {/* Actions Section - Adjusted top margin */}
+        <div className="flex items-center gap-3 flex-wrap mt-4">
           <button
             onClick={() => onPhotoClick(place)}
-            className="flex items-center gap-1 text-sm font-medium
-              text-[var(--action-primary)] hover:text-[var(--action-primary-hover)]
-              bg-[var(--action-primary)]/5 hover:bg-[var(--action-primary)]/10
-              px-3 py-1.5 rounded-md transition-colors"
+            className={`
+              flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-md
+              transition-colors
+              ${isRecommended 
+                ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-secondary)]'
+                : 'text-[var(--action-primary)] hover:text-[var(--action-primary-hover)] bg-[var(--action-primary)]/5 hover:bg-[var(--action-primary)]/10'
+              }
+            `}
           >
             View Details
             <ArrowRight size={16} />
@@ -218,6 +225,10 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
           </a>
         </div>
       </div>
+
+      {isRecommended && (
+        <div className="absolute -top-px left-0 right-0 h-1 bg-[var(--accent-primary)]" />
+      )}
     </div>
   );
 };

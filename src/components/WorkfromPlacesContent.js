@@ -76,6 +76,7 @@ const WorkfromPlacesContent = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
   const [recommendedPlace, setRecommendedPlace] = useState(null);
+  const [recommendedPlaceId, setRecommendedPlaceId] = useState(null);
   const [quickMatchHidden, setQuickMatchHidden] = useState(false);
 
   // Search functionality
@@ -252,7 +253,7 @@ const WorkfromPlacesContent = () => {
                       itemsPerPage={ITEMS_PER_PAGE}
                       viewMode={viewMode}
                       onPhotoClick={handlePhotoClick}
-                      recommendedPlaceName={recommendedPlace}
+                      recommendedPlaceId={recommendedPlaceId}
                     />
                   ) : (
                     <NearbyPlacesMap 

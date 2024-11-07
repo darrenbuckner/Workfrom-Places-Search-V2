@@ -74,7 +74,7 @@ const SearchResults = ({
   itemsPerPage = 10, 
   viewMode, 
   onPhotoClick,
-  recommendedPlaceName,
+  recommendedPlaceId,
   recommendation,
   recommendedPlace,
   isAnalyzing,
@@ -168,7 +168,7 @@ const SearchResults = ({
         ) : null}
 
         {currentItems.map((place, index) => {
-          const isRecommended = place.title === recommendedPlaceName;
+          const isRecommended = place.ID === recommendedPlaceId;;
 
           return (
             <React.Fragment key={place.ID}>
