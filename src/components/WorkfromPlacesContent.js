@@ -293,7 +293,7 @@ const WorkfromPlacesContent = () => {
       </div>
       
       {/* Footer */}
-      <footer className="py-4 bg-bg-secondary border-t border-[var(--border-primary)]">
+      <footer className="py-4 mt-10 bg-bg-secondary border-t border-[var(--border-primary)]">
         <div className="container mx-auto px-4 text-center text-xs text-text-secondary">
           <p>&copy; {new Date().getFullYear()} Workfrom</p>
         </div>
