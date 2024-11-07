@@ -12,6 +12,8 @@ import {
   Sparkles,
   ArrowRight
 } from 'lucide-react';
+import { useTheme } from './ThemeProvider';
+import { getWifiStatus } from './wifiUtils';
 
 const MetricBadge = ({ icon: Icon, label, color, className = "" }) => (
   <div className={`
@@ -26,50 +28,33 @@ const MetricBadge = ({ icon: Icon, label, color, className = "" }) => (
 );
 
 const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
-  // Helper function to format WiFi status
-  const getWifiStatus = () => {
-    if (place.no_wifi === "1") {
-      return { 
-        icon: WifiOff,
-        label: "No WiFi",
-        color: "text-red-500"
-      };
-    }
-    if (place.download) {
-      const speed = Math.round(place.download);
-      if (speed >= 50) return { icon: Wifi, label: "Fast WiFi", color: "text-green-500" };
-      if (speed >= 20) return { icon: Wifi, label: "Good WiFi", color: "text-green-500" };
-      if (speed >= 10) return { icon: Wifi, label: "Basic WiFi", color: "text-yellow-500" };
-      return { icon: Wifi, label: `${speed} Mbps`, color: "text-yellow-500" };
-    }
-    return { icon: Wifi, label: "WiFi Available", color: "text-[var(--text-secondary)]" };
-  };
+  const { isDark } = useTheme();
 
   // Helper function for power availability
   const getPowerStatus = () => {
     const powerValue = String(place.power || '').toLowerCase();
     if (powerValue === 'none' || powerValue === '') {
-      return { label: "No Power", color: "text-red-500" };
+      return { label: "No Power", color: isDark ? "text-red-400" : "text-red-500" };
     }
     if (powerValue.includes('range3') || powerValue.includes('good')) {
-      return { label: "Many Outlets", color: "text-green-500" };
+      return { label: "Many Outlets", color: isDark ? "text-green-400" : "text-green-500" };
     }
     if (powerValue.includes('range2')) {
-      return { label: "Some Outlets", color: "text-yellow-500" };
+      return { label: "Some Outlets", color: isDark ? "text-yellow-400" : "text-yellow-500" };
     }
-    return { label: "Limited Power", color: "text-yellow-500" };
+    return { label: "Limited Power", color: isDark ? "text-yellow-400" : "text-yellow-500" };
   };
 
   // Helper function for noise level
   const getNoiseLevel = () => {
     const noise = (place.noise_level || place.noise || "").toLowerCase();
-    if (noise.includes('quiet')) return { label: "Quiet", color: "text-green-500" };
-    if (noise.includes('moderate')) return { label: "Moderate", color: "text-yellow-500" };
-    if (noise.includes('noisy')) return { label: "Lively", color: "text-yellow-500" };
-    return { label: "Unknown", color: "text-[var(--text-secondary)]" };
+    if (noise.includes('quiet')) return { label: "Quiet", color: isDark ? "text-green-400" : "text-green-500" };
+    if (noise.includes('moderate')) return { label: "Moderate", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+    if (noise.includes('noisy')) return { label: "Lively", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+    return { label: "Unknown", color: isDark ? "text-gray-400" : "text-gray-500" };
   };
 
-  const wifiStatus = getWifiStatus();
+  const wifiStatus = getWifiStatus(place, isDark);
   const powerStatus = getPowerStatus();
   const noiseLevel = getNoiseLevel();
   const amenities = [
@@ -146,18 +131,18 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
                     ? 'bg-[var(--accent-primary)] shadow-sm' 
                     : 'bg-[var(--accent-primary)]'
                   }
-                  text-[var(--button-text)]
+                  text-white
                 `}
               >
                 {place.workabilityScore}
               </div>
             </div>
 
-            {/* Metrics Section - Moved up and adjusted spacing */}
+            {/* Metrics Section */}
             <div className="mt-3 space-y-1.5">
               <div className="flex flex-wrap gap-1.5">
                 <MetricBadge 
-                  icon={wifiStatus.icon} 
+                  icon={wifiStatus.icon === 'WifiOff' ? WifiOff : Wifi}
                   label={wifiStatus.label} 
                   color={wifiStatus.color}
                 />
@@ -193,7 +178,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
           </div>
         </div>
 
-        {/* Actions Section - Adjusted top margin */}
+        {/* Actions Section */}
         <div className="flex items-center gap-3 flex-wrap mt-4">
           <button
             onClick={() => onPhotoClick(place)}
@@ -201,7 +186,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
               flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-md
               transition-colors
               ${isRecommended 
-                ? 'bg-[var(--accent-primary)] text-[var(--button-text)] hover:bg-[var(--accent-secondary)]'
+                ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-secondary)]'
                 : 'text-[var(--action-primary)] hover:text-[var(--action-primary-hover)] bg-[var(--action-primary)]/5 hover:bg-[var(--action-primary)]/10'
               }
             `}
