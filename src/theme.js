@@ -1,95 +1,94 @@
-// Custom dark theme with cyan accent (#32e6e2)
 export const darkTheme = {
-  // Base colors - Dramatic depths
-  'bg-primary': '#0a0d0f',            // Deep space black with cyan tint
-  'bg-secondary': '#111618',          // Monochromatic darker
-  'bg-tertiary': '#161b1d',           // Elevated surface
+  // Base colors - Deep, rich backgrounds inspired by Lyft
+  'bg-primary': '#0F0B14',            // Deep purple-black
+  'bg-secondary': '#161219',          // Lighter purple-black
+  'bg-tertiary': '#1D1820',           // Elevated surface with purple tint
   
-  // Text colors - Sharp contrast
-  'text-primary': '#ffffff',          // Pure white for maximum contrast
-  'text-secondary': '#9ba7aa',        // Muted but legible
-  'text-tertiary': '#6b7779',         // Subtle text
+  // Text colors - Crisp contrast
+  'text-primary': '#FFFFFF',          // Pure white
+  'text-secondary': '#B4A5C1',        // Soft purple-white
+  'text-tertiary': '#8E7B9B',         // Muted purple
   
-  // Action colors - Cyan accent
-  'action-primary': '#32e6e2',        // Main cyan accent
-  'action-primary-hover': '#2bc9c6',  // Darker shade
-  'action-primary-light': 'rgba(50, 230, 226, 0.12)',
-  'action-primary-border': 'rgba(50, 230, 226, 0.25)',
+  // Action colors - Lyft-inspired pink/purple
+  'action-primary': '#EA4C89',        // Vibrant pink
+  'action-primary-hover': '#D23B78',  // Darker pink
+  'action-primary-light': 'rgba(234, 76, 137, 0.12)',
+  'action-primary-border': 'rgba(234, 76, 137, 0.25)',
   
-  // Interactive colors - Clean transitions
-  'interactive-text': '#0a0d0f',      // Dark text for interactive elements
-  'interactive-hover': '#121e1e',     // Slightly lighter dark for hover
-  'interactive-muted': '#6b7779',     
+  // Interactive colors
+  'interactive-text': '#FFFFFF',      
+  'interactive-hover': '#B4A5C1',     
+  'interactive-muted': '#8E7B9B',     
   
-  // Accent colors - Modernist palette
-  'accent-primary': '#32e6e2',        // Main cyan
-  'accent-secondary': '#e8fcfb',      // Bright cyan accent
-  'accent-muted': '#1a4544',          // Deep cyan background
+  // Accent colors - Bold pink highlights
+  'accent-primary': '#EA4C89',        // Vibrant pink
+  'accent-secondary': '#FF69B4',      // Bright pink
+  'accent-muted': '#4A2B4B',          // Deep purple background
   
-  // Border colors - Architectural definition
-  'border-primary': 'rgba(50, 230, 226, 0.08)',
-  'border-secondary': 'rgba(50, 230, 226, 0.04)',
+  // Border colors - Subtle purple tints
+  'border-primary': 'rgba(255, 255, 255, 0.1)',
+  'border-secondary': 'rgba(255, 255, 255, 0.05)',
   
-  // Component specific - Structured spaces
-  'card-bg': '#111618',
-  'card-hover': '#161b1d',
-  'input-bg': '#161b1d',
-  'input-border': 'rgba(50, 230, 226, 0.08)',
-  'button-text': '#0a0d0f',           // Dark text for buttons
-  'button-text-muted': '#1a4544',
+  // Component specific
+  'card-bg': '#161219',
+  'card-hover': '#1D1820',
+  'input-bg': '#1D1820',
+  'input-border': 'rgba(255, 255, 255, 0.1)',
+  'button-text': '#FFFFFF',
+  'button-text-muted': '#B4A5C1',
   
-  // Status colors - Contemporary palette
-  'success': '#2ee6af',               // Cyan-tinted green
-  'warning': '#e6c832',               // Bold amber
-  'error': '#e65a32',                 // Vivid red
-  'info': '#32e6e2',                  // Cyan accent
+  // Status colors - Modern and bold
+  'success': '#00E5A0',               // Bright mint green
+  'warning': '#FFB168',               // Warm orange
+  'error': '#FF4F7D',                 // Pink-red
+  'info': '#EA4C89',                  // Pink
   
-  // Place-specific colors - Bold modernist approach
-  'place-highlight-bg': '#161b1d',     
-  'place-highlight-border': '#1f2729', 
-  'place-tag-bg': 'rgba(50, 230, 226, 0.15)',
-  'place-tag-text': '#0a0d0f',
-  'place-score-high': '#2ee6af',       
-  'place-score-medium': '#e6c832',     
-  'place-score-low': '#e65a32',        
-  'place-feature-icon': '#32e6e2',     
-  'place-distance': '#9ba7aa',         
-  'place-hours': '#2ee6af',            
-  'place-hours-closed': '#e65a32',     
+  // Place-specific colors
+  'place-highlight-bg': '#1D1820',     
+  'place-highlight-border': '#2A222E', 
+  'place-tag-bg': 'rgba(234, 76, 137, 0.15)',
+  'place-tag-text': '#FF69B4',
+  'place-score-high': '#00E5A0',       
+  'place-score-medium': '#FFB168',     
+  'place-score-low': '#FF4F7D',        
+  'place-feature-icon': '#FF69B4',     
+  'place-distance': '#B4A5C1',         
+  'place-hours': '#00E5A0',            
+  'place-hours-closed': '#FF4F7D',     
 
-  // Promoted place colors - Dramatic emphasis
-  'promoted-bg': '#1a2324',           
-  'promoted-border': '#243436',       
-  'promoted-text': '#ffffff',         
-  'promoted-secondary': '#9ba7aa',    
-  'promoted-highlight': '#32e6e2',    
-  'promoted-tag-bg': 'rgba(50, 230, 226, 0.2)',
-  'promoted-tag-text': '#0a0d0f',
-  'promoted-score-bg': '#1f2729',     
-  'promoted-score-text': '#0a0d0f',   
-  'promoted-feature-icon': '#32e6e2', 
+  // Promoted place colors
+  'promoted-bg': '#2A1F33',           
+  'promoted-border': '#3D2D47',       
+  'promoted-text': '#FFFFFF',         
+  'promoted-secondary': '#B4A5C1',    
+  'promoted-highlight': '#EA4C89',    
+  'promoted-tag-bg': 'rgba(234, 76, 137, 0.2)',
+  'promoted-tag-text': '#FF69B4',
+  'promoted-score-bg': '#2A222E',     
+  'promoted-score-text': '#FFFFFF',   
+  'promoted-feature-icon': '#FF69B4', 
   
-  // Scoring colors for promoted items - Bold states
-  'promoted-score-high': '#2ee6af',   
-  'promoted-score-medium': '#e6c832', 
-  'promoted-score-low': '#e65a32',    
+  // Scoring colors for promoted items
+  'promoted-score-high': '#00E5A0',   
+  'promoted-score-medium': '#FFB168', 
+  'promoted-score-low': '#FF4F7D',    
   
-  // Navigation - Clear wayfinding
-  'nav-active': '#32e6e2',           
-  'nav-inactive': '#6b7779',
-  'nav-hover': '#2bc9c6',
+  // Navigation
+  'nav-active': '#EA4C89',           
+  'nav-inactive': '#8E7B9B',
+  'nav-hover': '#FF69B4',
   
-  // Map elements - Contemporary styling
-  'map-marker': '#32e6e2',           
-  'map-marker-active': '#2bc9c6',
-  'map-overlay': 'rgba(10, 13, 15, 0.85)',
+  // Map elements
+  'map-marker': '#EA4C89',           
+  'map-marker-active': '#FF69B4',
+  'map-overlay': 'rgba(15, 11, 20, 0.85)',
   
-  // Modal - Dramatic overlay
-  'modal-overlay': 'rgba(10, 13, 15, 0.95)',
+  // Modal
+  'modal-overlay': 'rgba(15, 11, 20, 0.95)',
   
-  // Gradients - Modern transitions
-  'gradient-primary': 'linear-gradient(to right, rgba(50, 230, 226, 0.15), rgba(50, 230, 226, 0.08))',
-  'gradient-hover': 'linear-gradient(to right, rgba(50, 230, 226, 0.25), rgba(50, 230, 226, 0.15))',
+  // Gradients
+  'gradient-primary': 'linear-gradient(to right, rgba(234, 76, 137, 0.15), rgba(234, 76, 137, 0.08))',
+  'gradient-hover': 'linear-gradient(to right, rgba(234, 76, 137, 0.25), rgba(234, 76, 137, 0.15))',
 };
 
 export const lightTheme = {

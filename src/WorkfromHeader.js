@@ -7,61 +7,69 @@ const WorkfromLogo = () => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     viewBox="0 0 100 100" 
-    className="w-8 h-8 sm:w-10 sm:h-10"
+    className="w-8 h-8 sm:w-10 sm:h-10 text-[var(--text-primary)]"
     aria-label="Workfrom logo"
   >
-    {/* Enhanced Background Circle */}
-    <circle cx="50" cy="50" r="48" fill="#1e1b4b" /> {/* Deep purple background */}
-    <circle cx="50" cy="50" r="46" fill="none" stroke="#312e81" strokeWidth="2" /> {/* Rich purple border */}
+    {/* Background Circle */}
+    <circle 
+      cx="50" 
+      cy="50" 
+      r="48" 
+      className="text-[var(--bg-tertiary)]" 
+      fill="currentColor" 
+    />
+    <circle 
+      cx="50" 
+      cy="50" 
+      r="46" 
+      fill="none" 
+      className="text-[var(--border-primary)]" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+    />
     
-    {/* Enhanced Location Pin Base with gradient */}
-    <defs>
-      <linearGradient id="pinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#7c3aed" /> {/* Lighter violet */}
-        <stop offset="100%" stopColor="#5340f0" /> {/* Primary purple */}
-      </linearGradient>
-    </defs>
+    {/* Location Pin */}
     <path 
       d="M50 20 C35 20, 25 32, 25 45 C25 58, 35 65, 50 80 C65 65, 75 58, 75 45 C75 32, 65 20, 50 20"
-      fill="url(#pinGradient)"
-      opacity="0.95"
+      className="text-[var(--text-primary)]"
+      fill="currentColor"
+      opacity="0.9"
     />
     
-    {/* Enhanced Laptop Screen with gradient */}
+    {/* Laptop Screen */}
     <rect 
-      x="38" y="38" width="24" height="16" rx="2" 
-      fill="#f1f5f9" 
-      stroke="#cbd5e1" 
-      strokeWidth="1.5" 
+      x="38" 
+      y="38" 
+      width="24" 
+      height="16" 
+      rx="2" 
+      className="text-[var(--bg-secondary)]"
+      fill="currentColor"
     />
     
-    {/* Enhanced Laptop Base with gradient */}
+    {/* Laptop Base */}
     <path 
       d="M35 54 L65 54 L68 58 L32 58 Z" 
-      fill="#e2e8f0" 
-      stroke="#cbd5e1" 
-      strokeWidth="1.5" 
+      className="text-[var(--bg-secondary)]"
+      fill="currentColor"
     />
     
-    {/* Enhanced Coffee Cup with gradient */}
-    <circle cx="50" cy="45" r="3" fill="#6d28d9" opacity="0.9" /> {/* Rich purple */}
+    {/* Coffee Cup */}
+    <circle 
+      cx="50" 
+      cy="45" 
+      r="3" 
+      className="text-[var(--text-primary)]" 
+      fill="currentColor"
+      opacity="0.9" 
+    />
     <path 
       d="M47 45 Q50 48, 53 45" 
-      stroke="#6d28d9" 
+      className="text-[var(--text-primary)]"
+      stroke="currentColor"
       strokeWidth="1.5" 
       fill="none" 
     />
-    
-    {/* Enhanced Glow Effect */}
-    <circle cx="50" cy="50" r="44" fill="url(#enhancedGlow)" opacity="0.15" />
-    
-    {/* Enhanced Gradients */}
-    <defs>
-      <radialGradient id="enhancedGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#a78bfa" /> {/* Bright violet glow */}
-        <stop offset="100%" stopColor="#5340f0" stopOpacity="0" />
-      </radialGradient>
-    </defs>
   </svg>
 );
 
