@@ -2,7 +2,6 @@ import React from 'react';
 import { List, Map, SlidersHorizontal } from 'lucide-react';
 import { Message } from './components/ui/loading';
 import PostSearchFilters from './PostSearchFilters';
-import GenAIInsights from './GenAIInsights';
 
 const FilteredSearchResults = ({
   places,
@@ -40,16 +39,6 @@ const FilteredSearchResults = ({
   // Search complete with results
   if (shouldShowResults) {
     return (
-      <div className="space-y-6">
-        <GenAIInsights
-          places={places}
-          isSearching={false}
-          onPhotoClick={onPhotoClick}
-          isUsingSavedLocation={isUsingSavedLocation}
-          onRecommendationMade={onRecommendationMade}
-          className="mb-1"
-        />
-
         <div className="border border-[var(--border-primary)] rounded-lg shadow-sm bg-[var(--bg-secondary)]">
           <div className="border-t border-[var(--border-primary)]">
             <div className="p-4">

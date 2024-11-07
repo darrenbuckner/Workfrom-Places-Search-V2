@@ -128,7 +128,6 @@ const WorkfromPlacesContent = () => {
 
         {/* Search Controls Wrap */}
         <StyledSearchContainer>
-          {/* Search Controls */}
           <SearchControls
             radius={radius}
             setRadius={setRadius}
@@ -138,16 +137,6 @@ const WorkfromPlacesContent = () => {
             locationName={locationName}
           />
         </StyledSearchContainer>
-
-        {/* Quick Match - AI Recommendation */}
-        <QuickMatch
-          places={places}
-          searchPhase={searchPhase}
-          onRecommendationMade={setRecommendedPlace}
-          onPhotoClick={handlePhotoClick}
-          isHidden={quickMatchHidden}
-          onHide={() => setQuickMatchHidden(true)}
-        />
 
         {/* Results Section - Only show when search is complete */}
         {searchPhase === SearchPhases.COMPLETE && (
@@ -239,25 +228,41 @@ const WorkfromPlacesContent = () => {
                 />
               </div>
             ) : (hasPlaces ? (
-              <div className="p-4 border-t border-[var(--border-primary)]">
-                {viewMode === 'list' ? (
-                  <SearchResults
-                    places={places}
-                    sortBy={sortBy}
-                    filters={postSearchFilters}
-                    itemsPerPage={ITEMS_PER_PAGE}
-                    viewMode={viewMode}
-                    onPhotoClick={handlePhotoClick}
-                    recommendedPlaceName={recommendedPlace}
-                  />
-                ) : (
-                  <NearbyPlacesMap 
-                    places={places}
-                    userLocation={location}
-                    onPhotoClick={handlePhotoClick}
-                    highlightedPlace={recommendedPlace}
-                  />
+              <div className="border-t border-[var(--border-primary)]">
+                {/* QuickMatch now appears inside the results container */}
+                {!quickMatchHidden && (
+                  <div className="p-4 border-b border-[var(--border-primary)]">
+                    <QuickMatch
+                      places={places}
+                      searchPhase={searchPhase}
+                      onRecommendationMade={setRecommendedPlace}
+                      onPhotoClick={handlePhotoClick}
+                      isHidden={quickMatchHidden}
+                      onHide={() => setQuickMatchHidden(true)}
+                    />
+                  </div>
                 )}
+                
+                <div className="p-4">
+                  {viewMode === 'list' ? (
+                    <SearchResults
+                      places={places}
+                      sortBy={sortBy}
+                      filters={postSearchFilters}
+                      itemsPerPage={ITEMS_PER_PAGE}
+                      viewMode={viewMode}
+                      onPhotoClick={handlePhotoClick}
+                      recommendedPlaceName={recommendedPlace}
+                    />
+                  ) : (
+                    <NearbyPlacesMap 
+                      places={places}
+                      userLocation={location}
+                      onPhotoClick={handlePhotoClick}
+                      highlightedPlace={recommendedPlace}
+                    />
+                  )}
+                </div>
               </div>
             ) : (
               <div className="p-4 border-t border-[var(--border-primary)]">
