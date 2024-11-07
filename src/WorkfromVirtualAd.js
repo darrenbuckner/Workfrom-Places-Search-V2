@@ -33,7 +33,7 @@ const WorkfromVirtualAd = () => {
             className={`
               group inline-flex items-center justify-center whitespace-nowrap px-4 py-2 
               bg-[var(--accent-primary)] hover:bg-[var(--accent-secondary)] 
-              text-white text-sm rounded-full font-medium 
+              text-[var(--button-text)] text-sm rounded-full font-medium 
               transition-all duration-300
               shadow-sm hover:shadow-md
               border border-[var(--accent-primary)]

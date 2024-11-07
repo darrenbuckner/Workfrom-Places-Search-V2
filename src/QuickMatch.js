@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Star, X, ArrowRight, Navigation } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Sparkles, Star, X, ArrowRight, Navigation, Loader } from 'lucide-react';
 import { SearchPhases } from './constants';
 import API_CONFIG from './config';
 
@@ -13,21 +13,39 @@ const QuickMatch = ({
 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
+  const [loadingMessage, setLoadingMessage] = useState('Confirming your best option...');
+  const analysisRequestedRef = useRef(false);
   
   const getGoogleMapsUrl = (place) => {
     const address = `${place.street}, ${place.city}, ${place.postal}`;
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
   };
 
+  // Rotate loading messages
   useEffect(() => {
-    if (places?.length > 0 && searchPhase === SearchPhases.COMPLETE && !recommendation && !isHidden) {
-      analyzeAndRecommend();
-    }
-  }, [places, searchPhase, recommendation, isHidden]);
+    if (!isAnalyzing) return;
 
-  const analyzeAndRecommend = async () => {
-    if (isAnalyzing || !places.length) return;
+    const messages = [
+      'Confirming your best option...',
+      'Analyzing workspace details...',
+      'Checking community insights...',
+      'Almost ready...'
+    ];
+    let currentIndex = 0;
+    
+    const interval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % messages.length;
+      setLoadingMessage(messages[currentIndex]);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isAnalyzing]);
+
+  const analyzeAndRecommend = useCallback(async () => {
+    if (isAnalyzing || !places.length || analysisRequestedRef.current) return;
+    
     setIsAnalyzing(true);
+    analysisRequestedRef.current = true;
 
     try {
       const placesForAnalysis = places.slice(0, 10).map(place => ({
@@ -93,7 +111,29 @@ const QuickMatch = ({
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [places, onRecommendationMade]);
+
+  // Reset analysis state when places change
+  useEffect(() => {
+    if (places?.length === 0) {
+      setRecommendation(null);
+      analysisRequestedRef.current = false;
+    }
+  }, [places]);
+
+  // Trigger analysis only when we have places and are in complete state
+  useEffect(() => {
+    const shouldAnalyze = 
+      places?.length > 0 && 
+      searchPhase === SearchPhases.COMPLETE && 
+      !recommendation && 
+      !isHidden && 
+      !analysisRequestedRef.current;
+
+    if (shouldAnalyze) {
+      analyzeAndRecommend();
+    }
+  }, [places, searchPhase, recommendation, isHidden, analyzeAndRecommend]);
 
   if (isHidden || searchPhase === SearchPhases.INITIAL || (!places?.length && !isAnalyzing)) {
     return null;
@@ -115,24 +155,24 @@ const QuickMatch = ({
 
       <div className="p-3">
         {isAnalyzing ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[var(--accent-primary)] animate-pulse" />
+              <Loader className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />
             </div>
-            <div>
+            <div className="flex-1">
               <div className="text-sm font-medium text-[var(--text-primary)]">
-                Finding your best match...
+                {loadingMessage}
               </div>
-              <div className="mt-1 h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
-                <div className="h-full w-2/3 bg-[var(--accent-primary)] animate-pulse" />
+              <div className="mt-2 h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
+                <div className="h-full w-full bg-[var(--accent-primary)] origin-left animate-[progress_2s_ease-in-out_infinite]" />
               </div>
             </div>
           </div>
         ) : recommendation && (
           <div className="space-y-2">
-            {/* Header Section */}
+            {/* Rest of the component remains the same */}
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded bg-[var(--accent-primary)] text-white 
+              <div className="flex-shrink-0 w-10 h-10 rounded bg-[var(--accent-primary)] text-[var(--button-text)] 
                 flex items-center justify-center font-bold text-lg">
                 {recommendation.place.workabilityScore}
               </div>
@@ -155,7 +195,6 @@ const QuickMatch = ({
               </div>
             </div>
 
-            {/* AI Insights Section */}
             <div className="space-y-1.5 pt-1 border-t border-[var(--border-primary)]/50">
               {recommendation.headline && (
                 <div className="text-xs font-medium text-[var(--text-primary)]">
@@ -189,12 +228,11 @@ const QuickMatch = ({
               )}
             </div>
 
-            {/* Actions Section */}
             <div className="flex gap-2 pt-1">
               <button
                 onClick={() => onPhotoClick(recommendation.place)}
                 className="flex-1 px-2 py-1.5 text-xs font-medium rounded
-                  bg-[var(--accent-primary)] text-white hover:bg-[var(--action-primary-hover)]
+                  bg-[var(--accent-primary)] text-[var(--button-text)] hover:bg-[var(--action-primary-hover)]
                   flex items-center justify-center gap-1 transition-colors"
               >
                 See Details
@@ -215,6 +253,20 @@ const QuickMatch = ({
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes progress {
+          0% {
+            transform: translateX(-100%);
+          }
+          50% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+      `}</style>
     </div>
   );
 };

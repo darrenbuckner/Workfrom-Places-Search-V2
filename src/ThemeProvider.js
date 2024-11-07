@@ -56,15 +56,15 @@ export const ThemeToggle = () => {
       className={`
         p-2 rounded transition-colors
         bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)]
-        text-white shadow-[0_0_20px_var(--action-primary-border)]
+        text-[var(--button-text)] shadow-[0_0_20px_var(--action-primary-border)]
         border border-[var(--action-primary-border)]
       `}
       aria-label="Toggle theme"
     >
       {isDark ? (
-        <Sun size={16} className="text-white" />
+        <Sun size={16} className="text-[var(--button-text)]" />
       ) : (
-        <Moon size={16} className="text-white" />
+        <Moon size={16} className="text-[var(--button-text)]" />
       )}
     </button>
   );

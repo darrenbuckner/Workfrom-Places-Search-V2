@@ -121,7 +121,7 @@ const LocationConfirmDialog = ({
             className={`
               w-full px-4 py-2 text-sm transition-colors
               ${isDark 
-                ? 'text-blue-200 hover:text-white' 
+                ? 'text-blue-200 hover:text-[var(--button-text)]' 
                 : 'text-[var(--text-secondary)] hover:text-gray-900'
               }
             `}

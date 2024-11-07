@@ -53,7 +53,7 @@ const WorkabilityControls = ({
           </span>
           <span className={`
             absolute right-1 top-1/2 -translate-y-1/2 
-            text-[10px] font-medium text-white
+            text-[10px] font-medium text-[var(--button-text)]
             transition-opacity duration-200
             ${currentSort === 'score_high' ? 'opacity-100' : 'opacity-0'}
           `}>
@@ -61,7 +61,7 @@ const WorkabilityControls = ({
           </span>
         </div>
         <span className={`ml-2 text-sm font-medium ${
-          isDark ? 'text-white' : 'text-gray-900'
+          isDark ? 'text-[var(--button-text)]' : 'text-gray-900'
         }`}>
           Sort by score
         </span>

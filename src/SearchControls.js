@@ -73,7 +73,7 @@ const SearchControls = ({
                   flex flex-col items-center justify-center
                   border border-[var(--border-primary)]
                   ${value === activePreset
-                    ? 'bg-[var(--action-primary)] text-white border-transparent'
+                    ? 'bg-[var(--action-primary)] text-[var(--button-text)] border-transparent'
                     : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                   }
                 `}
@@ -96,7 +96,7 @@ const SearchControls = ({
               focus:ring-[var(--action-primary-light)]
               ${disabled
                 ? 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'
-                : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white'
+                : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-[var(--button-text)]'
               }
             `}
           >
@@ -126,7 +126,7 @@ const SearchControls = ({
                 flex items-center justify-center gap-2
                 ${disabled
                   ? 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'
-                  : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white'
+                  : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-[var(--button-text)]'
                 }
               `}
             >
@@ -151,7 +151,7 @@ const SearchControls = ({
                 flex items-center justify-center gap-1
                 ${disabled
                   ? 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'
-                  : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white'
+                  : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-[var(--button-text)]'
                 }
               `}
             >
@@ -183,7 +183,7 @@ const SearchControls = ({
                         flex flex-col items-center justify-center
                         border border-[var(--border-primary)]
                         ${value === activePreset
-                          ? 'bg-[var(--action-primary)] text-white border-transparent'
+                          ? 'bg-[var(--action-primary)] text-[var(--button-text)] border-transparent'
                           : 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
                         }
                       `}

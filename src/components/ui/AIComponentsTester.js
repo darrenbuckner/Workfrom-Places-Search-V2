@@ -11,7 +11,7 @@ const AIComponentsTester = () => {
           onClick={() => setShowError(false)}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             !showError 
-              ? 'bg-[var(--accent-primary)] text-white' 
+              ? 'bg-[var(--accent-primary)] text-[var(--button-text)]' 
               : 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
           }`}
         >
@@ -21,7 +21,7 @@ const AIComponentsTester = () => {
           onClick={() => setShowError(true)}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
             showError 
-              ? 'bg-[var(--accent-primary)] text-white' 
+              ? 'bg-[var(--accent-primary)] text-[var(--button-text)]' 
               : 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
           }`}
         >

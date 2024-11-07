@@ -146,7 +146,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
                     ? 'bg-[var(--accent-primary)] shadow-sm' 
                     : 'bg-[var(--accent-primary)]'
                   }
-                  text-white
+                  text-[var(--button-text)]
                 `}
               >
                 {place.workabilityScore}
@@ -201,7 +201,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
               flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-md
               transition-colors
               ${isRecommended 
-                ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-secondary)]'
+                ? 'bg-[var(--accent-primary)] text-[var(--button-text)] hover:bg-[var(--accent-secondary)]'
                 : 'text-[var(--action-primary)] hover:text-[var(--action-primary-hover)] bg-[var(--action-primary)]/5 hover:bg-[var(--action-primary)]/10'
               }
             `}

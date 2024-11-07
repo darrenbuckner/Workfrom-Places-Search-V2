@@ -31,7 +31,7 @@ const MessageBanner = ({ message, type = 'info', onAction }) => {
             <button
               onClick={() => onAction?.('add')}
               className="flex-1 px-4 py-2 rounded-md bg-accent-primary 
-                hover:bg-accent-secondary transition-colors text-white text-sm
+                hover:bg-accent-secondary transition-colors text-[var(--button-text)] text-sm
                 flex items-center justify-center gap-1.5"
             >
               <Plus size={14} />

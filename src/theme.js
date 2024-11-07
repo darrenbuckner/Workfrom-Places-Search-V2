@@ -1,94 +1,95 @@
+// Custom dark theme with cyan accent (#32e6e2)
 export const darkTheme = {
   // Base colors - Dramatic depths
-  'bg-primary': '#0a0b0d',            // Deep space black
-  'bg-secondary': '#111216',          // Monochromatic darker
-  'bg-tertiary': '#16171c',          // Elevated surface
+  'bg-primary': '#0a0d0f',            // Deep space black with cyan tint
+  'bg-secondary': '#111618',          // Monochromatic darker
+  'bg-tertiary': '#161b1d',           // Elevated surface
   
   // Text colors - Sharp contrast
   'text-primary': '#ffffff',          // Pure white for maximum contrast
-  'text-secondary': '#9ba1b0',        // Muted but legible
-  'text-tertiary': '#6b7280',        // Subtle text
+  'text-secondary': '#9ba7aa',        // Muted but legible
+  'text-tertiary': '#6b7779',         // Subtle text
   
-  // Action colors - Vibrant purple accent
-  'action-primary': '#5340f0',        // New primary purple
-  'action-primary-hover': '#4733e0',  // Darker shade
-  'action-primary-light': 'rgba(83, 64, 240, 0.12)',
-  'action-primary-border': 'rgba(83, 64, 240, 0.25)',
+  // Action colors - Cyan accent
+  'action-primary': '#32e6e2',        // Main cyan accent
+  'action-primary-hover': '#2bc9c6',  // Darker shade
+  'action-primary-light': 'rgba(50, 230, 226, 0.12)',
+  'action-primary-border': 'rgba(50, 230, 226, 0.25)',
   
   // Interactive colors - Clean transitions
-  'interactive-text': '#ffffff',      
-  'interactive-hover': '#9ba1b0',     
-  'interactive-muted': '#6b7280',     
+  'interactive-text': '#0a0d0f',      // Dark text for interactive elements
+  'interactive-hover': '#121e1e',     // Slightly lighter dark for hover
+  'interactive-muted': '#6b7779',     
   
   // Accent colors - Modernist palette
-  'accent-primary': '#5340f0',        // New primary purple
-  'accent-secondary': '#f9f2ff',      // New bright violet accent
-  'accent-muted': '#2a1f99',         // Deep purple background
+  'accent-primary': '#32e6e2',        // Main cyan
+  'accent-secondary': '#e8fcfb',      // Bright cyan accent
+  'accent-muted': '#1a4544',          // Deep cyan background
   
   // Border colors - Architectural definition
-  'border-primary': 'rgba(255, 255, 255, 0.08)',
-  'border-secondary': 'rgba(255, 255, 255, 0.04)',
+  'border-primary': 'rgba(50, 230, 226, 0.08)',
+  'border-secondary': 'rgba(50, 230, 226, 0.04)',
   
   // Component specific - Structured spaces
-  'card-bg': '#111216',
-  'card-hover': '#16171c',
-  'input-bg': '#16171c',
-  'input-border': 'rgba(255, 255, 255, 0.08)',
-  'button-text': '#ffffff',
-  'button-text-muted': '#9ba1b0',
+  'card-bg': '#111618',
+  'card-hover': '#161b1d',
+  'input-bg': '#161b1d',
+  'input-border': 'rgba(50, 230, 226, 0.08)',
+  'button-text': '#0a0d0f',           // Dark text for buttons
+  'button-text-muted': '#1a4544',
   
   // Status colors - Contemporary palette
-  'success': '#10b981',               // Modern green
-  'warning': '#f59e0b',               // Bold amber
-  'error': '#ef4444',                 // Vivid red
-  'info': '#5340f0',                  // Updated to match new purple
+  'success': '#2ee6af',               // Cyan-tinted green
+  'warning': '#e6c832',               // Bold amber
+  'error': '#e65a32',                 // Vivid red
+  'info': '#32e6e2',                  // Cyan accent
   
   // Place-specific colors - Bold modernist approach
-  'place-highlight-bg': '#16171c',     
-  'place-highlight-border': '#1f2937', 
-  'place-tag-bg': 'rgba(83, 64, 240, 0.15)',
-  'place-tag-text': '#6e5df2',
-  'place-score-high': '#10b981',       
-  'place-score-medium': '#f59e0b',     
-  'place-score-low': '#ef4444',        
-  'place-feature-icon': '#6e5df2',     
-  'place-distance': '#9ba1b0',         
-  'place-hours': '#10b981',            
-  'place-hours-closed': '#ef4444',     
+  'place-highlight-bg': '#161b1d',     
+  'place-highlight-border': '#1f2729', 
+  'place-tag-bg': 'rgba(50, 230, 226, 0.15)',
+  'place-tag-text': '#0a0d0f',
+  'place-score-high': '#2ee6af',       
+  'place-score-medium': '#e6c832',     
+  'place-score-low': '#e65a32',        
+  'place-feature-icon': '#32e6e2',     
+  'place-distance': '#9ba7aa',         
+  'place-hours': '#2ee6af',            
+  'place-hours-closed': '#e65a32',     
 
   // Promoted place colors - Dramatic emphasis
-  'promoted-bg': '#1e1b4b',           
-  'promoted-border': '#312e81',       
+  'promoted-bg': '#1a2324',           
+  'promoted-border': '#243436',       
   'promoted-text': '#ffffff',         
-  'promoted-secondary': '#9ba1b0',    
-  'promoted-highlight': '#5340f0',    // Updated to new purple
-  'promoted-tag-bg': 'rgba(83, 64, 240, 0.2)',
-  'promoted-tag-text': '#6e5df2',
-  'promoted-score-bg': '#1f2937',     
-  'promoted-score-text': '#ffffff',   
-  'promoted-feature-icon': '#6e5df2', 
+  'promoted-secondary': '#9ba7aa',    
+  'promoted-highlight': '#32e6e2',    
+  'promoted-tag-bg': 'rgba(50, 230, 226, 0.2)',
+  'promoted-tag-text': '#0a0d0f',
+  'promoted-score-bg': '#1f2729',     
+  'promoted-score-text': '#0a0d0f',   
+  'promoted-feature-icon': '#32e6e2', 
   
   // Scoring colors for promoted items - Bold states
-  'promoted-score-high': '#10b981',   
-  'promoted-score-medium': '#f59e0b', 
-  'promoted-score-low': '#ef4444',    
+  'promoted-score-high': '#2ee6af',   
+  'promoted-score-medium': '#e6c832', 
+  'promoted-score-low': '#e65a32',    
   
   // Navigation - Clear wayfinding
-  'nav-active': '#5340f0',           // Updated to new purple
-  'nav-inactive': '#6b7280',
-  'nav-hover': '#6e5df2',
+  'nav-active': '#32e6e2',           
+  'nav-inactive': '#6b7779',
+  'nav-hover': '#2bc9c6',
   
   // Map elements - Contemporary styling
-  'map-marker': '#5340f0',           // Updated to new purple
-  'map-marker-active': '#6e5df2',
-  'map-overlay': 'rgba(10, 11, 13, 0.85)',
+  'map-marker': '#32e6e2',           
+  'map-marker-active': '#2bc9c6',
+  'map-overlay': 'rgba(10, 13, 15, 0.85)',
   
   // Modal - Dramatic overlay
-  'modal-overlay': 'rgba(10, 11, 13, 0.95)',
+  'modal-overlay': 'rgba(10, 13, 15, 0.95)',
   
   // Gradients - Modern transitions
-  'gradient-primary': 'linear-gradient(to right, rgba(83, 64, 240, 0.15), rgba(83, 64, 240, 0.08))',
-  'gradient-hover': 'linear-gradient(to right, rgba(83, 64, 240, 0.25), rgba(83, 64, 240, 0.15))',
+  'gradient-primary': 'linear-gradient(to right, rgba(50, 230, 226, 0.15), rgba(50, 230, 226, 0.08))',
+  'gradient-hover': 'linear-gradient(to right, rgba(50, 230, 226, 0.25), rgba(50, 230, 226, 0.15))',
 };
 
 export const lightTheme = {

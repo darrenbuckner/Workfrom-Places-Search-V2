@@ -159,7 +159,7 @@ const WorkspaceFilters = ({
                 onClick={() => onFilterChange('openNow', !filters.openNow)}
                 className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-sm transition-colors ${
                   filters.openNow
-                    ? 'bg-[var(--action-primary)] text-white'
+                    ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
                     : 'bg-[var(--bg-tertiary)] border border-[var(--border-primary)] text-[var(--text-primary)] hover:border-[var(--action-primary-border)]'
                 }`}
               >

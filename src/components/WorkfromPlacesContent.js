@@ -147,7 +147,7 @@ const WorkfromPlacesContent = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-sm font-medium text-[var(--text-primary)]">
                     {hasPlaces 
-                      ? `Found ${places.length} places within ${lastSearchedRadius} miles`
+                      ? `Located ${places.length} places within ${lastSearchedRadius} miles`
                       : 'No places match your current filters'}
                   </span>
                 </div>
@@ -165,7 +165,7 @@ const WorkfromPlacesContent = () => {
                       className={`
                         p-2 rounded transition-colors
                         ${showFilters
-                          ? 'bg-[var(--action-primary)] text-white'
+                          ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
                           : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                         }
                       `}
@@ -182,7 +182,7 @@ const WorkfromPlacesContent = () => {
                         className={`
                           p-2 rounded transition-colors
                           ${viewMode === 'list'
-                            ? 'bg-[var(--action-primary)] text-white'
+                            ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
                             : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                           }
                         `}
@@ -195,7 +195,7 @@ const WorkfromPlacesContent = () => {
                         className={`
                           p-2 rounded transition-colors
                           ${viewMode === 'map'
-                            ? 'bg-[var(--action-primary)] text-white'
+                            ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
                             : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
                           }
                         `}

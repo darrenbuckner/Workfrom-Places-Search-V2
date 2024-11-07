@@ -139,19 +139,13 @@ const getWorkabilityMetrics = (place) => {
 const getMissingInfo = (place) => {
   const missing = [];
   
-  // Core workability factors
   if (!place.download && place.no_wifi !== "1") missing.push("WiFi speed");
   if (!place.power) missing.push("power outlet availability");
   if (!place.noise_level && !place.noise) missing.push("noise level");
-  
-  // Visual information
   if (!place.full_img && !place.thumbnail_img) missing.push("photos");
-  
-  // Additional helpful details
   if (!place.description) missing.push("workspace description");
   if (!place.hours) missing.push("operating hours");
   
-  // Amenity details
   const missingAmenities = [];
   if (place.coffee === undefined) missingAmenities.push("coffee availability");
   if (place.food === undefined) missingAmenities.push("food options");
@@ -179,14 +173,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   const contentRef = useRef(null);
   const progress = useScrollPosition(contentRef);
   useScrollLock(true);
-
-  // Add helper functions for score explanation
-  const getScoreExplanation = (score) => {
-    if (score >= 8) return "excellent";
-    if (score >= 6) return "good";
-    if (score >= 4) return "moderate";
-    return "limited";
-  };
 
   const getScoreQuality = (score) => {
     if (score >= 8) return { label: 'Excellent', stars: 3 };
@@ -302,18 +288,24 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       <div className="space-y-1">
                         <p className="text-sm text-[var(--text-secondary)]">{selectedPlace?.street}</p>
                         <p className="text-sm text-[var(--text-secondary)]">{selectedPlace?.city}</p>
+                        <p className="text-sm text-[var(--text-secondary)]">
+                          {selectedPlace?.distance} miles away
+                        </p>
                       </div>
                       {selectedPlace?.street && selectedPlace?.city && (
                         <a
                           href={getGoogleMapsUrl(`${selectedPlace.street}, ${selectedPlace.city}`)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center px-3 py-1.5 rounded-md
+                          className="group flex items-center px-3 py-1.5 rounded-md
                             bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)]
-                            text-white text-sm transition-colors"
+                            text-[var(--button-text)] text-sm transition-colors"
                         >
                           <Navigation size={14} className="mr-1.5" />
-                          Directions
+                          <span className="mr-1">Directions</span>
+                          <span className="text-[var(--button-text)]/80 text-xs">
+                            ({selectedPlace?.distance}mi)
+                          </span>
                         </a>
                       )}
                     </div>
@@ -440,7 +432,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
 
                         {/* Missing Info Alert */}
                         {getMissingInfo(selectedPlace).length > 0 && (
-                          <div className="flex items-start gap-2 pt-2 border-t border-[var(--border-primary)]">
+                          <div className="hidden flex items-start gap-2 pt-2 border-t border-[var(--border-primary)]">
                             <AlertCircle size={14} className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" />
                             <p className="text-xs text-[var(--text-secondary)] leading-tight">
                               Help other members by adding {formatMissingInfo(getMissingInfo(selectedPlace))}
