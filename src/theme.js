@@ -92,35 +92,35 @@ export const darkTheme = {
 };
 
 export const lightTheme = {
-  // Base colors - Warm, professional neutrals
+  // Base colors - Warm, professional neutrals (unchanged)
   'bg-primary': '#FFFFFF',            // Clean white
   'bg-secondary': '#F8F9FB',          // Soft blue-gray
   'bg-tertiary': '#F1F4F8',           // Lighter blue-gray
   
-  // Text colors - Rich, readable hierarchy
+  // Text colors - Rich, readable hierarchy (unchanged)
   'text-primary': '#1A2B3B',          // Deep blue-gray
   'text-secondary': '#4A5567',        // Medium blue-gray
   'text-tertiary': '#6E7A8A',         // Light blue-gray
   
-  // Action colors - Confident blue
-  'action-primary': '#2557A7',        // Professional blue
-  'action-primary-hover': '#1E4687',  // Darker blue
-  'action-primary-light': 'rgba(37, 87, 167, 0.12)',
-  'action-primary-border': 'rgba(37, 87, 167, 0.25)',
+  // Action colors - Now dark and bold
+  'action-primary': '#000000',        // Pure black for primary actions
+  'action-primary-hover': '#1a1a1a',  // Slightly lighter black on hover
+  'action-primary-light': 'rgba(0, 0, 0, 0.12)',
+  'action-primary-border': 'rgba(0, 0, 0, 0.25)',
   
-  // Interactive colors - Natural progression
+  // Interactive colors - More contrast
   'interactive-text': '#1A2B3B',      // Deep blue-gray
-  'interactive-hover': '#2557A7',     // Professional blue
+  'interactive-hover': '#000000',     // Black
   'interactive-muted': '#4A5567',     // Medium blue-gray
   
-  // Accent colors - Professional palette
-  'accent-primary': '#2557A7',        // Professional blue
-  'accent-secondary': '#1E4687',      // Darker blue
-  'accent-muted': '#EEF4FB',          // Light blue background
+  // Accent colors - Bold black palette
+  'accent-primary': '#000000',        // Pure black
+  'accent-secondary': '#1a1a1a',      // Slightly lighter black
+  'accent-muted': '#f5f5f5',          // Light gray background
   
-  // Border colors - Subtle definition
-  'border-primary': '#E3E8EF',        // Light border
-  'border-secondary': '#D0D7E2',      // Slightly darker border
+  // Border colors - Subtle definition (unchanged)
+  'border-primary': '#E3E8EF',
+  'border-secondary': '#D0D7E2',
   
   // Component specific - Refined spaces
   'card-bg': '#FFFFFF',
@@ -130,58 +130,58 @@ export const lightTheme = {
   'button-text': '#FFFFFF',
   'button-text-muted': '#4A5567',
   
-  // Status colors - Clear, professional indicators
-  'success': '#0E8A6C',               // Professional green
+  // Status colors - High contrast indicators
+  'success': '#2D8A54',               // Darker green
   'warning': '#B95000',               // Warm orange
   'error': '#CC3340',                 // Professional red
-  'info': '#2557A7',                  // Professional blue
+  'info': '#000000',                  // Black for info
   
-  // Place-specific colors - Workspace oriented
+  // Place-specific colors - Bold workspace oriented
   'place-highlight-bg': '#F8F9FB',
   'place-highlight-border': '#E3E8EF',
-  'place-tag-bg': 'rgba(37, 87, 167, 0.08)',
-  'place-tag-text': '#2557A7',
-  'place-score-high': '#0E8A6C',
+  'place-tag-bg': 'rgba(0, 0, 0, 0.08)',
+  'place-tag-text': '#000000',
+  'place-score-high': '#2D8A54',      // Darker green
   'place-score-medium': '#B95000',
   'place-score-low': '#CC3340',
-  'place-feature-icon': '#2557A7',
+  'place-feature-icon': '#000000',
   'place-distance': '#4A5567',
-  'place-hours': '#0E8A6C',
+  'place-hours': '#2D8A54',
   'place-hours-closed': '#CC3340',
 
   // Promoted place colors - Premium feel
-  'promoted-bg': '#F8FAFD',           // Slightly blue-tinted
+  'promoted-bg': '#F8FAFD',
   'promoted-border': '#E3E8EF',
   'promoted-text': '#1A2B3B',
   'promoted-secondary': '#4A5567',
-  'promoted-highlight': '#2557A7',
-  'promoted-tag-bg': 'rgba(37, 87, 167, 0.08)',
-  'promoted-tag-text': '#2557A7',
+  'promoted-highlight': '#000000',
+  'promoted-tag-bg': 'rgba(0, 0, 0, 0.08)',
+  'promoted-tag-text': '#000000',
   'promoted-score-bg': '#F8FAFD',
   'promoted-score-text': '#1A2B3B',
-  'promoted-feature-icon': '#2557A7',
+  'promoted-feature-icon': '#000000',
   
-  // Scoring colors for promoted items - Consistent states
-  'promoted-score-high': '#0E8A6C',
+  // Scoring colors for promoted items
+  'promoted-score-high': '#2D8A54',   // Darker green
   'promoted-score-medium': '#B95000',
   'promoted-score-low': '#CC3340',
   
-  // Navigation - Clear wayfinding
-  'nav-active': '#2557A7',
+  // Navigation - Bold wayfinding
+  'nav-active': '#000000',
   'nav-inactive': '#4A5567',
-  'nav-hover': '#1E4687',
+  'nav-hover': '#1a1a1a',
   
-  // Map elements - Professional mapping
-  'map-marker': '#2557A7',
-  'map-marker-active': '#1E4687',
+  // Map elements - Bold mapping
+  'map-marker': '#000000',
+  'map-marker-active': '#1a1a1a',
   'map-overlay': 'rgba(255, 255, 255, 0.95)',
   
   // Modal - Clean overlay
-  'modal-overlay': 'rgba(26, 43, 59, 0.4)',
+  'modal-overlay': 'rgba(0, 0, 0, 0.4)',
   
   // Gradients - Subtle transitions
-  'gradient-primary': 'linear-gradient(to right, rgba(37, 87, 167, 0.08), rgba(37, 87, 167, 0.04))',
-  'gradient-hover': 'linear-gradient(to right, rgba(37, 87, 167, 0.12), rgba(37, 87, 167, 0.08))',
+  'gradient-primary': 'linear-gradient(to right, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.04))',
+  'gradient-hover': 'linear-gradient(to right, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.08))',
 };
 
 // Helper functions
