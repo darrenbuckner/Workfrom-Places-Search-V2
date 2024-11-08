@@ -14,7 +14,7 @@ import PostSearchFilters from '../PostSearchFilters';
 import WorkabilityControls from '../WorkabilityControls';
 import WelcomeBanner from '../WelcomeBanner';
 import QuickMatch from '../QuickMatch';
-import { Message } from '../components/ui/loading';
+import ErrorMessage from '../ErrorMessage';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -22,13 +22,9 @@ const StyledSearchContainer = ({ children }) => {
   return (
     <div className="mb-6">
       <div className="relative rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-        {/* Decorative Elements - Moved outside main container */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent-primary)]/5 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[var(--accent-primary)]/5 rounded-full blur-xl pointer-events-none" />
-        
-        <div className="relative p-4 sm:p-6">
-          {children}
-        </div>
+        <div className="relative p-4 sm:p-6">{children}</div>
       </div>
     </div>
   );
@@ -50,8 +46,8 @@ const WorkfromPlacesContent = () => {
     setPlaces,
     searchPhase,
     setSearchPhase,
-    error,
-    setError,
+    error: searchError,
+    setError: setSearchError,
     sortBy,
     setSortBy,
     postSearchFilters,
@@ -70,29 +66,65 @@ const WorkfromPlacesContent = () => {
 
   // Local state
   const [radius, setRadius] = useState(2);
-  const [lastSearchedRadius, setLastSearchedRadius] = useState(2); // Track the radius used in last search
+  const [lastSearchedRadius, setLastSearchedRadius] = useState(2);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [viewMode, setViewMode] = useState('list');
   const [showFilters, setShowFilters] = useState(false);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
   const [recommendedPlace, setRecommendedPlace] = useState(null);
-  const [recommendedPlaceId, setRecommendedPlaceId] = useState(null);
   const [quickMatchHidden, setQuickMatchHidden] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Search functionality
-  const performSearch = async () => {
-    setSearchPhase(SearchPhases.LOCATING);
+  const handleSearchError = (error) => {
+    if (error.name === 'GeolocationPositionError') {
+      switch (error.code) {
+        case 1:
+          setError({
+            code: 'LOCATION_DENIED',
+            title: 'Location Access Required',
+            message: 'Please enable location access in your browser settings to find workspaces near you.',
+            variant: 'warning'
+          });
+          break;
+        case 2:
+          setError({
+            code: 'LOCATION_UNAVAILABLE',
+            title: 'Location Unavailable',
+            message: 'Unable to determine your location. Please check your device settings and try again.',
+            variant: 'warning'
+          });
+          break;
+        default:
+          setError({
+            code: 'LOCATION_ERROR',
+            title: 'Location Error',
+            message: 'An error occurred while getting your location. Please try again.',
+            variant: 'error'
+          });
+      }
+    } else {
+      setError(error);
+    }
+  };
+
+  const resetSearch = () => {
     setPlaces([]);
     setRecommendedPlace(null);
-    setError('');
-    setLastSearchedRadius(radius); // Update the last searched radius
-    setQuickMatchHidden(false); // Reset the hidden state on new search
+    setError(null);
+    setSearchError(null);
+    setLocationError(null);
+    setQuickMatchHidden(false);
     setPostSearchFilters({
       type: 'any',
       power: 'any',
       noise: 'any',
       openNow: false
     });
+  };
+
+  const performSearch = async () => {
+    resetSearch();
+    setSearchPhase(SearchPhases.LOCATING);
 
     try {
       const searchLocation = await getLocation();
@@ -101,9 +133,10 @@ const WorkfromPlacesContent = () => {
       setSearchPhase(SearchPhases.LOADING);
       await fetchPlaces(searchLocation, radius);
       setIsSearchPerformed(true);
+      setLastSearchedRadius(radius);
     } catch (err) {
       console.error('Search failed:', err);
-      setError(err.message);
+      handleSearchError(err);
     } finally {
       setSearchPhase(SearchPhases.COMPLETE);
     }
@@ -113,21 +146,28 @@ const WorkfromPlacesContent = () => {
     setPostSearchFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  const handleQuickMatchError = (error) => {
+    setError({
+      title: 'Analysis Error',
+      message: error.message || 'Unable to analyze workspaces at this time.',
+      variant: 'warning'
+    });
+  };
+
   const hasPlaces = places.length > 0;
+  const showError = error || searchError || locationError;
+  const currentError = error || searchError || locationError;
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
       <div className="container mx-auto px-3 sm:px-4 max-w-2xl flex-grow overflow-x-hidden">
-        {/* Header */}
         <WorkfromHeader
           onShowHowItWorks={() => setShowHowItWorks(true)}
           className="mt-4 sm:mt-6 md:mt-8 mb-4"
         />
 
-        {/* Welcome Banner */}
         <WelcomeBanner isSearchPerformed={isSearchPerformed} />
 
-        {/* Search Controls Wrap */}
         <StyledSearchContainer>
           <SearchControls
             radius={radius}
@@ -139,73 +179,84 @@ const WorkfromPlacesContent = () => {
           />
         </StyledSearchContainer>
 
-        {/* Results Section - Only show when search is complete */}
         {searchPhase === SearchPhases.COMPLETE && (
           <div className="border border-[var(--border-primary)] rounded-lg shadow-sm bg-[var(--bg-secondary)]">
             <div className="p-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-medium text-[var(--text-primary)]">
-                    {hasPlaces 
-                      ? `Located ${places.length} places within ${lastSearchedRadius} miles`
-                      : 'No places match your current filters'}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-                  <div className="flex items-center gap-2">
-                    <WorkabilityControls 
-                      onSortChange={setSortBy}
-                      currentSort={sortBy}
-                      showSortControl={hasPlaces}
-                    />
-                    
-                    <button
-                      onClick={() => setShowFilters(!showFilters)}
-                      className={`
-                        p-2 rounded transition-colors
-                        ${showFilters
-                          ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-                          : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                        }
-                      `}
-                      aria-label="Toggle filters"
-                    >
-                      <SlidersHorizontal size={18} />
-                    </button>
-                  </div>
-
-                  {hasPlaces && (
-                    <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
-                      <button
-                        onClick={() => setViewMode('list')}
-                        className={`
-                          p-2 rounded transition-colors
-                          ${viewMode === 'list'
-                            ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-                            : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                          }
-                        `}
-                        aria-label="List view"
-                      >
-                        <List size={18} />
-                      </button>
-                      <button
-                        onClick={() => setViewMode('map')}
-                        className={`
-                          p-2 rounded transition-colors
-                          ${viewMode === 'map'
-                            ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-                            : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                          }
-                        `}
-                        aria-label="Map view"
-                      >
-                        <Map size={18} />
-                      </button>
+                {showError ? (
+                  <ErrorMessage
+                    error={currentError}
+                    onRetry={performSearch}
+                    onDismiss={() => setError(null)}
+                    size="default"
+                    className="w-full animate-fade-in"
+                  />
+                ) : (
+                  <>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-medium text-[var(--text-primary)]">
+                        {hasPlaces 
+                          ? `Located ${places.length} places within ${lastSearchedRadius} miles`
+                          : 'No places match your current filters'}
+                      </span>
                     </div>
-                  )}
-                </div>
+                    
+                    <div className="flex items-center gap-2 sm:gap-4 ml-auto">
+                      <div className="flex items-center gap-2">
+                        <WorkabilityControls 
+                          onSortChange={setSortBy}
+                          currentSort={sortBy}
+                          showSortControl={hasPlaces}
+                        />
+                        
+                        <button
+                          onClick={() => setShowFilters(!showFilters)}
+                          className={`
+                            p-2 rounded transition-colors
+                            ${showFilters
+                              ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
+                              : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                            }
+                          `}
+                          aria-label="Toggle filters"
+                        >
+                          <SlidersHorizontal size={18} />
+                        </button>
+                      </div>
+
+                      {hasPlaces && (
+                        <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
+                          <button
+                            onClick={() => setViewMode('list')}
+                            className={`
+                              p-2 rounded transition-colors
+                              ${viewMode === 'list'
+                                ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
+                                : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                              }
+                            `}
+                            aria-label="List view"
+                          >
+                            <List size={18} />
+                          </button>
+                          <button
+                            onClick={() => setViewMode('map')}
+                            className={`
+                              p-2 rounded transition-colors
+                              ${viewMode === 'map'
+                                ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
+                                : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+                              }
+                            `}
+                            aria-label="Map view"
+                          >
+                            <Map size={18} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -220,17 +271,8 @@ const WorkfromPlacesContent = () => {
               </div>
             )}
 
-            {error ? (
-              <div className="p-4 border-t border-[var(--border-primary)]">
-                <Message
-                  variant="error"
-                  message="Error"
-                  description={error}
-                />
-              </div>
-            ) : (hasPlaces ? (
+            {hasPlaces && !showError && (
               <div className="border-t border-[var(--border-primary)]">
-                {/* QuickMatch now appears inside the results container */}
                 {!quickMatchHidden && (
                   <div className="p-4 border-b border-[var(--border-primary)]">
                     <QuickMatch
@@ -240,6 +282,7 @@ const WorkfromPlacesContent = () => {
                       onPhotoClick={handlePhotoClick}
                       isHidden={quickMatchHidden}
                       onHide={() => setQuickMatchHidden(true)}
+                      onError={handleQuickMatchError}
                     />
                   </div>
                 )}
@@ -253,7 +296,7 @@ const WorkfromPlacesContent = () => {
                       itemsPerPage={ITEMS_PER_PAGE}
                       viewMode={viewMode}
                       onPhotoClick={handlePhotoClick}
-                      recommendedPlaceId={recommendedPlaceId}
+                      recommendedPlace={recommendedPlace}
                     />
                   ) : (
                     <NearbyPlacesMap 
@@ -265,19 +308,10 @@ const WorkfromPlacesContent = () => {
                   )}
                 </div>
               </div>
-            ) : (
-              <div className="p-4 border-t border-[var(--border-primary)]">
-                <Message 
-                  variant="info"
-                  message="No places found"
-                  description="Try adjusting your search radius or try a different location"
-                />
-              </div>
-            ))}
+            )}
           </div>
         )}
 
-        {/* Modals */}
         {showHowItWorks && (
           <HowItWorksModal setShowModal={setShowHowItWorks} />
         )}
@@ -292,7 +326,6 @@ const WorkfromPlacesContent = () => {
         )}
       </div>
       
-      {/* Footer */}
       <footer className="py-4 mt-10 bg-bg-secondary border-t border-[var(--border-primary)]">
         <div className="container mx-auto px-4 text-center text-xs text-text-secondary">
           <p>&copy; {new Date().getFullYear()} Workfrom</p>

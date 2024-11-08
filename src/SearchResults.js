@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Brain, Loader, Sparkles } from 'lucide-react';
-import SearchResultsSkeleton from './SearchResultsSkeleton';
+import { Brain, Loader, Sparkles, AlertTriangle } from 'lucide-react';
 import PlaceCard from './PlaceCard';
 import Pagination from './Pagination';
 import WorkfromVirtualAd from './WorkfromVirtualAd';
+import ErrorMessage from './ErrorMessage';
 
 const AIBadge = ({ className = "" }) => (
   <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
@@ -13,7 +13,7 @@ const AIBadge = ({ className = "" }) => (
   </div>
 );
 
-const LoadingState = ({ progress }) => {
+const LoadingState = ({ progress, className = "" }) => {
   const [currentMessage, setCurrentMessage] = useState(0);
   const messages = [
     "Finding your perfect workspace...",
@@ -31,9 +31,8 @@ const LoadingState = ({ progress }) => {
   }, []);
 
   return (
-    <div className="mb-6 animate-fade-in">
+    <div className={`mb-6 animate-fade-in ${className}`}>
       <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-md overflow-hidden relative">
-        {/* Top Progress Bar */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--bg-secondary)]">
           <div 
             className="absolute top-0 left-0 h-full bg-[var(--accent-primary)] transition-all duration-300 ease-out"
@@ -55,11 +54,8 @@ const LoadingState = ({ progress }) => {
             </p>
           </div>
 
-          {/* Subtle Loading Bar */}
           <div className="mt-4 h-1 rounded-full overflow-hidden bg-[var(--bg-secondary)]">
-            <div 
-              className="h-full bg-[var(--accent-primary)]/20 rounded-full shimmer"
-            />
+            <div className="h-full bg-[var(--accent-primary)]/20 rounded-full shimmer" />
           </div>
         </div>
       </div>
@@ -67,18 +63,49 @@ const LoadingState = ({ progress }) => {
   );
 };
 
+const NoResultsState = ({ onRetry, className = "" }) => (
+  <div className={`mb-6 animate-fade-in ${className}`}>
+    <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-4">
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <AlertTriangle className="w-4 h-4 text-[var(--accent-primary)]" />
+          </div>
+        </div>
+        <div className="flex-1">
+          <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
+            No Places Found
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)]">
+            We couldn't find any workspaces matching your criteria. Try adjusting your filters or search in a different area.
+          </p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="mt-3 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-secondary)] transition-colors"
+            >
+              Try Again
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const SearchResults = ({ 
-  places, 
-  sortBy, 
-  filters, 
-  itemsPerPage = 10, 
-  viewMode, 
+  places,
+  sortBy,
+  filters,
+  itemsPerPage = 10,
+  viewMode,
   onPhotoClick,
-  recommendedPlaceId,
-  recommendation,
   recommendedPlace,
   isAnalyzing,
-  isUsingSavedLocation
+  error,
+  onRetry,
+  onFilterChange,
+  className = ""
 }) => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,17 +113,20 @@ const SearchResults = ({
   const [hasInitialized, setHasInitialized] = useState(false);
   const isMobileRef = useRef(window.innerWidth < 640);
 
+  const controlsRef = useRef(null);
+  const resultsRef = useRef(null);
+  const recommendedCardRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
+
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(places.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, places.length);
   const currentItems = places.slice(startIndex, endIndex);
 
-  const shouldShowLoading = isAnalyzing && !isUsingSavedLocation;
-
   // Loading progress effect
   useEffect(() => {
-    if (shouldShowLoading) {
+    if (isAnalyzing) {
       setLoadingProgress(0);
       const startTime = Date.now();
       const duration = 8000;
@@ -114,11 +144,16 @@ const SearchResults = ({
 
       return () => clearInterval(interval);
     }
-  }, [shouldShowLoading]);
+  }, [isAnalyzing]);
 
-  const controlsRef = useRef(null);
-  const resultsRef = useRef(null);
-  const recommendedCardRef = useRef(null);
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const scrollToControls = useCallback(() => {
     if (controlsRef.current) {
@@ -142,31 +177,42 @@ const SearchResults = ({
     setCurrentPage(newPage);
 
     requestAnimationFrame(() => {
-      scrollToControls();
-      setTimeout(() => {
-        setIsPageChanging(false);
-      }, 500);
+      scrollTimeoutRef.current = setTimeout(() => {
+        scrollToControls();
+        setTimeout(() => {
+          setIsPageChanging(false);
+        }, 500);
+      }, 50);
     });
   }, [currentPage, totalPages, scrollToControls]);
 
+  // Early return for error state
+  if (error) {
+    return (
+      <ErrorMessage
+        error={error}
+        onRetry={onRetry}
+        variant="full"
+        className={`mb-6 animate-fade-in ${className}`}
+      />
+    );
+  }
+
+  // Loading state
+  if (isAnalyzing) {
+    return <LoadingState progress={loadingProgress} className={className} />;
+  }
+
+  // No results state
+  if (!isAnalyzing && places.length === 0) {
+    return <NoResultsState onRetry={onRetry} className={className} />;
+  }
+
   return (
-    <div className="relative">      
+    <div className={`relative ${className}`}>
       <div ref={controlsRef} className="scroll-mt-32" />
       
       <div className="space-y-6">
-        {shouldShowLoading ? (
-          <>
-            <LoadingState progress={loadingProgress} />
-            <SearchResultsSkeleton />
-          </>
-        ) : recommendation?.recommendation && recommendedPlace ? (
-          <RecommendedCard 
-            recommendation={recommendation} 
-            place={recommendedPlace} 
-            onPhotoClick={onPhotoClick}
-          />
-        ) : null}
-
         {currentItems.map((place, index) => {
           const isRecommended = recommendedPlace && place.ID === recommendedPlace.ID;
 
@@ -205,7 +251,12 @@ const SearchResults = ({
         .shimmer {
           width: 100%;
           background-size: 200% 100%;
-          background-image: linear-gradient(90deg, transparent 0%, var(--accent-primary) 50%, transparent 100%);
+          background-image: linear-gradient(
+            90deg, 
+            transparent 0%, 
+            var(--accent-primary) 50%, 
+            transparent 100%
+          );
           animation: shimmer 2s infinite linear;
         }
         @keyframes fadeIn {
@@ -222,76 +273,6 @@ const SearchResults = ({
           animation: fadeIn 0.3s ease-out forwards;
         }
       `}</style>
-    </div>
-  );
-};
-
-// Separate RecommendedCard component
-const RecommendedCard = ({ recommendation, place, onPhotoClick }) => {
-  const recData = recommendation.recommendation;
-  const description = recData.headline || recData.context;
-
-  return (
-    <div className="mb-6 animate-fade-in">
-      <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-md overflow-hidden">
-        <div className="p-4">
-          <div className="flex gap-4">
-            <div className="flex-shrink-0 w-14 h-14 rounded-md relative
-              bg-[var(--accent-primary)] text-white
-              flex items-center justify-center font-bold text-xl">
-              {place.workabilityScore}
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full 
-                bg-[var(--accent-primary)] flex items-center justify-center">
-                <Sparkles className="w-3 h-3 text-white animate-pulse" />
-              </div>
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <AIBadge />
-                <span className="text-sm text-[var(--text-secondary)]">
-                  {place.distance} miles away
-                </span>
-              </div>
-
-              <h3 className="text-lg font-medium text-[var(--text-primary)] mb-1">
-                {place.title}
-              </h3>
-
-              {description && (
-                <p className="text-sm font-medium text-[var(--text-primary)] mb-2">
-                  {description}
-                </p>
-              )}
-
-              {recData.personalNote && (
-                <p className="text-sm text-[var(--text-secondary)] mb-3">
-                  {recData.personalNote}
-                </p>
-              )}
-
-              {recData.standoutFeatures?.length > 0 && (
-                <div className="text-xs text-[var(--text-secondary)] space-y-1.5">
-                  {recData.standoutFeatures.map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                      <span>{typeof feature === 'string' ? feature : feature.description}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <button
-                onClick={() => onPhotoClick(place)}
-                className="mt-4 text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-secondary)] 
-                  transition-colors"
-              >
-                View Details
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
