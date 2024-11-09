@@ -1,19 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Sparkles, Star, X, ArrowRight, Navigation, Loader } from 'lucide-react';
+import { Sparkles, ArrowRight, Navigation, Loader, X } from 'lucide-react';
 import { SearchPhases } from './constants';
 import API_CONFIG from './config';
 import ErrorMessage from './ErrorMessage';
 
-// Extracted animation keyframes
-const animationStyles = {
-  '@keyframes progress': {
-    '0%': { transform: 'translateX(-100%)' },
-    '50%': { transform: 'translateX(0)' },
-    '100%': { transform: 'translateX(100%)' }
-  },
-  progressAnimation: {
-    animation: 'progress 2s ease-in-out infinite'
-  }
+const getGoogleMapsUrl = (place) => {
+  const address = `${place.street}, ${place.city}, ${place.postal}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
 };
 
 const QuickMatch = ({ 
@@ -27,20 +20,16 @@ const QuickMatch = ({
 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [recommendation, setRecommendation] = useState(null);
-  const [loadingMessage, setLoadingMessage] = useState('Confirming your best option...');
+  const [loadingMessage, setLoadingMessage] = useState('Finding your perfect workspace...');
   const [error, setError] = useState(null);
   const analysisRequestedRef = useRef(false);
-  
-  const getGoogleMapsUrl = (place) => {
-    const address = `${place.street}, ${place.city}, ${place.postal}`;
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-  };
 
+  // Loading message rotation
   useEffect(() => {
     if (!isAnalyzing) return;
 
     const messages = [
-      'Confirming your best option...',
+      'Finding your perfect workspace...',
       'Analyzing workspace details...',
       'Checking community insights...',
       'Almost ready...'
@@ -116,17 +105,13 @@ const QuickMatch = ({
       
       if (data.meta.code === 200 || data.meta.code === 207) {
         const aiRecommendation = data.insights.recommendation;
-        const contextInfo = data.insights.context;
         const recommendedPlace = places.find(p => p.title === aiRecommendation.name);
         
         if (recommendedPlace) {
           setRecommendation({
             place: recommendedPlace,
             headline: aiRecommendation.headline,
-            lede: aiRecommendation.lede,
-            personalNote: aiRecommendation.personalNote,
-            standoutFeatures: aiRecommendation.standoutFeatures,
-            context: contextInfo
+            context: data.insights.context
           });
           onRecommendationMade?.(recommendedPlace);
         }
@@ -144,8 +129,6 @@ const QuickMatch = ({
         setRecommendation({
           place: bestPlace,
           headline: 'Highest rated workspace nearby',
-          lede: 'This workspace offers the best overall workability score in the area.',
-          standoutFeatures: [],
           context: 'Based on workability score'
         });
         onRecommendationMade?.(bestPlace);
@@ -157,7 +140,7 @@ const QuickMatch = ({
     }
   }, [places, onRecommendationMade, onError]);
 
-  // Trigger analysis when we have places and are in complete state
+  // Trigger analysis when conditions are met
   useEffect(() => {
     const shouldAnalyze = 
       places?.length > 0 && 
@@ -196,20 +179,18 @@ const QuickMatch = ({
 
   if (isAnalyzing) {
     return (
-      <div className="flex items-center gap-3 animate-fade-in">
-        <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 
-          flex items-center justify-center">
-          <Loader className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />
-        </div>
-        <div className="flex-1">
-          <div className="text-sm font-medium text-[var(--text-primary)]">
-            {loadingMessage}
+      <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 animate-fade-in">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
+            <Loader className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />
           </div>
-          <div className="mt-2 h-1 rounded-full bg-[var(--bg-secondary)] overflow-hidden">
-            <div 
-              className="h-full w-full bg-[var(--accent-primary)] origin-left"
-              style={animationStyles.progressAnimation}
-            />
+          <div className="flex-1">
+            <div className="text-sm font-medium text-[var(--text-primary)]">
+              {loadingMessage}
+            </div>
+            <div className="mt-2 h-1 rounded-full bg-[var(--bg-tertiary)] overflow-hidden">
+              <div className="h-full w-1/3 bg-[var(--accent-primary)] animate-pulse rounded-full" />
+            </div>
           </div>
         </div>
       </div>
@@ -218,91 +199,87 @@ const QuickMatch = ({
 
   if (!recommendation) return null;
 
-  return (
-    <div className="relative animate-fade-in">
-      <button
-        onClick={onHide}
-        className="absolute right-0 top-0 p-1.5 rounded-full 
-          hover:bg-[var(--bg-tertiary)] transition-colors"
-        aria-label="Hide quick match"
-      >
-        <X size={14} className="text-[var(--text-secondary)]" />
-      </button>
+  const { place } = recommendation;
 
-      <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-14 h-14 rounded-md relative
-          bg-[var(--accent-primary)] text-white
-          flex items-center justify-center font-bold text-xl">
-          {recommendation.place.workabilityScore}
-          <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full 
-            bg-[var(--accent-primary)] flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-white animate-pulse" />
+  return (
+    <div className="relative rounded-lg border border-[var(--accent-primary)] bg-[var(--bg-primary)] overflow-hidden animate-fadeIn">
+      {/* Top accent line */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--accent-primary)]" />
+      
+      <div className="p-4">
+        {/* Close button */}
+        <button
+          onClick={onHide}
+          className="absolute right-3 top-3 p-1.5 rounded-full 
+            hover:bg-[var(--bg-tertiary)] transition-colors"
+          aria-label="Hide quick match"
+        >
+          <X size={14} className="text-[var(--text-secondary)]" />
+        </button>
+
+        {/* AI Badge */}
+        <div className="flex items-center gap-1.5 mb-3">
+          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full 
+            bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] 
+            text-xs font-medium">
+            <Sparkles className="w-3 h-3" />
+            AI Recommended
           </div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="text-xs px-1.5 py-0.5 rounded-full 
-              bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] 
-              font-medium inline-flex items-center gap-1">
-              <Sparkles className="w-3 h-3" />
-              Best Match
-            </div>
-            <span className="text-sm text-[var(--text-secondary)]">
-              {recommendation.place.distance}mi away
-            </span>
+        {/* Content Grid */}
+        <div className="flex gap-4">
+          {/* Score Badge */}
+          <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-[var(--accent-primary)] 
+            text-white flex items-center justify-center font-bold text-2xl">
+            {place.workabilityScore}
           </div>
 
-          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-1">
-            {recommendation.place.title}
-          </h3>
-
-          {recommendation.headline && (
-            <p className="text-sm text-[var(--text-primary)] font-medium mb-2">
-              {recommendation.headline}
+          {/* Details */}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1 line-clamp-1">
+              {place.title}
+            </h3>
+            
+            <p className="text-sm text-[var(--text-secondary)] mb-1">
+              {place.distance} miles away
             </p>
-          )}
 
-          {recommendation.lede && (
-            <p className="text-sm text-[var(--text-secondary)] mb-3">
-              {recommendation.lede}
-            </p>
-          )}
+            {recommendation.headline && (
+              <p className="text-sm text-[var(--text-primary)] mb-3 line-clamp-2">
+                {recommendation.headline}
+              </p>
+            )}
 
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => onPhotoClick(recommendation.place)}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-md
-                bg-[var(--accent-primary)] text-white
-                hover:bg-[var(--accent-secondary)] transition-colors
-                text-sm font-medium"
-            >
-              View Details
-              <ArrowRight size={14} />
-            </button>
-            <a
-              href={getGoogleMapsUrl(recommendation.place)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-md
-                border border-[var(--border-primary)]
-                hover:bg-[var(--bg-secondary)] transition-colors
-                text-sm font-medium"
-            >
-              <Navigation size={14} />
-              Directions
-            </a>
+            {/* Actions */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button
+                onClick={() => onPhotoClick(place)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md
+                  bg-[var(--accent-primary)] text-white
+                  hover:bg-[var(--accent-secondary)] transition-colors
+                  text-sm font-medium"
+              >
+                View Details
+                <ArrowRight size={14} />
+              </button>
+              
+              <a
+                href={getGoogleMapsUrl(place)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md
+                  text-[var(--text-primary)] bg-[var(--bg-tertiary)]
+                  hover:bg-[var(--bg-secondary)] transition-colors
+                  text-sm font-medium"
+              >
+                <Navigation size={14} />
+                Directions
+              </a>
+            </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes progress {
-          0% { transform: translateX(-100%); }
-          50% { transform: translateX(0); }
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 };

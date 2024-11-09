@@ -12,6 +12,7 @@ import {
   Sparkles,
   ArrowRight
 } from 'lucide-react';
+import DistanceDisplay from './DistanceDisplay';
 import { useTheme } from './ThemeProvider';
 import { getWifiStatus } from './wifiUtils';
 
@@ -116,9 +117,10 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
                 >
                   {place.title}
                 </h2>
-                <p className="text-sm text-[var(--text-secondary)]">
-                  {place.distance} miles away
-                </p>
+                <DistanceDisplay 
+                  distance={place.distance} 
+                  className="mt-1"
+                />
               </div>
               
               <div 
