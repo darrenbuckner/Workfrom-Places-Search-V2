@@ -1,147 +1,178 @@
 export const darkTheme = {
-  // Base colors - Deep, rich backgrounds inspired by Lyft
-  'bg-primary': '#0F0B14',            // Deep purple-black
-  'bg-secondary': '#161219',          // Lighter purple-black
-  'bg-tertiary': '#1D1820',           // Elevated surface with purple tint
+  // Base colors - Enhanced for better depth and contrast
+  'bg-primary': '#1A1221',            // Deeper purple-black base
+  'bg-secondary': '#251B2D',          // Richer dark purple
+  'bg-tertiary': '#322438',           // More saturated purple for active states
   
-  // Text colors - Crisp contrast
-  'text-primary': '#FFFFFF',          // Pure white
-  'text-secondary': '#B4A5C1',        // Soft purple-white
-  'text-tertiary': '#8E7B9B',         // Muted purple
+  // Text colors - Improved readability and hierarchy
+  'text-primary': '#F8F2FF',          // Warmer white for main text
+  'text-secondary': '#D4C2E5',        // Softer purple-tinted secondary text
+  'text-tertiary': '#9D89B3',         // Muted but still readable
   
-  // Action colors - Lyft-inspired pink/purple
-  'action-primary': '#EA4C89',        // Vibrant pink
-  'action-primary-hover': '#D23B78',  // Darker pink
-  'action-primary-light': 'rgba(234, 76, 137, 0.12)',
-  'action-primary-border': 'rgba(234, 76, 137, 0.25)',
+  // Action colors - More vibrant and engaging
+  'action-primary': '#8A3FB7',        // Brighter purple for primary actions
+  'action-primary-hover': '#9E4BD0',  // Lighter hover state
+  'action-primary-light': 'rgba(138, 63, 183, 0.15)', // Subtle glow effect
+  'action-primary-border': 'rgba(138, 63, 183, 0.3)', // Defined borders
   
-  // Interactive colors
-  'interactive-text': '#FFFFFF',      
-  'interactive-hover': '#B4A5C1',     
-  'interactive-muted': '#8E7B9B',     
+  // Action text colors - Enhanced visibility
+  'action-text': '#E2B8FF',           // Brighter purple text
+  'action-text-hover': '#F0CDFF',     // Lighter hover state
+  'action-text-muted': '#B98CE2',     // Softer muted state
   
-  // Accent colors - Bold pink highlights
-  'accent-primary': '#EA4C89',        // Vibrant pink
-  'accent-secondary': '#FF69B4',      // Bright pink
-  'accent-muted': '#4A2B4B',          // Deep purple background
+  // Button colors - More distinctive
+  'button-primary': '#8A3FB7',        // Matches action-primary
+  'button-primary-hover': '#9E4BD0',  // Matches action-primary-hover
+  'button-secondary': '#322438',      // Subtle but visible
+  'button-secondary-hover': '#3D2C45', // Lighter hover state
+  'button-text': '#FFFFFF',           // Pure white for contrast
+  'button-text-muted': '#D4C2E5',     // Matches text-secondary
   
-  // Border colors - Subtle purple tints
-  'border-primary': 'rgba(255, 255, 255, 0.1)',
-  'border-secondary': 'rgba(255, 255, 255, 0.05)',
+  // Score colors - More intuitive
+  'score-background': '#8A3FB7',      // Matches primary action
+  'score-background-hover': '#9E4BD0', // Consistent hover state
+  'score-text': '#FFFFFF',            // Clear white text
   
-  // Component specific
-  'card-bg': '#161219',
-  'card-hover': '#1D1820',
-  'input-bg': '#1D1820',
-  'input-border': 'rgba(255, 255, 255, 0.1)',
-  'button-text': '#FFFFFF',
-  'button-text-muted': '#B4A5C1',
+  // Accent colors - More vibrant
+  'accent-primary': '#B347F5',        // Brighter purple accent
+  'accent-secondary': '#C76AFF',      // Lighter purple for hover
+  'accent-muted': '#3D2C45',          // Subtle background accent
   
-  // Status colors - Modern and bold
-  'success': '#00E5A0',               // Bright mint green
-  'warning': '#FFB168',               // Warm orange
-  'error': '#FF4F7D',                 // Pink-red
-  'info': '#EA4C89',                  // Pink
+  // Interactive elements
+  'interactive-text': '#F8F2FF',      // Consistent with text-primary
+  'interactive-hover': '#D4C2E5',     // Matches text-secondary
+  'interactive-muted': '#9D89B3',     // Matches text-tertiary
   
-  // Place-specific colors
-  'place-highlight-bg': '#1D1820',     
-  'place-highlight-border': '#2A222E', 
-  'place-tag-bg': 'rgba(234, 76, 137, 0.15)',
-  'place-tag-text': '#FF69B4',
-  'place-score-high': '#00E5A0',       
-  'place-score-medium': '#FFB168',     
-  'place-score-low': '#FF4F7D',        
-  'place-feature-icon': '#FF69B4',     
-  'place-distance': '#B4A5C1',         
-  'place-hours': '#00E5A0',            
-  'place-hours-closed': '#FF4F7D',     
+  // Borders - More defined hierarchy
+  'border-primary': 'rgba(212, 194, 229, 0.15)',    // More visible primary border
+  'border-secondary': 'rgba(212, 194, 229, 0.08)',  // Subtle secondary border
+  
+  // Component specific - Enhanced distinction
+  'card-bg': '#251B2D',               // Matches bg-secondary
+  'card-hover': '#322438',            // Matches bg-tertiary
+  'input-bg': '#322438',              // Consistent with tertiary
+  'input-border': 'rgba(212, 194, 229, 0.15)',  // Matches border-primary
+  
+  // Status colors - More vibrant and accessible
+  'success': '#4CAF50',               // Brighter green
+  'warning': '#FF9800',               // Warmer orange
+  'error': '#F44336',                 // Brighter red
+  'info': '#B347F5',                  // Matches accent-primary
+  
+  // Place-specific colors - Enhanced visibility
+  'place-highlight-bg': '#322438',    // Consistent tertiary
+  'place-highlight-border': '#3D2C45', // Slightly lighter for definition
+  'place-tag-bg': 'rgba(179, 71, 245, 0.15)',  // Uses accent-primary
+  'place-tag-text': '#B347F5',        // Matches accent-primary
+  'place-score-high': '#4CAF50',      // Consistent success
+  'place-score-medium': '#FF9800',    // Consistent warning
+  'place-score-low': '#F44336',       // Consistent error
+  'place-feature-icon': '#B347F5',    // Matches accent-primary
+  'place-distance': '#D4C2E5',        // Matches text-secondary
+  'place-hours': '#4CAF50',           // Matches success
+  'place-hours-closed': '#F44336',    // Matches error
 
-  // Promoted place colors
-  'promoted-bg': '#2A1F33',           
-  'promoted-border': '#3D2D47',       
-  'promoted-text': '#FFFFFF',         
-  'promoted-secondary': '#B4A5C1',    
-  'promoted-highlight': '#EA4C89',    
-  'promoted-tag-bg': 'rgba(234, 76, 137, 0.2)',
-  'promoted-tag-text': '#FF69B4',
-  'promoted-score-bg': '#2A222E',     
-  'promoted-score-text': '#FFFFFF',   
-  'promoted-feature-icon': '#FF69B4', 
-  
-  // Scoring colors for promoted items
-  'promoted-score-high': '#00E5A0',   
-  'promoted-score-medium': '#FFB168', 
-  'promoted-score-low': '#FF4F7D',    
+  // Promoted place colors - More prominent
+  'promoted-bg': '#3D2C45',           // Lighter than accent-muted
+  'promoted-border': '#8A3FB7',       // Matches action-primary
+  'promoted-text': '#F8F2FF',         // Matches text-primary
+  'promoted-secondary': '#D4C2E5',    // Matches text-secondary
+  'promoted-highlight': '#B347F5',    // Matches accent-primary
+  'promoted-tag-bg': 'rgba(179, 71, 245, 0.2)', // Slightly more visible
+  'promoted-tag-text': '#B347F5',     // Matches accent-primary
+  'promoted-score-bg': '#8A3FB7',     // Matches action-primary
+  'promoted-score-text': '#FFFFFF',   // Pure white for contrast
+  'promoted-feature-icon': '#B347F5', // Matches accent-primary
   
   // Navigation
-  'nav-active': '#EA4C89',           
-  'nav-inactive': '#8E7B9B',
-  'nav-hover': '#FF69B4',
+  'nav-active': '#B347F5',            // Matches accent-primary
+  'nav-inactive': '#9D89B3',          // Matches text-tertiary
+  'nav-hover': '#C76AFF',             // Matches accent-secondary
   
-  // Map elements
-  'map-marker': '#EA4C89',           
-  'map-marker-active': '#FF69B4',
-  'map-overlay': 'rgba(15, 11, 20, 0.85)',
+  // Map elements - Enhanced visibility
+  'map-marker': '#8A3FB7',            // Matches action-primary
+  'map-marker-active': '#9E4BD0',     // Matches action-primary-hover
+  'map-overlay': 'rgba(26, 18, 33, 0.95)', // Uses bg-primary
   
   // Modal
-  'modal-overlay': 'rgba(15, 11, 20, 0.95)',
+  'modal-overlay': 'rgba(26, 18, 33, 0.95)', // Consistent with map-overlay
   
-  // Gradients
-  'gradient-primary': 'linear-gradient(to right, rgba(234, 76, 137, 0.15), rgba(234, 76, 137, 0.08))',
-  'gradient-hover': 'linear-gradient(to right, rgba(234, 76, 137, 0.25), rgba(234, 76, 137, 0.15))',
+  // Gradients - More sophisticated
+  'gradient-primary': 'linear-gradient(to right, rgba(179, 71, 245, 0.15), rgba(179, 71, 245, 0.08))',
+  'gradient-hover': 'linear-gradient(to right, rgba(179, 71, 245, 0.25), rgba(179, 71, 245, 0.15))',
+  
+  // Shadow effects - New
+  'shadow-sm': '0 1px 2px rgba(0, 0, 0, 0.3)',
+  'shadow-md': '0 2px 4px rgba(0, 0, 0, 0.3)',
+  'shadow-lg': '0 4px 6px rgba(0, 0, 0, 0.3)',
+  
+  // Focus states - New
+  'focus-ring': 'rgba(179, 71, 245, 0.5)',
+  'focus-ring-offset': '#1A1221'
 };
 
 export const lightTheme = {
-  // Base colors - Warm, professional neutrals (unchanged)
-  'bg-primary': '#FFFFFF',            // Clean white
-  'bg-secondary': '#F8F9FB',          // Soft blue-gray
-  'bg-tertiary': '#F1F4F8',           // Lighter blue-gray
+  // Base colors
+  'bg-primary': '#FFFFFF',            
+  'bg-secondary': '#F8F9FB',          
+  'bg-tertiary': '#F1F4F8',           
   
-  // Text colors - Rich, readable hierarchy (unchanged)
-  'text-primary': '#1A2B3B',          // Deep blue-gray
-  'text-secondary': '#4A5567',        // Medium blue-gray
-  'text-tertiary': '#6E7A8A',         // Light blue-gray
+  // Text colors
+  'text-primary': '#1A2B3B',          
+  'text-secondary': '#4A5567',        
+  'text-tertiary': '#6E7A8A',         
   
-  // Action colors - Now dark and bold
-  'action-primary': '#000000',        // Pure black for primary actions
-  'action-primary-hover': '#1a1a1a',  // Slightly lighter black on hover
+  // Action colors
+  'action-primary': '#000000',        
+  'action-primary-hover': '#1a1a1a',  
   'action-primary-light': 'rgba(0, 0, 0, 0.12)',
   'action-primary-border': 'rgba(0, 0, 0, 0.25)',
   
-  // Interactive colors - More contrast
-  'interactive-text': '#1A2B3B',      // Deep blue-gray
-  'interactive-hover': '#000000',     // Black
-  'interactive-muted': '#4A5567',     // Medium blue-gray
+  // Button-specific colors
+  'button-primary': '#000000',
+  'button-primary-hover': '#1a1a1a',
+  'button-secondary': '#F1F4F8',
+  'button-secondary-hover': '#E3E8EF',
+  'button-text': '#FFFFFF',
+  'button-text-muted': '#4A5567',
   
-  // Accent colors - Bold black palette
-  'accent-primary': '#000000',        // Pure black
-  'accent-secondary': '#1a1a1a',      // Slightly lighter black
-  'accent-muted': '#f5f5f5',          // Light gray background
+  // Score-specific colors
+  'score-background': '#000000',
+  'score-background-hover': '#1a1a1a',
+  'score-text': '#FFFFFF',
   
-  // Border colors - Subtle definition (unchanged)
+  // Interactive colors
+  'interactive-text': '#1A2B3B',      
+  'interactive-hover': '#000000',     
+  'interactive-muted': '#4A5567',     
+  
+  // Accent colors
+  'accent-primary': '#000000',        
+  'accent-secondary': '#1a1a1a',      
+  'accent-muted': '#f5f5f5',          
+  
+  // Border colors
   'border-primary': '#E3E8EF',
   'border-secondary': '#D0D7E2',
   
-  // Component specific - Refined spaces
+  // Component specific
   'card-bg': '#FFFFFF',
   'card-hover': '#F8F9FB',
   'input-bg': '#FFFFFF',
   'input-border': '#E3E8EF',
-  'button-text': '#FFFFFF',
-  'button-text-muted': '#4A5567',
   
-  // Status colors - High contrast indicators
-  'success': '#2D8A54',               // Darker green
-  'warning': '#B95000',               // Warm orange
-  'error': '#CC3340',                 // Professional red
-  'info': '#000000',                  // Black for info
+  // Status colors
+  'success': '#2D8A54',               
+  'warning': '#B95000',               
+  'error': '#CC3340',                 
+  'info': '#000000',                  
   
-  // Place-specific colors - Bold workspace oriented
+  // Place-specific colors
   'place-highlight-bg': '#F8F9FB',
   'place-highlight-border': '#E3E8EF',
   'place-tag-bg': 'rgba(0, 0, 0, 0.08)',
   'place-tag-text': '#000000',
-  'place-score-high': '#2D8A54',      // Darker green
+  'place-score-high': '#2D8A54',      
   'place-score-medium': '#B95000',
   'place-score-low': '#CC3340',
   'place-feature-icon': '#000000',
@@ -149,9 +180,9 @@ export const lightTheme = {
   'place-hours': '#2D8A54',
   'place-hours-closed': '#CC3340',
 
-  // Promoted place colors - Premium feel
+  // Promoted place colors
   'promoted-bg': '#F8FAFD',
-  'promoted-border': '#E3E8EF',
+  'promoted-border': '#000000',
   'promoted-text': '#1A2B3B',
   'promoted-secondary': '#4A5567',
   'promoted-highlight': '#000000',
@@ -162,29 +193,29 @@ export const lightTheme = {
   'promoted-feature-icon': '#000000',
   
   // Scoring colors for promoted items
-  'promoted-score-high': '#2D8A54',   // Darker green
+  'promoted-score-high': '#2D8A54',   
   'promoted-score-medium': '#B95000',
   'promoted-score-low': '#CC3340',
   
-  // Navigation - Bold wayfinding
+  // Navigation
   'nav-active': '#000000',
   'nav-inactive': '#4A5567',
   'nav-hover': '#1a1a1a',
   
-  // Map elements - Bold mapping
+  // Map elements
   'map-marker': '#000000',
   'map-marker-active': '#1a1a1a',
   'map-overlay': 'rgba(255, 255, 255, 0.95)',
   
-  // Modal - Clean overlay
+  // Modal
   'modal-overlay': 'rgba(0, 0, 0, 0.4)',
   
-  // Gradients - Subtle transitions
+  // Gradients
   'gradient-primary': 'linear-gradient(to right, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.04))',
   'gradient-hover': 'linear-gradient(to right, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.08))',
 };
 
-// Helper functions
+// Helper functions remain unchanged
 export const getColorWithOpacity = (color, opacity) => {
   if (color.startsWith('#')) {
     const r = parseInt(color.slice(1, 3), 16);

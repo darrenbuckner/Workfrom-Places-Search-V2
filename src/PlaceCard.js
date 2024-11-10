@@ -20,7 +20,7 @@ const MetricBadge = ({ icon: Icon, label, color, className = "" }) => (
   <div className={`
     inline-flex items-center gap-1.5 px-2 py-1 
     rounded-md border border-[var(--border-primary)]
-    bg-[var(--bg-primary)] whitespace-nowrap
+    bg-[var(--bg-primary)]
     ${className}
   `}>
     <Icon size={14} className={color} />
@@ -49,9 +49,15 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
   // Helper function for noise level
   const getNoiseLevel = () => {
     const noise = (place.noise_level || place.noise || "").toLowerCase();
-    if (noise.includes('quiet')) return { label: "Quiet", color: isDark ? "text-green-400" : "text-green-500" };
-    if (noise.includes('moderate')) return { label: "Moderate", color: isDark ? "text-yellow-400" : "text-yellow-500" };
-    if (noise.includes('noisy')) return { label: "Lively", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+    if (noise.includes('quiet')) {
+      return { label: "Quiet", color: isDark ? "text-green-400" : "text-green-500" };
+    }
+    if (noise.includes('moderate')) {
+      return { label: "Moderate", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+    }
+    if (noise.includes('noisy')) {
+      return { label: "Lively", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+    }
     return { label: "Unknown", color: isDark ? "text-gray-400" : "text-gray-500" };
   };
 
@@ -102,7 +108,7 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 {isRecommended && (
-                  <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full 
+                  <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
                     bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] 
                     text-xs font-medium w-fit mb-1"
                   >
@@ -128,12 +134,8 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
                 className={`
                   flex-shrink-0 w-12 h-12 rounded-lg cursor-pointer
                   flex items-center justify-center font-bold text-lg
+                  bg-[var(--accent-primary)] text-[var(--button-text)]
                   transition-transform hover:scale-105
-                  ${isRecommended 
-                    ? 'bg-[var(--accent-primary)] shadow-sm' 
-                    : 'bg-[var(--accent-primary)]'
-                  }
-                  text-white
                 `}
               >
                 {place.workabilityScore}
@@ -187,10 +189,8 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
             className={`
               flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-md
               transition-colors
-              ${isRecommended 
-                ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-secondary)]'
-                : 'text-[var(--action-primary)] hover:text-[var(--action-primary-hover)] bg-[var(--action-primary)]/5 hover:bg-[var(--action-primary)]/10'
-              }
+              bg-[var(--accent-primary)] text-[var(--button-text)]
+              hover:bg-[var(--accent-secondary)]
             `}
           >
             View Details
@@ -203,8 +203,9 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 text-sm font-medium
-              text-[var(--text-secondary)] hover:text-[var(--text-primary)]
-              bg-[var(--bg-tertiary)] hover:bg-[var(--bg-tertiary)]/80
+              bg-[var(--bg-tertiary)] text-[var(--interactive-text)]
+              hover:text-[var(--interactive-hover)]
+              hover:bg-[var(--bg-tertiary)]/80
               px-3 py-1.5 rounded-md transition-colors"
           >
             <Navigation size={14} />

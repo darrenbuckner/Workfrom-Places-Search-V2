@@ -59,7 +59,7 @@ const RadiusSelect = ({
   };
 
   const baseButtonStyles = variant === 'primary'
-    ? 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white'
+    ? 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-[var(--button-text)]'
     : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]';
 
   return (
@@ -104,14 +104,14 @@ const RadiusSelect = ({
                     p-3 rounded-md transition-colors text-left
                     border border-[var(--border-primary)]
                     ${value === radius
-                      ? 'bg-[var(--action-primary)] text-white border-transparent'
+                      ? 'bg-[var(--action-primary)] text-[var(--button-text)] border-transparent'
                       : 'bg-[var(--bg-secondary)]/95 hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
                     }
                   `}
                 >
                   <div className="font-medium">{label}</div>
                   <div className={`text-xs mt-0.5 ${
-                    value === radius ? 'text-white/80' : 'text-[var(--text-secondary)]'
+                    value === radius ? 'text-[var(--button-text)]/80' : 'text-[var(--text-secondary)]'
                   }`}>
                     {description}
                   </div>

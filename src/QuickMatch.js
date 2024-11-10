@@ -229,9 +229,11 @@ const QuickMatch = ({
 
         {/* Content Grid */}
         <div className="flex gap-4">
-          {/* Score Badge */}
-          <div className="flex-shrink-0 w-16 h-16 rounded-lg bg-[var(--accent-primary)] 
-            text-white flex items-center justify-center font-bold text-2xl">
+          {/* Score Badge - Using theme colors */}
+          <div className="flex-shrink-0 w-16 h-16 rounded-lg
+            bg-[var(--accent-primary)]
+            text-[var(--button-text)]
+            flex items-center justify-center font-bold text-2xl">
             {place.workabilityScore}
           </div>
 
@@ -251,12 +253,12 @@ const QuickMatch = ({
               </p>
             )}
 
-            {/* Actions */}
+            {/* Actions - Using theme colors */}
             <div className="flex flex-wrap gap-2 mt-3">
               <button
                 onClick={() => onPhotoClick(place)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md
-                  bg-[var(--accent-primary)] text-white
+                  bg-[var(--accent-primary)] text-[var(--button-text)]
                   hover:bg-[var(--accent-secondary)] transition-colors
                   text-sm font-medium"
               >
@@ -269,7 +271,8 @@ const QuickMatch = ({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md
-                  text-[var(--text-primary)] bg-[var(--bg-tertiary)]
+                  bg-[var(--bg-tertiary)] text-[var(--interactive-text)]
+                  hover:text-[var(--interactive-hover)]
                   hover:bg-[var(--bg-secondary)] transition-colors
                   text-sm font-medium"
               >

@@ -54,7 +54,7 @@ const SearchControls = ({
               focus:ring-[var(--action-primary-light)]
               ${disabled
                 ? 'bg-[var(--bg-tertiary)] text-[var(--text-tertiary)] cursor-not-allowed'
-                : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-white'
+                : 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-[var(--button-text)]'
               }
             `}
           >
