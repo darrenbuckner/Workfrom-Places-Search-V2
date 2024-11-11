@@ -1,141 +1,237 @@
-import React from 'react';
-import { Brain, X, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Brain, Clock, Users, Wifi, Battery, 
+  Volume2, Sparkles, ArrowRight, Coffee,
+  Navigation, Zap 
+} from 'lucide-react';
 
-const AnalysisSection = ({ title, children }) => (
-  <div className="p-4 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-    <h3 className="font-medium mb-3 text-[var(--text-primary)]">{title}</h3>
-    {children}
-  </div>
-);
-
-const WorkspaceAnalysis = ({ 
-  analysis, 
-  isAnalyzing, 
-  error,
-  onHide,
-  onPlaceClick 
+const WorkspaceAnalyzer = ({ 
+  places,
+  isAnalyzing,
+  onPlaceClick,
+  className = ''
 }) => {
-  if (error) {
-    return (
-      <div className="mb-6">
-        <div className="border border-red-500 rounded-lg p-4 bg-red-50">
-          <p className="text-red-600">Error analyzing workspaces: {error}</p>
+  const insights = [
+    {
+      id: 'focused',
+      icon: Brain,
+      title: 'Focus Zones',
+      description: 'Perfect for deep work & concentration',
+      color: 'emerald',
+      getPlaces: () => places
+        .filter(p => p.noise?.toLowerCase().includes('quiet'))
+        .sort((a, b) => b.workabilityScore - a.workabilityScore)
+        .slice(0, 3),
+      metrics: (place) => [
+        {
+          icon: Volume2,
+          value: place.noise || 'Unknown',
+          good: place.noise?.toLowerCase().includes('quiet')
+        },
+        {
+          icon: Wifi,
+          value: place.download ? `${Math.round(place.download)} Mbps` : 'Unknown',
+          good: place.download >= 25
+        }
+      ]
+    },
+    {
+      id: 'team',
+      icon: Users,
+      title: 'Team Spaces',
+      description: 'Ideal for collaboration & meetings',
+      color: 'blue',
+      getPlaces: () => places
+        .filter(p => p.food === "1" && p.download >= 25)
+        .sort((a, b) => b.workabilityScore - a.workabilityScore)
+        .slice(0, 3),
+      metrics: (place) => [
+        {
+          icon: Wifi,
+          value: place.download ? `${Math.round(place.download)} Mbps` : 'Unknown',
+          good: place.download >= 25
+        },
+        {
+          icon: Coffee,
+          value: place.food === "1" ? 'Food Available' : 'No Food',
+          good: place.food === "1"
+        }
+      ]
+    },
+    {
+      id: 'quick',
+      icon: Zap,
+      title: 'Quick Stops',
+      description: 'Closest high-rated workspaces',
+      color: 'purple',
+      getPlaces: () => places
+        .filter(p => p.distance <= 1)
+        .sort((a, b) => b.workabilityScore - a.workabilityScore)
+        .slice(0, 3),
+      metrics: (place) => [
+        {
+          icon: Navigation,
+          value: `${place.distance} miles`,
+          good: place.distance <= 0.5
+        },
+        {
+          icon: Battery,
+          value: place.power || 'Unknown',
+          good: place.power?.includes('range3')
+        }
+      ]
+    }
+  ];
+
+  const [activeInsight, setActiveInsight] = useState(insights[0]);
+
+  const InsightNavigation = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+      {insights.map(insight => {
+        const isActive = activeInsight.id === insight.id;
+        return (
+          <button
+            key={insight.id}
+            onClick={() => setActiveInsight(insight)}
+            className={`
+              relative p-4 rounded-lg border transition-all
+              ${isActive 
+                ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
+                : 'border-[var(--border-primary)] hover:bg-[var(--bg-secondary)]'
+              }
+            `}
+          >
+            {isActive && (
+              <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--accent-primary)] rounded-t-lg" />
+            )}
+            
+            <div className="flex flex-col items-start gap-2">
+              <div className={`
+                p-2 rounded-lg
+                ${isActive 
+                  ? 'bg-[var(--accent-primary)] text-[var(--button-text)]' 
+                  : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
+                }
+              `}>
+                <insight.icon size={18} />
+              </div>
+              
+              <div className="text-left">
+                <div className="font-medium text-[var(--text-primary)]">
+                  {insight.title}
+                </div>
+                <div className="text-sm text-[var(--text-secondary)] mt-1">
+                  {insight.description}
+                </div>
+              </div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const WorkspaceInsightCard = ({ place, insight, isHighlighted }) => (
+    <div 
+      onClick={() => onPlaceClick(place)}
+      className={`
+        relative p-4 rounded-lg border cursor-pointer
+        transition-all duration-200 group
+        ${isHighlighted 
+          ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/5' 
+          : 'border-[var(--border-primary)] bg-[var(--bg-primary)] hover:bg-[var(--bg-secondary)]'
+        }
+      `}
+    >
+      {isHighlighted && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--accent-primary)] rounded-t-lg" />
+      )}
+
+      <div className="flex items-start gap-3">
+        <div className={`
+          flex-shrink-0 w-12 h-12 rounded-lg
+          font-bold text-xl flex items-center justify-center
+          ${isHighlighted
+            ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
+            : 'bg-[var(--bg-secondary)] text-[var(--text-primary)]'
+          }
+        `}>
+          {place.workabilityScore}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h4 className="font-medium text-[var(--text-primary)] mb-1 truncate">
+            {place.title}
+          </h4>
+          
+          <div className="flex flex-wrap gap-3 mt-2">
+            {insight.metrics(place).map((metric, index) => (
+              <div 
+                key={index}
+                className={`
+                  flex items-center gap-1.5 px-2 py-1 rounded-md text-xs
+                  ${metric.good
+                    ? 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'
+                    : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'
+                  }
+                `}
+              >
+                <metric.icon size={12} />
+                <span>{metric.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
-    );
-  }
+
+      <button className={`
+        w-full mt-3 px-3 py-1.5 rounded text-sm font-medium
+        flex items-center justify-center gap-1.5 transition-colors
+        ${isHighlighted
+          ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
+          : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] group-hover:bg-[var(--bg-secondary)]'
+        }
+      `}>
+        View Details
+        <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
+      </button>
+    </div>
+  );
 
   if (isAnalyzing) {
     return (
-      <div className="mb-6">
-        <div className="border border-[var(--border-primary)] rounded-lg p-4 bg-[var(--bg-secondary)]">
-          <div className="animate-pulse space-y-4">
-            <div className="flex items-center gap-2">
-              <Brain className="w-5 h-5 text-[var(--accent-primary)]" />
-              <div className="h-4 bg-[var(--bg-tertiary)] rounded w-48"></div>
-            </div>
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-[var(--bg-tertiary)] rounded"></div>
-              ))}
-            </div>
-          </div>
+      <div className="animate-pulse space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-32 bg-[var(--bg-secondary)] rounded-lg" />
+          ))}
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-32 bg-[var(--bg-secondary)] rounded-lg" />
+          ))}
         </div>
       </div>
     );
   }
 
-  if (!analysis) return null;
-
-  const { bestFor, timeBasedRecommendations, uniqueFeatures } = analysis;
-
   return (
-    <div className="mb-6">
-      <div className="border border-[var(--accent-secondary)] rounded-lg bg-[var(--bg-primary)] relative">
-        <button
-          onClick={onHide}
-          className="absolute right-4 top-4 p-1.5 rounded-full 
-            bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] 
-            text-[var--text-secondary] transition-colors"
-        >
-          <X size={16} />
-        </button>
+    <div className={className}>
+      <InsightNavigation />
 
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Brain className="w-5 h-5 text-[var(--accent-primary)]" />
-            <h2 className="text-lg font-medium text-[var(--text-primary)]">
-              Workspace Analysis
-            </h2>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <AnalysisSection title="Best For Work Styles">
-              {Object.entries(bestFor).map(([style, data]) => (
-                <div
-                  key={style}
-                  className="group mb-3 last:mb-0 cursor-pointer"
-                  onClick={() => onPlaceClick(data.name)}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                    <h4 className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]">
-                      {style.replace(/([A-Z])/g, ' $1').trim()}
-                    </h4>
-                  </div>
-                  <div className="ml-3 text-sm text-[var(--text-secondary)]">
-                    {data.name} - {data.reason}
-                  </div>
-                </div>
-              ))}
-            </AnalysisSection>
-
-            <AnalysisSection title="Time-Based Recommendations">
-              {Object.entries(timeBasedRecommendations).map(([time, data]) => (
-                <div
-                  key={time}
-                  className="group mb-3 last:mb-0 cursor-pointer"
-                  onClick={() => onPlaceClick(data.name)}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                    <h4 className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]">
-                      {time.charAt(0).toUpperCase() + time.slice(1)}
-                    </h4>
-                  </div>
-                  <div className="ml-3 text-sm text-[var(--text-secondary)]">
-                    {data.name} - {data.reason}
-                  </div>
-                </div>
-              ))}
-            </AnalysisSection>
-          </div>
-
-          <AnalysisSection title="Notable Features" className="mt-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {uniqueFeatures.map((feature, index) => (
-                <div
-                  key={index}
-                  className="group cursor-pointer"
-                  onClick={() => onPlaceClick(feature.placeName)}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)]" />
-                    <span className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-primary)]">
-                      {feature.placeName}
-                    </span>
-                  </div>
-                  <div className="ml-3 text-sm text-[var(--text-secondary)]">
-                    {feature.feature} - {feature.description}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </AnalysisSection>
-        </div>
+      {/* Workspace Cards */}
+      <div className="space-y-4">
+        {activeInsight.getPlaces().map((place, index) => (
+          <WorkspaceInsightCard
+            key={place.ID}
+            place={place}
+            insight={activeInsight}
+            isHighlighted={index === 0}
+          />
+        ))}
       </div>
     </div>
   );
 };
 
-export default WorkspaceAnalysis;
+export default WorkspaceAnalyzer;

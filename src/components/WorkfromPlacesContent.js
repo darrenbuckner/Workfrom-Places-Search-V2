@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { List, Map, SlidersHorizontal } from 'lucide-react';
+import { List, Map, SlidersHorizontal, Brain } from 'lucide-react';
 import { useLocation } from '../hooks/useLocation';
 import { usePlaces } from '../hooks/usePlaces';
 import { usePhotoModal } from '../hooks/usePhotoModal';
@@ -15,6 +15,8 @@ import WorkabilityControls from '../WorkabilityControls';
 import WelcomeBanner from '../WelcomeBanner';
 import QuickMatch from '../QuickMatch';
 import ErrorMessage from '../ErrorMessage';
+import WorkspaceAnalyzer from './WorkspaceAnalyzer';
+import QuickInsights from './QuickInsights';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -29,6 +31,22 @@ const StyledSearchContainer = ({ children }) => {
     </div>
   );
 };
+
+const ViewModeButton = ({ mode, currentMode, icon: Icon, onClick }) => (
+  <button
+    onClick={() => onClick(mode)}
+    className={`
+      p-2 rounded transition-colors
+      ${currentMode === mode
+        ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
+        : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
+      }
+    `}
+    aria-label={`${mode} view`}
+  >
+    <Icon size={18} />
+  </button>
+);
 
 const WorkfromPlacesContent = () => {
   // Custom hooks
@@ -74,6 +92,12 @@ const WorkfromPlacesContent = () => {
   const [recommendedPlace, setRecommendedPlace] = useState(null);
   const [quickMatchHidden, setQuickMatchHidden] = useState(false);
   const [error, setError] = useState(null);
+  const [userPreferences, setUserPreferences] = useState({
+    preferQuiet: false,
+    needsPower: false,
+    needsWifi: true,
+    teamSize: 1
+  });
 
   const handleSearchError = (error) => {
     if (error.name === 'GeolocationPositionError') {
@@ -154,9 +178,60 @@ const WorkfromPlacesContent = () => {
     });
   };
 
+  const handleViewModeChange = (mode) => {
+    setViewMode(mode);
+    if (mode === 'analyze') {
+      setQuickMatchHidden(true);
+    }
+  };
+
   const hasPlaces = places.length > 0;
   const showError = error || searchError || locationError;
   const currentError = error || searchError || locationError;
+
+  const renderContent = () => {
+    if (viewMode === 'list') {
+      return (
+        <SearchResults
+          places={places}
+          sortBy={sortBy}
+          filters={postSearchFilters}
+          itemsPerPage={ITEMS_PER_PAGE}
+          viewMode={viewMode}
+          onPhotoClick={handlePhotoClick}
+          recommendedPlace={recommendedPlace}
+        />
+      );
+    }
+
+    if (viewMode === 'map') {
+      return (
+        <NearbyPlacesMap 
+          places={places}
+          userLocation={location}
+          onPhotoClick={handlePhotoClick}
+          highlightedPlace={recommendedPlace}
+        />
+      );
+    }
+
+    if (viewMode === 'analyze') {
+      return (
+        <div className="space-y-6">
+          <QuickInsights 
+            places={places}
+            onPlaceClick={handlePhotoClick}
+            userPreferences={userPreferences}
+          />
+          <WorkspaceAnalyzer
+            places={places}
+            isAnalyzing={searchPhase === SearchPhases.LOADING}
+            onPlaceClick={handlePhotoClick}
+          />
+        </div>
+      );
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-bg-primary">
@@ -226,32 +301,24 @@ const WorkfromPlacesContent = () => {
 
                       {hasPlaces && (
                         <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
-                          <button
-                            onClick={() => setViewMode('list')}
-                            className={`
-                              p-2 rounded transition-colors
-                              ${viewMode === 'list'
-                                ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-                                : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                              }
-                            `}
-                            aria-label="List view"
-                          >
-                            <List size={18} />
-                          </button>
-                          <button
-                            onClick={() => setViewMode('map')}
-                            className={`
-                              p-2 rounded transition-colors
-                              ${viewMode === 'map'
-                                ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-                                : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                              }
-                            `}
-                            aria-label="Map view"
-                          >
-                            <Map size={18} />
-                          </button>
+                          <ViewModeButton
+                            mode="list"
+                            currentMode={viewMode}
+                            icon={List}
+                            onClick={handleViewModeChange}
+                          />
+                          <ViewModeButton
+                            mode="map"
+                            currentMode={viewMode}
+                            icon={Map}
+                            onClick={handleViewModeChange}
+                          />
+                          <ViewModeButton
+                            mode="analyze"
+                            currentMode={viewMode}
+                            icon={Brain}
+                            onClick={handleViewModeChange}
+                          />
                         </div>
                       )}
                     </div>
@@ -273,7 +340,7 @@ const WorkfromPlacesContent = () => {
 
             {hasPlaces && !showError && (
               <div className="border-t border-[var(--border-primary)]">
-                {!quickMatchHidden && (
+                {!quickMatchHidden && viewMode !== 'analyze' && (
                   <div className="p-4 border-b border-[var(--border-primary)]">
                     <QuickMatch
                       places={places}
@@ -288,24 +355,7 @@ const WorkfromPlacesContent = () => {
                 )}
                 
                 <div className="p-4">
-                  {viewMode === 'list' ? (
-                    <SearchResults
-                      places={places}
-                      sortBy={sortBy}
-                      filters={postSearchFilters}
-                      itemsPerPage={ITEMS_PER_PAGE}
-                      viewMode={viewMode}
-                      onPhotoClick={handlePhotoClick}
-                      recommendedPlace={recommendedPlace}
-                    />
-                  ) : (
-                    <NearbyPlacesMap 
-                      places={places}
-                      userLocation={location}
-                      onPhotoClick={handlePhotoClick}
-                      highlightedPlace={recommendedPlace}
-                    />
-                  )}
+                  {renderContent()}
                 </div>
               </div>
             )}
