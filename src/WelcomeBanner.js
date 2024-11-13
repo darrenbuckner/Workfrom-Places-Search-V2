@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sun, Moon, Sunset } from 'lucide-react';
 
 const WelcomeBanner = ({ isSearchPerformed = false }) => {
-  if (isSearchPerformed) {
-    return null;
-  }
+  const [isVisible, setIsVisible] = useState(true);
+  const [shouldRender, setShouldRender] = useState(true);
+
+  useEffect(() => {
+    if (isSearchPerformed) {
+      setIsVisible(false);
+      // Wait for fade out animation before removing from DOM
+      const timer = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isSearchPerformed]);
+
+  if (!shouldRender) return <div className="h-0 transition-all duration-300" />;
 
   const hour = new Date().getHours();
   
@@ -33,7 +43,10 @@ const WelcomeBanner = ({ isSearchPerformed = false }) => {
   const { greeting, Icon, message } = getTimeBasedContent();
 
   return (
-    <div className="animate-fadeIn mb-4">
+    <div className={`
+      transition-all duration-300 mb-4 
+      ${isVisible ? 'opacity-100 max-h-48' : 'opacity-0 max-h-0 overflow-hidden'}
+    `}>
       <div className="relative overflow-hidden">
         {/* Decorative Elements */}
         <div className="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent-primary)]/5 rounded-full blur-2xl" />

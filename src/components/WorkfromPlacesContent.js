@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { List, Map, Brain, SlidersHorizontal } from 'lucide-react';
 import { useLocation } from '../hooks/useLocation';
 import { usePlaces } from '../hooks/usePlaces';
@@ -15,6 +15,7 @@ import PostSearchFilters from '../PostSearchFilters';
 import WorkabilityControls from '../WorkabilityControls';
 import InsightsSummary from '../InsightsSummary';
 import WelcomeBanner from '../WelcomeBanner';
+import AIInsightsLoading from '../AIInsightsLoading';
 import ViewModeToggle from '../ViewModeToggle';
 import ErrorMessage from '../ErrorMessage';
 import API_CONFIG from '../config';
@@ -48,7 +49,6 @@ const ViewModeButton = ({ mode, currentMode, icon: Icon, onClick }) => (
 );
 
 const WorkfromPlacesContent = () => {
-  // State
   const [radius, setRadius] = useState(2);
   const [lastSearchedRadius, setLastSearchedRadius] = useState(2);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
@@ -57,8 +57,9 @@ const WorkfromPlacesContent = () => {
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
   const [error, setError] = useState(null);
   const [workspaceAnalysis, setWorkspaceAnalysis] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
 
-  // Custom hooks
   const {
     location,
     setLocation,
@@ -91,15 +92,19 @@ const WorkfromPlacesContent = () => {
     closePhotoModal
   } = usePhotoModal();
 
-  const hasPlaces = places.length > 0;
-  const showError = error || searchError || locationError;
-  const currentError = error || searchError || locationError;
+  useEffect(() => {
+    let progressInterval;
+    if (isAnalyzing && analysisProgress < 90) {
+      progressInterval = setInterval(() => {
+        setAnalysisProgress(prev => Math.min(prev + 1, 90));
+      }, 50);
+    }
+    return () => clearInterval(progressInterval);
+  }, [isAnalyzing, analysisProgress]);
 
-  // Add the filter handler function
   const handlePostSearchFilter = (key, value) => {
     setPostSearchFilters(prev => ({ ...prev, [key]: value }));
   };
-
 
   const handleSearchError = (error) => {
     if (error.name === 'GeolocationPositionError') {
@@ -139,6 +144,8 @@ const WorkfromPlacesContent = () => {
     setSearchError(null);
     setLocationError(null);
     setWorkspaceAnalysis(null);
+    setIsAnalyzing(false);
+    setAnalysisProgress(0);
     setPostSearchFilters({
       type: 'any',
       power: 'any',
@@ -157,54 +164,63 @@ const WorkfromPlacesContent = () => {
       
       setSearchPhase(SearchPhases.LOADING);
       const fetchedPlaces = await fetchPlaces(searchLocation, radius);
-      setIsSearchPerformed(true);
-      setLastSearchedRadius(radius);
+      
+      if (fetchedPlaces.length > 0) {
+        setLastSearchedRadius(radius);
 
-      // Prepare data for analysis
-      const placesData = fetchedPlaces.map(place => ({
-        name: place.title,
-        type: place.type || '',
-        distance: parseFloat(place.distance) || 0,
-        noise: place.noise_level || place.noise || '',
-        power: place.power || '',
-        workabilityScore: place.workabilityScore || 0,
-        wifi: place.download ? `${Math.round(place.download)} Mbps` : 
-              place.no_wifi === "1" ? "No WiFi" : "Unknown",
-        amenities: {
-          coffee: place.coffee === "1",
-          food: place.food === "1",
-          alcohol: place.alcohol === "1",
-          outdoorSeating: place.outdoor_seating === "1" || place.outside === "1"
-        }
-      }));
+        // Start analysis if we're in insights view or it's the first search
+        if (viewMode === 'insights' || !isSearchPerformed) {
+          setIsAnalyzing(true);
+          setAnalysisProgress(0);
 
-      try {
-        const analysisResponse = await fetch(
-          `${API_CONFIG.baseUrl}/analyze-workspaces?appid=${API_CONFIG.appId}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ places: placesData })
+          const placesData = fetchedPlaces.map(place => ({
+            name: place.title,
+            type: place.type || '',
+            distance: parseFloat(place.distance) || 0,
+            noise: place.noise_level || place.noise || '',
+            power: place.power || '',
+            workabilityScore: place.workabilityScore || 0,
+            wifi: place.download ? `${Math.round(place.download)} Mbps` : 
+                  place.no_wifi === "1" ? "No WiFi" : "Unknown",
+            amenities: {
+              coffee: place.coffee === "1",
+              food: place.food === "1",
+              alcohol: place.alcohol === "1",
+              outdoorSeating: place.outdoor_seating === "1" || place.outside === "1"
+            }
+          }));
+
+          try {
+            const analysisResponse = await fetch(
+              `${API_CONFIG.baseUrl}/analyze-workspaces?appid=${API_CONFIG.appId}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ places: placesData })
+              }
+            );
+
+            if (analysisResponse.ok) {
+              const analysisData = await analysisResponse.json();
+              if (analysisData.insights) {
+                setAnalysisProgress(100);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                setWorkspaceAnalysis(analysisData.insights);
+              }
+            }
+          } catch (err) {
+            console.error('Analysis failed:', err);
+          } finally {
+            setIsAnalyzing(false);
           }
-        );
-
-        if (analysisResponse.ok) {
-          const analysisData = await analysisResponse.json();
-          console.log('Analysis Response:', analysisData); // Debug log
-          if (analysisData.insights) {
-            setWorkspaceAnalysis(analysisData.insights);
-          }
         }
-      } catch (err) {
-        console.error('Analysis failed:', err);
-        // Don't fail the whole search if analysis fails
-      }
 
-      // Automatically switch to insights view after first search
-      if (!isSearchPerformed) {
-        setViewMode('insights');
+        if (!isSearchPerformed) {
+          setViewMode('insights');
+          setIsSearchPerformed(true);
+        }
       }
     } catch (err) {
       console.error('Search failed:', err);
@@ -215,6 +231,23 @@ const WorkfromPlacesContent = () => {
   };
 
   const renderContent = () => {
+    if (searchPhase === SearchPhases.INITIAL) {
+      return null;
+    }
+
+    if ((searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING) && viewMode === 'insights') {
+      return <AIInsightsLoading locationName={locationName} />;
+    }
+
+    if (searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING) {
+      if (viewMode === 'list') {
+        return <SearchResults isLoading={true} />;
+      }
+      if (viewMode === 'map') {
+        return <div className="h-[500px] rounded-lg bg-[var(--bg-secondary)] animate-pulse" />;
+      }
+    }
+
     if (viewMode === 'list') {
       return (
         <SearchResults
@@ -239,6 +272,9 @@ const WorkfromPlacesContent = () => {
     }
 
     if (viewMode === 'insights') {
+      if (isAnalyzing) {
+        return <AIInsightsLoading locationName={locationName} />;
+      }
       return (
         <InsightsSummary
           places={places}
@@ -271,7 +307,7 @@ const WorkfromPlacesContent = () => {
           />
         </StyledSearchContainer>
 
-        {searchPhase === SearchPhases.COMPLETE && (
+        {searchPhase !== SearchPhases.INITIAL && (
           <>
             <ControlsHeader 
               viewMode={viewMode}
@@ -282,11 +318,11 @@ const WorkfromPlacesContent = () => {
               radius={lastSearchedRadius}
               sortBy={sortBy}
               setSortBy={setSortBy}
+              disabled={searchPhase !== SearchPhases.COMPLETE}
             />
 
-            {/* Show filters panel if enabled */}
-            {showFilters && viewMode !== 'insights' && (
-              <div className="mt-4 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)] p-4">
+            {showFilters && viewMode !== 'insights' && searchPhase === SearchPhases.COMPLETE && (
+              <div className="mt-4 animate-fadeIn">
                 <PostSearchFilters
                   onFilterChange={handlePostSearchFilter}
                   currentFilters={postSearchFilters}
@@ -295,11 +331,8 @@ const WorkfromPlacesContent = () => {
               </div>
             )}
 
-            {/* Content section */}
-            <div className="mt-4 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
-              <div className="">
-                {renderContent()}
-              </div>
+            <div className="mt-4 animate-fadeIn">
+              {renderContent()}
             </div>
           </>
         )}

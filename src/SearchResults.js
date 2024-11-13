@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React from 'react';
 import { Brain, Loader, Sparkles, AlertTriangle } from 'lucide-react';
 import PlaceCard from './PlaceCard';
 import Pagination from './Pagination';
@@ -13,58 +13,47 @@ const AIBadge = ({ className = "" }) => (
   </div>
 );
 
-const LoadingState = ({ progress, className = "" }) => {
-  const [currentMessage, setCurrentMessage] = useState(0);
-  const messages = [
-    "Finding your perfect workspace...",
-    "Analyzing local options...",
-    "Checking community insights...",
-    "Almost ready..."
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentMessage(prev => (prev + 1) % messages.length);
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className={`mb-6 animate-fade-in ${className}`}>
-      <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-md overflow-hidden relative">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--bg-secondary)]">
-          <div 
-            className="absolute top-0 left-0 h-full bg-[var(--accent-primary)] transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        <div className="p-4">
-          <div className="flex items-center gap-2">
-            <AIBadge />
-          </div>
-          
-          <div className="flex items-center gap-3 mt-3">
-            <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
-              <Loader className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />
+const SkeletonPlaceCard = () => (
+  <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+    <div className="p-4 animate-pulse">
+      <div className="flex items-start gap-4">
+        {/* Thumbnail skeleton */}
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-[var(--bg-tertiary)] flex-shrink-0" />
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              {/* Title skeleton */}
+              <div className="h-6 bg-[var(--bg-tertiary)] rounded w-3/4 mb-2" />
+              {/* Distance skeleton */}
+              <div className="h-4 bg-[var(--bg-tertiary)] rounded w-1/4" />
             </div>
-            <p className="text-sm font-medium text-[var(--text-primary)] transition-opacity duration-300">
-              {messages[currentMessage]}
-            </p>
+            {/* Score skeleton */}
+            <div className="w-12 h-12 rounded-lg bg-[var(--bg-tertiary)] flex-shrink-0" />
           </div>
 
-          <div className="mt-4 h-1 rounded-full overflow-hidden bg-[var(--bg-secondary)]">
-            <div className="h-full bg-[var(--accent-primary)]/20 rounded-full shimmer" />
+          {/* Metrics skeleton */}
+          <div className="mt-3 space-y-2">
+            <div className="flex gap-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-8 bg-[var(--bg-tertiary)] rounded w-24" />
+              ))}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Actions skeleton */}
+      <div className="flex gap-2 mt-4">
+        <div className="h-9 bg-[var(--bg-tertiary)] rounded w-32" />
+        <div className="h-9 bg-[var(--bg-tertiary)] rounded w-28" />
+      </div>
     </div>
-  );
-};
+  </div>
+);
 
 const NoResultsState = ({ onRetry, className = "" }) => (
-  <div className={`mb-6 animate-fade-in ${className}`}>
+  <div className={`mb-6 animate-fadeIn ${className}`}>
     <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg p-4">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
@@ -94,29 +83,24 @@ const NoResultsState = ({ onRetry, className = "" }) => (
 );
 
 const SearchResults = ({ 
-  places,
+  places = [],
   sortBy,
   filters,
   itemsPerPage = 10,
   viewMode,
   onPhotoClick,
-  recommendedPlace,
-  isAnalyzing,
+  isLoading = false,
   error,
   onRetry,
   onFilterChange,
   className = ""
 }) => {
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isPageChanging, setIsPageChanging] = useState(false);
-  const [hasInitialized, setHasInitialized] = useState(false);
-  const isMobileRef = useRef(window.innerWidth < 640);
+  const [currentPage, setCurrentPage] = React.useState(1);
 
-  const controlsRef = useRef(null);
-  const resultsRef = useRef(null);
-  const recommendedCardRef = useRef(null);
-  const scrollTimeoutRef = useRef(null);
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, sortBy]);
 
   // Calculate pagination values
   const totalPages = Math.max(1, Math.ceil(places.length / itemsPerPage));
@@ -124,141 +108,59 @@ const SearchResults = ({
   const endIndex = Math.min(startIndex + itemsPerPage, places.length);
   const currentItems = places.slice(startIndex, endIndex);
 
-  // Loading progress effect
-  useEffect(() => {
-    if (isAnalyzing) {
-      setLoadingProgress(0);
-      const startTime = Date.now();
-      const duration = 8000;
-      
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min((elapsed / duration) * 100, 90);
-        
-        if (progress >= 90) {
-          clearInterval(interval);
-        }
-        
-        setLoadingProgress(progress);
-      }, 100);
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-fadeIn">
+        {[...Array(3)].map((_, index) => (
+          <SkeletonPlaceCard key={index} />
+        ))}
+      </div>
+    );
+  }
 
-      return () => clearInterval(interval);
-    }
-  }, [isAnalyzing]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const scrollToControls = useCallback(() => {
-    if (controlsRef.current) {
-      const headerPadding = 120;
-      const controlsTop = controlsRef.current.getBoundingClientRect().top;
-      const scrollPosition = window.pageYOffset + controlsTop - headerPadding;
-
-      window.scrollTo({
-        top: Math.max(0, scrollPosition),
-        behavior: 'smooth'
-      });
-    }
-  }, []);
-
-  const handlePageChange = useCallback((newPage) => {
-    if (newPage < 1 || newPage > totalPages || newPage === currentPage) {
-      return;
-    }
-
-    setIsPageChanging(true);
-    setCurrentPage(newPage);
-
-    requestAnimationFrame(() => {
-      scrollTimeoutRef.current = setTimeout(() => {
-        scrollToControls();
-        setTimeout(() => {
-          setIsPageChanging(false);
-        }, 500);
-      }, 50);
-    });
-  }, [currentPage, totalPages, scrollToControls]);
-
-  // Early return for error state
+  // Error state
   if (error) {
     return (
       <ErrorMessage
         error={error}
         onRetry={onRetry}
-        variant="full"
-        className={`mb-6 animate-fade-in ${className}`}
+        className={`mb-6 animate-fadeIn ${className}`}
       />
     );
   }
 
-  // Loading state
-  if (isAnalyzing) {
-    return <LoadingState progress={loadingProgress} className={className} />;
-  }
-
   // No results state
-  if (!isAnalyzing && places.length === 0) {
+  if (!isLoading && places.length === 0) {
     return <NoResultsState onRetry={onRetry} className={className} />;
   }
 
   return (
     <div className={`relative ${className}`}>
-      <div ref={controlsRef} className="scroll-mt-32" />
-      
       <div className="space-y-6">
-        {currentItems.map((place, index) => {
-          const isRecommended = recommendedPlace && place.ID === recommendedPlace.ID;
-
-          return (
-            <React.Fragment key={place.ID}>
-              {index > 0 && index % 5 === 0 && <WorkfromVirtualAd />}
-              <div 
-                ref={isRecommended ? recommendedCardRef : null}
-                className={isRecommended ? 'scroll-mt-[180px] sm:scroll-mt-[240px]' : ''}
-              >
-                <PlaceCard
-                  place={place}
-                  onPhotoClick={() => onPhotoClick(place)}
-                  isRecommended={isRecommended}
-                />
-              </div>
-            </React.Fragment>
-          );
-        })}
+        {currentItems.map((place, index) => (
+          <React.Fragment key={place.ID}>
+            {index > 0 && index % 5 === 0 && <WorkfromVirtualAd />}
+            <div className="animate-fadeIn" style={{ animationDelay: `${index * 100}ms` }}>
+              <PlaceCard
+                place={place}
+                onPhotoClick={() => onPhotoClick(place)}
+              />
+            </div>
+          </React.Fragment>
+        ))}
       </div>
 
       {totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={handlePageChange}
+          onPageChange={setCurrentPage}
           className="mt-6"
         />
       )}
 
-      <style>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        .shimmer {
-          width: 100%;
-          background-size: 200% 100%;
-          background-image: linear-gradient(
-            90deg, 
-            transparent 0%, 
-            var(--accent-primary) 50%, 
-            transparent 100%
-          );
-          animation: shimmer 2s infinite linear;
-        }
+      <style jsx global>{`
         @keyframes fadeIn {
           from {
             opacity: 0;
@@ -269,8 +171,25 @@ const SearchResults = ({
             transform: translateY(0);
           }
         }
-        .animate-fade-in {
+
+        .animate-fadeIn {
           animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes shimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+
+        .shimmer {
+          background-size: 200% 100%;
+          background-image: linear-gradient(
+            90deg,
+            transparent 0%,
+            var(--accent-primary) 50%,
+            transparent 100%
+          );
+          animation: shimmer 2s infinite linear;
         }
       `}</style>
     </div>

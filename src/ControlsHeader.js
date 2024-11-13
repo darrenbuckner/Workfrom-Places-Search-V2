@@ -37,6 +37,27 @@ const ControlsHeader = ({
     { id: 'map', label: 'Map View', icon: Map }
   ];
 
+  const renderContextInfo = () => {
+    if (viewMode === 'insights') {
+      return (
+        <div className="text-sm font-medium text-[var(--text-primary)]">
+          AI-powered recommendations
+        </div>
+      );
+    }
+
+    return (
+      <div className="text-sm whitespace-nowrap">
+        <span className="font-medium text-[var(--text-primary)]">
+          {totalPlaces} places found
+        </span>
+        <span className="text-[var(--text-secondary)] ml-2">
+          within {radius} miles
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
       {/* Mobile Header */}
@@ -111,19 +132,12 @@ const ControlsHeader = ({
       </div>
 
       {/* Context Bar */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-          <div className="text-sm font-medium text-[var(--text-primary)]">
-            {totalPlaces} places found
-          </div>
-          <div className="text-sm text-[var(--text-secondary)]">
-            Within {radius} miles
-          </div>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 p-4">
+        {renderContextInfo()}
 
         {viewMode === 'list' && (
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-[var--text-secondary]">Sort by:</label>
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <label className="text-sm text-[var(--text-secondary)]">Sort by:</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
