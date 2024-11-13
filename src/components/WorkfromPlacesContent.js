@@ -297,7 +297,7 @@ const WorkfromPlacesContent = () => {
 
             {/* Content section */}
             <div className="mt-4 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
-              <div className="p-4">
+              <div className="">
                 {renderContent()}
               </div>
             </div>
