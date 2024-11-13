@@ -1,36 +1,35 @@
-import React, { useState, useRef } from 'react';
-import { List, Map, SlidersHorizontal, Brain } from 'lucide-react';
+import React, { useState } from 'react';
+import { List, Map, Brain, SlidersHorizontal } from 'lucide-react';
 import { useLocation } from '../hooks/useLocation';
 import { usePlaces } from '../hooks/usePlaces';
 import { usePhotoModal } from '../hooks/usePhotoModal';
 import { SearchPhases } from '../constants';
 import WorkfromHeader from '../WorkfromHeader';
 import HowItWorksModal from '../HowItWorksModal';
+import ControlsHeader from '../ControlsHeader';
 import SearchControls from '../SearchControls';
 import SearchResults from '../SearchResults';
 import NearbyPlacesMap from '../NearbyPlacesMap';
 import PhotoModal from '../PhotoModal';
 import PostSearchFilters from '../PostSearchFilters';
 import WorkabilityControls from '../WorkabilityControls';
+import InsightsSummary from '../InsightsSummary';
 import WelcomeBanner from '../WelcomeBanner';
-import QuickMatch from '../QuickMatch';
+import ViewModeToggle from '../ViewModeToggle';
 import ErrorMessage from '../ErrorMessage';
-import WorkspaceAnalyzer from './WorkspaceAnalyzer';
-import QuickInsights from './QuickInsights';
+import API_CONFIG from '../config';
 
 const ITEMS_PER_PAGE = 10;
 
-const StyledSearchContainer = ({ children }) => {
-  return (
-    <div className="mb-6">
-      <div className="relative rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-        <div className="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent-primary)]/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[var(--accent-primary)]/5 rounded-full blur-xl pointer-events-none" />
-        <div className="relative p-4 sm:p-6">{children}</div>
-      </div>
+const StyledSearchContainer = ({ children }) => (
+  <div className="mb-6">
+    <div className="relative rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+      <div className="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent-primary)]/5 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-[var(--accent-primary)]/5 rounded-full blur-xl pointer-events-none" />
+      <div className="relative p-4 sm:p-6">{children}</div>
     </div>
-  );
-};
+  </div>
+);
 
 const ViewModeButton = ({ mode, currentMode, icon: Icon, onClick }) => (
   <button
@@ -49,6 +48,16 @@ const ViewModeButton = ({ mode, currentMode, icon: Icon, onClick }) => (
 );
 
 const WorkfromPlacesContent = () => {
+  // State
+  const [radius, setRadius] = useState(2);
+  const [lastSearchedRadius, setLastSearchedRadius] = useState(2);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [viewMode, setViewMode] = useState('list');
+  const [showFilters, setShowFilters] = useState(false);
+  const [isSearchPerformed, setIsSearchPerformed] = useState(false);
+  const [error, setError] = useState(null);
+  const [workspaceAnalysis, setWorkspaceAnalysis] = useState(null);
+
   // Custom hooks
   const {
     location,
@@ -82,22 +91,15 @@ const WorkfromPlacesContent = () => {
     closePhotoModal
   } = usePhotoModal();
 
-  // Local state
-  const [radius, setRadius] = useState(2);
-  const [lastSearchedRadius, setLastSearchedRadius] = useState(2);
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [viewMode, setViewMode] = useState('list');
-  const [showFilters, setShowFilters] = useState(false);
-  const [isSearchPerformed, setIsSearchPerformed] = useState(false);
-  const [recommendedPlace, setRecommendedPlace] = useState(null);
-  const [quickMatchHidden, setQuickMatchHidden] = useState(false);
-  const [error, setError] = useState(null);
-  const [userPreferences, setUserPreferences] = useState({
-    preferQuiet: false,
-    needsPower: false,
-    needsWifi: true,
-    teamSize: 1
-  });
+  const hasPlaces = places.length > 0;
+  const showError = error || searchError || locationError;
+  const currentError = error || searchError || locationError;
+
+  // Add the filter handler function
+  const handlePostSearchFilter = (key, value) => {
+    setPostSearchFilters(prev => ({ ...prev, [key]: value }));
+  };
+
 
   const handleSearchError = (error) => {
     if (error.name === 'GeolocationPositionError') {
@@ -133,11 +135,10 @@ const WorkfromPlacesContent = () => {
 
   const resetSearch = () => {
     setPlaces([]);
-    setRecommendedPlace(null);
     setError(null);
     setSearchError(null);
     setLocationError(null);
-    setQuickMatchHidden(false);
+    setWorkspaceAnalysis(null);
     setPostSearchFilters({
       type: 'any',
       power: 'any',
@@ -155,9 +156,56 @@ const WorkfromPlacesContent = () => {
       setLocation(searchLocation);
       
       setSearchPhase(SearchPhases.LOADING);
-      await fetchPlaces(searchLocation, radius);
+      const fetchedPlaces = await fetchPlaces(searchLocation, radius);
       setIsSearchPerformed(true);
       setLastSearchedRadius(radius);
+
+      // Prepare data for analysis
+      const placesData = fetchedPlaces.map(place => ({
+        name: place.title,
+        type: place.type || '',
+        distance: parseFloat(place.distance) || 0,
+        noise: place.noise_level || place.noise || '',
+        power: place.power || '',
+        workabilityScore: place.workabilityScore || 0,
+        wifi: place.download ? `${Math.round(place.download)} Mbps` : 
+              place.no_wifi === "1" ? "No WiFi" : "Unknown",
+        amenities: {
+          coffee: place.coffee === "1",
+          food: place.food === "1",
+          alcohol: place.alcohol === "1",
+          outdoorSeating: place.outdoor_seating === "1" || place.outside === "1"
+        }
+      }));
+
+      try {
+        const analysisResponse = await fetch(
+          `${API_CONFIG.baseUrl}/analyze-workspaces?appid=${API_CONFIG.appId}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ places: placesData })
+          }
+        );
+
+        if (analysisResponse.ok) {
+          const analysisData = await analysisResponse.json();
+          console.log('Analysis Response:', analysisData); // Debug log
+          if (analysisData.insights) {
+            setWorkspaceAnalysis(analysisData.insights);
+          }
+        }
+      } catch (err) {
+        console.error('Analysis failed:', err);
+        // Don't fail the whole search if analysis fails
+      }
+
+      // Automatically switch to insights view after first search
+      if (!isSearchPerformed) {
+        setViewMode('insights');
+      }
     } catch (err) {
       console.error('Search failed:', err);
       handleSearchError(err);
@@ -165,29 +213,6 @@ const WorkfromPlacesContent = () => {
       setSearchPhase(SearchPhases.COMPLETE);
     }
   };
-
-  const handlePostSearchFilter = (key, value) => {
-    setPostSearchFilters(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handleQuickMatchError = (error) => {
-    setError({
-      title: 'Analysis Error',
-      message: error.message || 'Unable to analyze workspaces at this time.',
-      variant: 'warning'
-    });
-  };
-
-  const handleViewModeChange = (mode) => {
-    setViewMode(mode);
-    if (mode === 'analyze') {
-      setQuickMatchHidden(true);
-    }
-  };
-
-  const hasPlaces = places.length > 0;
-  const showError = error || searchError || locationError;
-  const currentError = error || searchError || locationError;
 
   const renderContent = () => {
     if (viewMode === 'list') {
@@ -199,7 +224,6 @@ const WorkfromPlacesContent = () => {
           itemsPerPage={ITEMS_PER_PAGE}
           viewMode={viewMode}
           onPhotoClick={handlePhotoClick}
-          recommendedPlace={recommendedPlace}
         />
       );
     }
@@ -210,25 +234,18 @@ const WorkfromPlacesContent = () => {
           places={places}
           userLocation={location}
           onPhotoClick={handlePhotoClick}
-          highlightedPlace={recommendedPlace}
         />
       );
     }
 
-    if (viewMode === 'analyze') {
+    if (viewMode === 'insights') {
       return (
-        <div className="space-y-6">
-          <QuickInsights 
-            places={places}
-            onPlaceClick={handlePhotoClick}
-            userPreferences={userPreferences}
-          />
-          <WorkspaceAnalyzer
-            places={places}
-            isAnalyzing={searchPhase === SearchPhases.LOADING}
-            onPlaceClick={handlePhotoClick}
-          />
-        </div>
+        <InsightsSummary
+          places={places}
+          analysisData={workspaceAnalysis}
+          locationName={locationName}
+          onPhotoClick={handlePhotoClick}
+        />
       );
     }
   };
@@ -255,111 +272,36 @@ const WorkfromPlacesContent = () => {
         </StyledSearchContainer>
 
         {searchPhase === SearchPhases.COMPLETE && (
-          <div className="border border-[var(--border-primary)] rounded-lg shadow-sm bg-[var(--bg-secondary)]">
-            <div className="p-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                {showError ? (
-                  <ErrorMessage
-                    error={currentError}
-                    onRetry={performSearch}
-                    onDismiss={() => setError(null)}
-                    size="default"
-                    className="w-full animate-fade-in"
-                  />
-                ) : (
-                  <>
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-medium text-[var(--text-primary)]">
-                        {hasPlaces 
-                          ? `Located ${places.length} places within ${lastSearchedRadius} miles`
-                          : 'No places match your current filters'}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-                      <div className="flex items-center gap-2">
-                        <WorkabilityControls 
-                          onSortChange={setSortBy}
-                          currentSort={sortBy}
-                          showSortControl={hasPlaces}
-                        />
-                        
-                        <button
-                          onClick={() => setShowFilters(!showFilters)}
-                          className={`
-                            p-2 rounded transition-colors
-                            ${showFilters
-                              ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-                              : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-                            }
-                          `}
-                          aria-label="Toggle filters"
-                        >
-                          <SlidersHorizontal size={18} />
-                        </button>
-                      </div>
+          <>
+            <ControlsHeader 
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+              showFilters={showFilters}
+              setShowFilters={setShowFilters}
+              totalPlaces={places.length}
+              radius={lastSearchedRadius}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+            />
 
-                      {hasPlaces && (
-                        <div className="flex items-center border-l border-[var(--border-primary)] pl-2 sm:pl-4">
-                          <ViewModeButton
-                            mode="list"
-                            currentMode={viewMode}
-                            icon={List}
-                            onClick={handleViewModeChange}
-                          />
-                          <ViewModeButton
-                            mode="map"
-                            currentMode={viewMode}
-                            icon={Map}
-                            onClick={handleViewModeChange}
-                          />
-                          <ViewModeButton
-                            mode="analyze"
-                            currentMode={viewMode}
-                            icon={Brain}
-                            onClick={handleViewModeChange}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
+            {/* Show filters panel if enabled */}
+            {showFilters && viewMode !== 'insights' && (
+              <div className="mt-4 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)] p-4">
+                <PostSearchFilters
+                  onFilterChange={handlePostSearchFilter}
+                  currentFilters={postSearchFilters}
+                  disabled={searchPhase !== SearchPhases.COMPLETE}
+                />
+              </div>
+            )}
+
+            {/* Content section */}
+            <div className="mt-4 border border-[var(--border-primary)] rounded-lg bg-[var(--bg-secondary)]">
+              <div className="p-4">
+                {renderContent()}
               </div>
             </div>
-
-            {showFilters && (
-              <div className="border-t border-[var(--border-primary)]">
-                <div className="p-4">
-                  <PostSearchFilters
-                    onFilterChange={handlePostSearchFilter}
-                    currentFilters={postSearchFilters}
-                  />
-                </div>
-              </div>
-            )}
-
-            {hasPlaces && !showError && (
-              <div className="border-t border-[var(--border-primary)]">
-                {!quickMatchHidden && viewMode !== 'analyze' && (
-                  <div className="p-4 border-b border-[var(--border-primary)]">
-                    <QuickMatch
-                      places={places}
-                      searchPhase={searchPhase}
-                      onRecommendationMade={setRecommendedPlace}
-                      onPhotoClick={handlePhotoClick}
-                      isHidden={quickMatchHidden}
-                      onHide={() => setQuickMatchHidden(true)}
-                      onError={handleQuickMatchError}
-                    />
-                  </div>
-                )}
-                
-                <div className="p-4">
-                  {renderContent()}
-                </div>
-              </div>
-            )}
-          </div>
+          </>
         )}
 
         {showHowItWorks && (
