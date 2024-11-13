@@ -14,6 +14,31 @@ import {
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
+const mapStyles = `
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: white !important;
+  }
+
+  .leaflet-popup-content {
+    margin: 0 !important;
+    min-width: 300px !important;
+  }
+
+  .map-dark .leaflet-popup-tip {
+    background: #1a1f2c !important;
+  }
+
+  .map-dark .leaflet-container a.leaflet-popup-close-button {
+    color: #94a3b8 !important;
+    padding: 8px !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+`;
+
 // MapController to handle automatic map fitting
 const MapController = ({ userLocation, places }) => {
   const map = useMap();
