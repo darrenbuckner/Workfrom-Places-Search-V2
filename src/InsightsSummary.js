@@ -75,6 +75,22 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
   const featuredSpotData = analysisData?.insights?.featured_spot;
   if (!featuredSpotData || !place) return null;
 
+  // Format distance
+  const formatDistance = (distance) => {
+    if (!distance) return 'Distance unknown';
+    if (distance === 0) return 'You are here';
+    
+    const distNum = typeof distance === 'string' ? parseFloat(distance) : distance;
+    
+    if (distNum < 0.1) {
+      return 'Less than 0.1 miles away';
+    } else if (distNum < 10) {
+      return `${distNum.toFixed(1)} miles away`;
+    } else {
+      return `${Math.round(distNum)} miles away`;
+    }
+  };
+
   return (
     <div className="col-span-full">
       <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] overflow-hidden">
@@ -112,14 +128,17 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
           <div className="flex flex-col lg:flex-row gap-6">
             {/* Main Content Column */}
             <div className="flex-1 space-y-4">
-              {/* Title and Description */}
+              {/* Title and Distance */}
               <div>
                 <ClickableTitle 
                   place={place} 
                   onPhotoClick={onPhotoClick}
-                  className="text-lg"
+                  className="text-lg mb-1"
                 />
-                <p className="mt-2 text-sm text-[var(--text-secondary)] leading-relaxed">
+                <div className="text-sm text-[var(--text-secondary)]">
+                  {formatDistance(place.distance)}
+                </div>
+                <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed">
                   {featuredSpotData.highlight}
                 </p>
               </div>
