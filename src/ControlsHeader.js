@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Map, Brain, SlidersHorizontal } from 'lucide-react';
+import { List, Map, Brain, SlidersHorizontal, MapPin } from 'lucide-react';
 
 const ViewTab = ({ id, label, icon: Icon, isActive, onClick }) => (
   <button
@@ -30,6 +30,8 @@ const ControlsHeader = ({
   radius,
   sortBy,
   setSortBy,
+  locationName,
+  disabled = false,
 }) => {
   const views = [
     { id: 'insights', label: 'AI Insights', icon: Brain },
@@ -40,20 +42,39 @@ const ControlsHeader = ({
   const renderContextInfo = () => {
     if (viewMode === 'insights') {
       return (
-        <div className="text-sm font-medium text-[var(--text-primary)]">
-          AI-powered recommendations
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 
+            flex items-center justify-center flex-shrink-0">
+            <Brain className="w-4 h-4 text-[var(--accent-primary)]" />
+          </div>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <h3 className="text-base font-medium text-[var(--text-primary)]">
+                Near you in {locationName || 'this area'}
+              </h3>
+              <span className="text-sm text-[var(--text-secondary)]">
+                • {totalPlaces} places analyzed
+              </span>
+            </div>
+            <p className="text-sm text-[var--text-secondary)]">
+              AI-powered insights and recommendations
+            </p>
+          </div>
         </div>
       );
     }
 
     return (
-      <div className="text-sm whitespace-nowrap">
-        <span className="font-medium text-[var(--text-primary)]">
-          {totalPlaces} places found
-        </span>
-        <span className="text-[var(--text-secondary)] ml-2">
-          within {radius} miles
-        </span>
+      <div className="flex items-center gap-2">
+        <MapPin className="w-4 h-4 text-[var(--text-secondary)]" />
+        <div className="text-sm">
+          <span className="font-medium text-[var(--text-primary)]">
+            {totalPlaces} places found
+          </span>
+          <span className="text-[var(--text-secondary)] ml-1">
+            within {radius} miles
+          </span>
+        </div>
       </div>
     );
   };
@@ -74,6 +95,7 @@ const ControlsHeader = ({
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                 }
               `}
+              disabled={disabled}
             >
               <view.icon size={20} />
             </button>
@@ -90,6 +112,7 @@ const ControlsHeader = ({
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }
             `}
+            disabled={disabled}
           >
             <SlidersHorizontal size={20} />
           </button>
@@ -97,7 +120,7 @@ const ControlsHeader = ({
       </div>
 
       {/* Desktop Header */}
-      <div className="hidden sm:flex items-center justify-between border-b border-[var(--border-primary)]">
+      <div className="hidden sm:flex items-center justify-between p-4">
         <div className="flex items-center">
           {views.map(view => (
             <ViewTab
@@ -112,27 +135,26 @@ const ControlsHeader = ({
         </div>
 
         {viewMode !== 'insights' && (
-          <div className="flex items-center gap-3 px-4">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`
-                flex items-center gap-2 px-3 py-1.5 rounded-md
-                transition-colors text-sm font-medium
-                ${showFilters
-                  ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                }
-              `}
-            >
-              <SlidersHorizontal size={16} />
-              Filters
-            </button>
-          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`
+              flex items-center gap-2 px-3 py-1.5 rounded-md
+              transition-colors text-sm font-medium
+              ${showFilters
+                ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
+                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+              }
+            `}
+            disabled={disabled}
+          >
+            <SlidersHorizontal size={16} />
+            Filters
+          </button>
         )}
       </div>
 
       {/* Context Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 p-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 p-4 border-t border-[var(--border-primary)]">
         {renderContextInfo()}
 
         {viewMode === 'list' && (
@@ -143,6 +165,7 @@ const ControlsHeader = ({
               onChange={(e) => setSortBy(e.target.value)}
               className="text-sm bg-[var(--bg-tertiary)] border border-[var(--border-primary)]
                 rounded-md px-2 py-1 text-[var(--text-primary)]"
+              disabled={disabled}
             >
               <option value="distance">Distance</option>
               <option value="score_high">Highest Rated</option>

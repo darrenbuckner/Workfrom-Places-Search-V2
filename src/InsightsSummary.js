@@ -410,20 +410,6 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
 
   return (
     <div className="rounded-lg border border-[var(--border-primary)] overflow-hidden bg-[var(--bg-secondary)]">
-      <div className="p-3 sm:p-4 border-b border-[var(--border-primary)]">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-7 rounded-lg bg-[var(--accent-primary)]/10 
-            flex items-center justify-center flex-shrink-0">
-            <Brain className="w-5 h-5 text-[var(--accent-primary)]" />
-          </div>
-          <div>
-            <h3 className="text-lg font-medium text-[var(--text-primary)]">
-              Near you in {locationName || 'this area'}
-            </h3>
-          </div>
-        </div>
-      </div>
-
       <div className="p-2 sm:p-4 grid gap-2 sm:gap-4 sm:grid-cols-2">
         <FeaturedSpot 
           place={places.find(p => p.title === analysisData?.insights?.featured_spot?.place_name)}
