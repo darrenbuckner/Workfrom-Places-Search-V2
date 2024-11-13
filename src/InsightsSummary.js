@@ -95,7 +95,7 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
     <div className="col-span-full">
       <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-[var(--border-primary)]">
+        <div className="p-3 sm:p-4 border-b border-[var(--border-primary)]">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3">
               <div className={`
@@ -410,7 +410,7 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
 
   return (
     <div className="rounded-lg border border-[var(--border-primary)] overflow-hidden bg-[var(--bg-secondary)]">
-      <div className="p-4 border-b border-[var(--border-primary)]">
+      <div className="p-3 sm:p-4 border-b border-[var(--border-primary)]">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 
             flex items-center justify-center flex-shrink-0">
@@ -427,7 +427,7 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
         </div>
       </div>
 
-      <div className="p-4 grid gap-4 sm:grid-cols-2">
+      <div className="p-2 sm:p-4 grid gap-2 sm:gap-4 sm:grid-cols-2">
         <FeaturedSpot 
           place={places.find(p => p.title === analysisData?.insights?.featured_spot?.place_name)}
           analysisData={analysisData}
@@ -463,7 +463,7 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
         ))}
       </div>
 
-      <div className="border-t border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
+      <div className="border-t border-[var(--border-primary)] bg-[var(--bg-primary)] p-3 sm:p-4">
         <div className="flex items-start gap-2">
           <MessageSquare className="w-4 h-4 text-[var(--accent-primary)] mt-0.5" />
           <p className="text-sm text-[var(--text-secondary)]">
