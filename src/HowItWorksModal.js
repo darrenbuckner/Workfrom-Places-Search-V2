@@ -5,18 +5,19 @@ import { useTheme } from './ThemeProvider';
 
 const HowItWorksModal = ({ setShowModal }) => {
   useScrollLock(true);
-  const { isDark } = useTheme();
   
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 overflow-y-auto">
+    <div className="fixed inset-0 bg-[var(--modal-backdrop)] backdrop-blur-xl z-50 overflow-y-auto">
       <div className="min-h-screen px-0 md:p-4 flex items-start md:items-center justify-center">
-        <div className="w-full md:w-[600px] bg-[var(--bg-primary)] md:rounded-lg overflow-hidden relative border border-[var(--border-primary)]">
+        <div className="w-full md:w-[600px] bg-[var(--bg-primary)] md:rounded-lg 
+          overflow-hidden relative border border-[var(--border-primary)]">
           {/* Close Button - Desktop */}
           <button 
             onClick={() => setShowModal(false)}
-            className="hidden md:flex absolute right-4 top-4 z-20 items-center justify-center w-8 h-8 rounded-full
+            className="hidden md:flex absolute right-4 top-4 z-20 items-center justify-center 
+              w-8 h-8 rounded-full
               bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] 
-              text-[var(--text-secondary)] transition-colors"
+              text-[var(--text-primary)] transition-colors"
           >
             <X size={20} />
           </button>
@@ -27,20 +28,23 @@ const HowItWorksModal = ({ setShowModal }) => {
             <div className="flex items-center justify-between p-3">
               <button 
                 onClick={() => setShowModal(false)}
-                className="flex items-center text-[var(--action-primary)] hover:text-[var(--action-primary-hover)]"
+                className="flex items-center text-[var(--action-primary)] 
+                  hover:text-[var(--action-primary-hover)]"
               >
                 <ChevronLeft size={20} className="mr-1" />
                 <span className="text-sm font-medium">Back</span>
               </button>
-              <h2 className="text-base font-semibold text-center flex-1 mx-4 truncate text-[var(--text-primary)]">
+              <h2 className="text-base font-semibold text-center flex-1 mx-4 
+                truncate text-[var(--text-primary)]"
+              >
                 How It Works
               </h2>
               <div className="w-8" />
             </div>
           </div>
 
-          {/* Modal content with proper mobile padding and scrolling */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-2rem)]">
+          {/* Modal content with proper background */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-2rem)] bg-[var(--bg-primary)]">
             <h2 className="text-xl font-semibold mb-4 pr-8 text-[var(--text-primary)]">
               How It Works
             </h2>

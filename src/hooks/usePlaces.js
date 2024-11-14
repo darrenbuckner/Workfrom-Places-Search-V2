@@ -48,7 +48,7 @@ export const usePlaces = () => {
       searchStateRef.current.lastSearchParams = { searchLocation, radius };
 
       const response = await fetch(
-        `${API_CONFIG.baseUrl}/places/ll/${searchLocation.latitude},${searchLocation.longitude}?radius=${radius}&appid=${API_CONFIG.appId}&rpp=50`,
+        `${API_CONFIG.baseUrl}/places/ll/${searchLocation.latitude},${searchLocation.longitude}?radius=${radius}&appid=${API_CONFIG.appId}&rpp=25`,
         {
           headers: {
             'Accept': 'application/json',

@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { 
   X, Loader, Navigation, Quote, ChevronLeft, Wifi, Battery, 
   Volume2, Clock, WifiOff, Users, Info, Star, StarHalf, StarOff, 
-  Coffee, AlertCircle 
+  Coffee, AlertCircle, ImageIcon,
+  ZoomIn 
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { getWifiStatus } from './wifiUtils';
@@ -171,13 +172,16 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   const metrics = getWorkabilityMetrics(selectedPlace);
 
   return (
-    <div className="fixed inset-0 z-50 bg-[var(--modal-overlay)] backdrop-blur-sm flex flex-col md:overflow-hidden">
+    <div className="fixed inset-0 z-50 flex flex-col md:overflow-hidden">
+      {/* Theme-consistent backdrop */}
+      <div className="absolute inset-0 bg-[var(--modal-backdrop)] backdrop-blur-xl" />
+      
       {/* Mobile Header */}
       <div className="flex-shrink-0 md:hidden sticky top-0 z-20 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
         <div className="flex items-center justify-between p-3">
           <button 
             onClick={() => setShowPhotoModal(false)}
-            className="flex items-center text-[var(--text-primary)] hover:text-[var(--text-secondary)]"
+            className="flex items-center text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors"
           >
             <ChevronLeft size={20} className="mr-1" />
             <span className="text-sm font-medium">Back</span>
@@ -190,11 +194,12 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
       </div>
 
       {/* Main Content */}
-      <div className="flex-grow flex md:items-center md:justify-center overflow-hidden">
+      <div className="relative flex-grow flex md:items-center md:justify-center overflow-hidden">
         <div className="w-full h-full md:w-[90vw] md:max-w-6xl md:h-[85vh] md:flex 
-          md:rounded-lg border overflow-hidden relative
-          bg-[var(--bg-primary)] border-[var(--border-primary)]">
-          
+          md:rounded-lg overflow-hidden relative
+          bg-[var(--bg-primary)] border border-[var(--border-primary)]
+          shadow-lg"
+        >
           {/* Desktop Close Button */}
           <button 
             onClick={() => setShowPhotoModal(false)}
@@ -244,14 +249,17 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                     </>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]">
-                      <p className="text-sm text-[var(--text-secondary)]">No image available</p>
+                      <div className="text-center">
+                        <ImageIcon size={32} className="mx-auto mb-2 text-[var(--text-tertiary)]" />
+                        <p className="text-sm text-[var(--text-secondary)]">No image available</p>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Details Section */}
-              <div className="relative flex-1 md:w-2/5">
+              <div className="relative flex-1 md:w-2/5 border-l border-[var(--modal-border)]">
                 <div className="p-4 space-y-4">
                   {/* Title - Only show on desktop */}
                   <div className="hidden md:block">
@@ -348,7 +356,10 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                     <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                       <div className="p-4">
                         <div className="flex items-start gap-2.5">
-                          <AlertCircle size={16} className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" />
+                          <AlertCircle 
+                            size={16} 
+                            className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" 
+                          />
                           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                             Help other members by adding {formatMissingInfo(getMissingInfo(selectedPlace))}
                           </p>

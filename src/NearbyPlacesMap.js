@@ -14,31 +14,6 @@ import {
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
-const mapStyles = `
-  .leaflet-popup-content-wrapper,
-  .leaflet-popup-tip {
-    background: transparent !important;
-    box-shadow: none !important;
-    color: white !important;
-  }
-
-  .leaflet-popup-content {
-    margin: 0 !important;
-    min-width: 300px !important;
-  }
-
-  .map-dark .leaflet-popup-tip {
-    background: #1a1f2c !important;
-  }
-
-  .map-dark .leaflet-container a.leaflet-popup-close-button {
-    color: #94a3b8 !important;
-    padding: 8px !important;
-    width: 28px !important;
-    height: 28px !important;
-  }
-`;
-
 // MapController to handle automatic map fitting
 const MapController = ({ userLocation, places }) => {
   const map = useMap();
@@ -85,68 +60,96 @@ const NearbyPlacesMap = ({
   const mapRef = useRef(null);
 
   const themeColors = {
-    accent: isDark ? '#FF9EEE' : '#000000',
-    highlight: isDark ? '#FFB8F3' : '#1a1a1a',
-    marker: isDark ? '#B399AF' : '#6E7A8A',
+    accent: {
+      primary: 'var(--accent-primary)',
+      secondary: 'var(--accent-secondary)',
+      muted: 'var(--accent-muted)',
+    },
     text: {
-      primary: isDark ? '#FFFFFF' : '#1A2B3B',
-      secondary: isDark ? '#E0C9DC' : '#4A5567'
+      primary: 'var(--text-primary)',
+      secondary: 'var(--text-secondary)',
+      tertiary: 'var(--text-tertiary)',
     },
     bg: {
-      primary: isDark ? '#2A1929' : '#FFFFFF',
-      secondary: isDark ? '#362234' : '#F8F9FB'
+      primary: 'var(--bg-primary)',
+      secondary: 'var(--bg-secondary)',
+      tertiary: 'var(--bg-tertiary)',
     },
-    border: isDark ? 'rgba(224, 201, 220, 0.1)' : '#E3E8EF'
+    border: {
+      primary: 'var(--border-primary)',
+      secondary: 'var(--border-secondary)',
+    },
+    button: {
+      text: 'var(--button-text)',
+      textMuted: 'var(--button-text-muted)',
+    }
   };
 
   const createCustomIcon = useCallback((isHighlighted = false) => {
     const size = isHighlighted ? 40 : 32;
-    const color = isHighlighted ? themeColors.accent : themeColors.marker;
+    const color = isHighlighted ? themeColors.accent.primary : themeColors.accent.muted;
     
     return L.divIcon({
       html: `
         <div style="
           width: ${size}px;
           height: ${size}px;
-          background-color: ${color};
-          border-radius: 50%;
-          opacity: 0.9;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 12px;
-          font-weight: bold;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          border: 2px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'};
-          transition: all 0.2s ease;
+          position: relative;
+          transform: translate(-50%, -50%);
         ">
           <div style="
-            width: ${size * 0.6}px;
-            height: ${size * 0.6}px;
-            background-color: white;
+            width: 100%;
+            height: 100%;
+            background-color: ${color};
             border-radius: 50%;
             opacity: 0.9;
-          "></div>
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: 2px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'};
+            transition: all 0.2s ease;
+          ">
+            <div style="
+              width: ${size * 0.6}px;
+              height: ${size * 0.6}px;
+              background-color: ${themeColors.bg.primary};
+              border-radius: 50%;
+              opacity: 0.9;
+            "></div>
+          </div>
         </div>
       `,
       className: `custom-marker${isHighlighted ? ' highlighted' : ''}`,
       iconSize: [size, size],
-      iconAnchor: [size/2, size/2]
+      iconAnchor: [size/2, size/2],
+      popupAnchor: [0, -(size/2 + 2)] // Offset popup slightly above the marker
     });
   }, [isDark, themeColors]);
 
   const createUserIcon = useCallback(() => {
+    const size = 48;
     return L.divIcon({
       html: `
         <div style="
-          width: 48px;
-          height: 48px;
-          background-color: ${themeColors.accent};
-          border-radius: 50%;
-          opacity: 0.15;
+          width: ${size}px;
+          height: ${size}px;
           position: relative;
+          transform: translate(-50%, -50%);
         ">
+          <div style="
+            width: 100%;
+            height: 100%;
+            background-color: ${themeColors.accent.primary};
+            border-radius: 50%;
+            opacity: 0.15;
+            position: absolute;
+            top: 0;
+            left: 0;
+          "></div>
           <div style="
             position: absolute;
             top: 50%;
@@ -154,16 +157,17 @@ const NearbyPlacesMap = ({
             transform: translate(-50%, -50%);
             width: 16px;
             height: 16px;
-            background-color: ${themeColors.accent};
+            background-color: ${themeColors.accent.primary};
             border-radius: 50%;
-            border: 3px solid white;
+            border: 3px solid ${themeColors.bg.primary};
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           "></div>
         </div>
       `,
       className: 'user-location-marker',
-      iconSize: [48, 48],
-      iconAnchor: [24, 24]
+      iconSize: [size, size],
+      iconAnchor: [size/2, size/2],
+      popupAnchor: [0, -(size/2 + 2)]
     });
   }, [themeColors]);
 
@@ -172,57 +176,116 @@ const NearbyPlacesMap = ({
       return { 
         icon: WifiOff, 
         label: "No WiFi", 
-        color: isDark ? "text-red-400" : "text-red-500" 
+        color: "text-[var(--error)]",
+        iconColor: "text-[var(--error)]"
       };
     }
+
     if (place.download) {
       const speed = Math.round(place.download);
       if (speed >= 50) {
         return {
           icon: Wifi,
           label: "Fast WiFi",
-          color: isDark ? "text-green-400" : "text-green-500"
+          value: "Excellent",
+          color: "text-[var(--success)]",
+          iconColor: "text-[var(--success)]"
+        };
+      }
+      if (speed >= 25) {
+        return {
+          icon: Wifi,
+          label: "Very Good WiFi",
+          value: "Very Good",
+          color: "text-[var(--success)]",
+          iconColor: "text-[var(--success)]"
+        };
+      }
+      if (speed >= 10) {
+        return {
+          icon: Wifi,
+          label: "Good WiFi",
+          value: "Good",
+          color: "text-[var(--warning)]",
+          iconColor: "text-[var(--warning)]"
         };
       }
       return {
         icon: Wifi,
         label: `${speed} Mbps`,
-        color: isDark ? "text-yellow-400" : "text-yellow-500"
+        value: "Basic",
+        color: "text-[var(--warning)]",
+        iconColor: "text-[var(--warning)]"
       };
     }
+
     return {
       icon: Wifi,
-      label: "Unknown",
-      color: isDark ? "text-gray-400" : "text-gray-500"
+      label: "WiFi Available",
+      value: "Unknown",
+      color: "text-[var(--text-tertiary)]",
+      iconColor: "text-[var(--text-tertiary)]"
     };
   };
 
   const getPowerStatus = (place) => {
     const powerValue = String(place.power || '').toLowerCase();
     if (powerValue === 'none' || powerValue === '') {
-      return { label: "No Power", color: isDark ? "text-red-400" : "text-red-500" };
+      return { 
+        label: "No Power",
+        color: "text-[var(--error)]",
+        iconColor: "text-[var(--error)]"
+      };
     }
     if (powerValue.includes('range3') || powerValue.includes('good')) {
-      return { label: "Many Outlets", color: isDark ? "text-green-400" : "text-green-500" };
+      return { 
+        label: "Many Outlets",
+        color: "text-[var(--success)]",
+        iconColor: "text-[var(--success)]"
+      };
     }
     if (powerValue.includes('range2')) {
-      return { label: "Some Outlets", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+      return { 
+        label: "Some Outlets",
+        color: "text-[var(--warning)]",
+        iconColor: "text-[var(--warning)]"
+      };
     }
-    return { label: "Limited Power", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+    return { 
+      label: "Limited Power",
+      color: "text-[var(--warning)]",
+      iconColor: "text-[var(--warning)]"
+    };
   };
 
   const getNoiseLevel = (place) => {
     const noise = (place.noise_level || place.noise || "").toLowerCase();
     if (noise.includes('quiet')) {
-      return { label: "Quiet", color: isDark ? "text-green-400" : "text-green-500" };
+      return { 
+        label: "Quiet",
+        color: "text-[var(--success)]",
+        iconColor: "text-[var(--success)]"
+      };
     }
     if (noise.includes('moderate')) {
-      return { label: "Moderate", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+      return { 
+        label: "Moderate",
+        color: "text-[var(--warning)]",
+        iconColor: "text-[var(--warning)]"
+      };
     }
     if (noise.includes('noisy')) {
-      return { label: "Lively", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+      return { 
+        label: "Lively",
+        color: "text-[var(--warning)]",
+        iconColor: "text-[var(--warning)]"
+      };
     }
-    return { label: "Unknown", color: isDark ? "text-gray-400" : "text-gray-500" };
+    return { 
+      label: "Unknown",
+      color: "text-[var(--text-tertiary)]",
+      iconColor: "text-[var(--text-tertiary)]"
+    };
   };
 
   return (
@@ -247,10 +310,10 @@ const NearbyPlacesMap = ({
         {/* Search radius circle */}
         <Circle
           center={defaultPosition}
-          radius={searchRadius * 1609.34} // Convert miles to meters
+          radius={searchRadius * 1609.34}
           pathOptions={{
-            color: themeColors.accent,
-            fillColor: themeColors.accent,
+            color: themeColors.accent.primary,
+            fillColor: themeColors.accent.primary,
             fillOpacity: 0.1,
             weight: 1
           }}
@@ -262,7 +325,7 @@ const NearbyPlacesMap = ({
           icon={createUserIcon()}
           zIndexOffset={1000}
         >
-          <Popup className="themed-popup">
+          <Popup>
             <div className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 
@@ -281,9 +344,9 @@ const NearbyPlacesMap = ({
         {/* Place markers */}
         {places.map((place) => {
           const isHighlighted = highlightedPlace && place.ID === highlightedPlace.ID;
-          const wifiStatus = getWifiStatus(place);
-          const powerStatus = getPowerStatus(place);
-          const noiseLevel = getNoiseLevel(place);
+          const wifiStatus = getWifiStatus(place, isDark);
+          const powerStatus = getPowerStatus(place, isDark);
+          const noiseLevel = getNoiseLevel(place, isDark);
           
           return (
             <Marker
@@ -292,16 +355,14 @@ const NearbyPlacesMap = ({
               icon={createCustomIcon(isHighlighted)}
               zIndexOffset={isHighlighted ? 900 : 100}
             >
-              <Popup minWidth={300}>
+              <Popup>
                 <div className={`
                   p-4 rounded-lg ${isHighlighted 
                     ? 'border-[var(--accent-primary)]' 
                     : 'border-[var(--border-primary)]'
                   } bg-[var(--bg-primary)] border
                 `}>
-                  {/* Header Section */}
                   <div className="flex items-start gap-4 mb-4">
-                    {/* Thumbnail */}
                     <div 
                       onClick={() => onPhotoClick(place)}
                       className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer
@@ -350,30 +411,31 @@ const NearbyPlacesMap = ({
                         </div>
                       </div>
 
-                      {/* Metrics Section */}
                       <div className="mt-3 space-y-1.5">
                         <div className="flex flex-wrap gap-1.5">
                           <MetricBadge 
                             icon={wifiStatus.icon}
                             label={wifiStatus.label} 
                             color={wifiStatus.color}
+                            iconColor={wifiStatus.iconColor}
                           />
                           <MetricBadge 
                             icon={Battery} 
                             label={powerStatus.label} 
                             color={powerStatus.color}
+                            iconColor={powerStatus.iconColor}
                           />
                           <MetricBadge 
                             icon={Volume2} 
                             label={noiseLevel.label} 
                             color={noiseLevel.color}
+                            iconColor={noiseLevel.iconColor}
                           />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Actions Section */}
                   <div className="flex items-center gap-3 mt-4">
                     <button
                       onClick={() => onPhotoClick(place)}
@@ -391,23 +453,16 @@ const NearbyPlacesMap = ({
                       )}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`
-                        flex items-center gap-1.5 text-sm font-medium 
+                      className="flex items-center gap-1.5 text-sm font-medium 
                         px-3 py-1.5 rounded-md transition-colors
                         bg-[var(--bg-tertiary)]
-                        border border-[var(--border-primary)]
-                        hover:border-[var(--accent-primary)]
+                        text-[var(--text-primary)]
                         hover:bg-[var(--bg-secondary)]
-                        ${isDark 
-                          ? 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]' 
-                          : 'text-[var(--text-primary)]'
-                        }
-                      `}
+                        hover:text-[var(--accent-primary)]"
                     >
-                      <Navigation size={14} className="text-current" /> {/* Use text-current to match parent text color */}
+                      <Navigation size={14} />
                       <span>Directions</span>
-                    </a>
-                  </div>
+                    </a></div>
                 </div>
               </Popup>
             </Marker>
@@ -417,21 +472,21 @@ const NearbyPlacesMap = ({
 
       <style jsx global>{`
         .leaflet-container {
-          background: ${themeColors.bg.primary};
+          background: var(--bg-primary);
           font-family: inherit;
         }
         
         .leaflet-popup-content-wrapper,
         .leaflet-popup-tip {
-          background: ${themeColors.bg.primary};
-          color: ${themeColors.text.primary};
-          border: 1px solid ${themeColors.border};
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          border: 1px solid var(--border-primary);
           border-radius: 0.5rem;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .leaflet-container a.leaflet-popup-close-button {
-          color: ${themeColors.text.secondary};
+          color: var(--text-secondary);
           padding: 8px;
           width: 28px;
           height: 28px;
@@ -440,23 +495,23 @@ const NearbyPlacesMap = ({
         }
         
         .leaflet-container a.leaflet-popup-close-button:hover {
-          color: ${themeColors.text.primary};
-          background: ${themeColors.bg.secondary};
+          color: var(--text-primary);
+          background: var(--bg-secondary);
           border-radius: 50%;
         }
 
         .map-dark .leaflet-control-zoom a {
-          background: ${themeColors.bg.secondary};
-          color: ${themeColors.text.primary};
-          border-color: ${themeColors.border};
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          border-color: var(--border-primary);
         }
 
         .map-dark .leaflet-control-zoom a:hover {
-          background: ${themeColors.bg.primary};
+          background: var(--bg-primary);
         }
 
         .leaflet-bar {
-          border-color: ${themeColors.border};
+          border-color: var(--border-primary);
         }
 
         .leaflet-popup {
@@ -492,9 +547,9 @@ const NearbyPlacesMap = ({
         }
 
         .leaflet-control-zoom a {
-          background: ${themeColors.bg.primary} !important;
-          color: ${themeColors.text.primary} !important;
-          border: 1px solid ${themeColors.border} !important;
+          background: var(--bg-primary) !important;
+          color: var(--text-primary) !important;
+          border: 1px solid var(--border-primary) !important;
           width: 32px !important;
           height: 32px !important;
           line-height: 30px !important;
@@ -503,8 +558,8 @@ const NearbyPlacesMap = ({
         }
 
         .leaflet-control-zoom a:hover {
-          background: ${themeColors.bg.secondary} !important;
-          color: ${themeColors.accent} !important;
+          background: var(--bg-secondary) !important;
+          color: var(--accent-primary) !important;
         }
 
         /* Search radius circle animation */
@@ -541,7 +596,7 @@ const NearbyPlacesMap = ({
           width: 48px;
           height: 48px;
           margin: -24px 0 0 -24px;
-          background: ${themeColors.accent};
+          background: var(--accent-primary);
           border-radius: 50%;
           animation: ripple 2s infinite ease-out;
           opacity: 0;
@@ -550,42 +605,6 @@ const NearbyPlacesMap = ({
         .leaflet-popup-content a {
           color: inherit !important;
           text-decoration: none !important;
-        }
-
-        .leaflet-popup-content a {
-          color: inherit !important;
-          text-decoration: none !important;
-        }
-
-        .leaflet-popup-content a:hover {
-          color: inherit !important;
-        }
-
-        .leaflet-container a.leaflet-popup-close-button {
-          width: 24px !important;
-          height: 24px !important;
-          padding: 0 !important;
-          margin: 4px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          color: ${themeColors.text.secondary};
-          font-size: 18px !important;
-          font-family: system-ui !important;
-          transition: all 0.2s ease;
-          border-radius: 50%;
-          line-height: 1 !important;
-        }
-
-        .leaflet-container a.leaflet-popup-close-button:hover {
-          color: ${themeColors.text.primary};
-          background: ${themeColors.bg.secondary};
-          text-decoration: none;
-        }
-
-        .leaflet-popup-close-button span {
-          margin-top: -2px;
-          display: inline-flex;
         }
 
         @keyframes ripple {
@@ -597,6 +616,66 @@ const NearbyPlacesMap = ({
             transform: scale(2);
             opacity: 0;
           }
+        }
+        
+        /* Dark theme specific styles */
+        .map-dark .leaflet-popup-content-wrapper,
+        .map-dark .leaflet-popup-tip {
+          background: var(--bg-primary);
+          border-color: var(--border-primary);
+        }
+
+        .map-dark .leaflet-container a.leaflet-popup-close-button {
+          color: var(--text-secondary);
+        }
+
+        .map-dark .leaflet-container a.leaflet-popup-close-button:hover {
+          color: var(--text-primary);
+          background: var(--bg-secondary);
+        }
+
+        /* Attribution link styles */
+        .leaflet-control-attribution {
+          background: var(--bg-primary) !important;
+          color: var(--text-secondary) !important;
+          font-size: 10px !important;
+          padding: 2px 8px !important;
+        }
+
+        .leaflet-control-attribution a {
+          color: var(--accent-primary) !important;
+        }
+
+        /* Focus styles for accessibility */
+        .leaflet-container a:focus,
+        .leaflet-container button:focus {
+          outline: 2px solid var(--accent-primary) !important;
+          outline-offset: 2px !important;
+        }
+
+        /* Popup transitions */
+        .leaflet-fade-anim .leaflet-popup {
+          transition: opacity 0.2s linear !important;
+        }
+
+        /* Custom scrollbar for popup content */
+        .leaflet-popup-content-wrapper {
+          scrollbar-width: thin;
+          scrollbar-color: var(--accent-primary) var(--bg-secondary);
+        }
+
+        .leaflet-popup-content-wrapper::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .leaflet-popup-content-wrapper::-webkit-scrollbar-track {
+          background: var(--bg-secondary);
+        }
+
+        .leaflet-popup-content-wrapper::-webkit-scrollbar-thumb {
+          background-color: var(--accent-primary);
+          border-radius: 4px;
+          border: 2px solid var(--bg-secondary);
         }
       `}</style>
     </div>

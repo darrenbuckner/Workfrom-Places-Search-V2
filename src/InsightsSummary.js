@@ -51,16 +51,16 @@ const PlacesList = ({ places, onPhotoClick, limit = 2 }) => {
   return (
     <div className="space-y-2">
       {displayPlaces.map((place, index) => (
-        <div key={place.ID} className={index > 0 ? "mt-3 pt-3 border-t border-[var(--border-primary)]" : ""}>
+        <div 
+          key={place.ID} 
+          className={`${index > 0 ? "mt-3 pt-3 border-t border-[var(--border-primary)]" : ""}`}
+        >
           <ClickableTitle 
             place={place} 
             onPhotoClick={onPhotoClick}
           />
           <p className="text-sm text-[var(--text-secondary)]">
             {place.distance} miles away
-            {places.length > limit && index === limit - 1 && (
-              <span className="hidden"> • {places.length - limit} more option{places.length - limit !== 1 ? 's' : ''}</span>
-            )}
           </p>
         </div>
       ))}
@@ -70,70 +70,54 @@ const PlacesList = ({ places, onPhotoClick, limit = 2 }) => {
 
 const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
   const { isDark } = useTheme();
-  
-  // Find the place data that matches the featured spot name from nested insights
   const featuredSpotData = analysisData?.insights?.featured_spot;
+  
   if (!featuredSpotData || !place) return null;
 
-  // Format distance
   const formatDistance = (distance) => {
     if (!distance) return 'Distance unknown';
     if (distance === 0) return 'You are here';
     
     const distNum = typeof distance === 'string' ? parseFloat(distance) : distance;
-    
-    if (distNum < 0.1) {
-      return 'Less than 0.1 miles away';
-    } else if (distNum < 10) {
-      return `${distNum.toFixed(1)} miles away`;
-    } else {
-      return `${Math.round(distNum)} miles away`;
-    }
+    return distNum < 0.1 ? 'Less than 0.1 miles away' :
+           distNum < 10 ? `${distNum.toFixed(1)} miles away` :
+           `${Math.round(distNum)} miles away`;
   };
 
   return (
     <div className="col-span-full">
       <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)] overflow-hidden">
-        {/* Header */}
-        <div className="p-3 sm:p-4 border-b border-[var(--border-primary)]">
+        <div className="p-4 border-b border-[var(--border-primary)]">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-3">
-              <div className={`
-                w-10 h-10 rounded-lg bg-gradient-to-br
-                from-[var(--accent-primary)]/20 to-[var(--accent-primary)]/10
-                flex items-center justify-center
-              `}>
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[var(--accent-primary)]/20 
+                to-[var(--accent-primary)]/10 flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-[var(--accent-primary)]" />
               </div>
               <div>
                 <h3 className="text-base font-medium text-[var(--text-primary)]">
-                  Featured Spot
+                  Featured Workspace
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  Unique find worth checking out
+                  Standout spot in your area
                 </p>
               </div>
             </div>
-            <div className={`
-              px-2 py-1 rounded-full text-xs font-medium
-              bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]
-            `}>
+            <div className="px-2.5 py-1 rounded-full text-xs font-medium
+              bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
               {featuredSpotData.vibe}
             </div>
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-4">
           <div className="flex flex-col lg:flex-row gap-6">
-            {/* Main Content Column */}
             <div className="flex-1 space-y-4">
-              {/* Title and Distance */}
               <div>
                 <ClickableTitle 
                   place={place} 
                   onPhotoClick={onPhotoClick}
-                  className="text-lg mb-1"
+                  className="text-lg mb-1.5"
                 />
                 <div className="text-sm text-[var(--text-secondary)]">
                   {formatDistance(place.distance)}
@@ -143,27 +127,24 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
                 </p>
               </div>
 
-              {/* Best For Tags */}
               <div className="flex flex-wrap gap-2">
                 {featuredSpotData.best_for.map((activity, index) => (
                   <div
                     key={index}
-                    className="px-2 py-1 rounded-md text-xs
-                      bg-[var(--bg-secondary)] text-[var(--text-secondary)]
-                      border border-[var(--border-primary)]"
+                    className="px-2.5 py-1 rounded-md text-xs bg-[var(--bg-secondary)] 
+                      text-[var(--text-secondary)] border border-[var(--border-primary)]"
                   >
-                    Perfect for {activity}
+                    Ideal for {activity}
                   </div>
                 ))}
               </div>
 
-              {/* Thumbnail */}
               <div 
                 onClick={() => onPhotoClick(place)}
                 className="relative mt-4 rounded-lg overflow-hidden group cursor-pointer
-                  border border-[var(--border-primary)]"
+                  border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
               >
-                <div className="aspect-w-16 aspect-h-9 bg-[var(--bg-secondary)]">
+                <div className="aspect-w-16 aspect-h-9">
                   {place.thumbnail_img ? (
                     <img
                       src={place.thumbnail_img}
@@ -180,27 +161,24 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
                       <span className="text-sm text-[var(--text-tertiary)]">No image available</span>
                     </div>
                   )}
-                  {/* View Photo Overlay */}
                   <div className="absolute inset-0 flex items-center justify-center 
                     bg-black/0 group-hover:bg-black/30 transition-all opacity-0 group-hover:opacity-100">
                     <span className="px-3 py-1.5 rounded-full bg-black/50 text-white text-sm 
                       flex items-center gap-1.5">
                       <ZoomIn size={14} />
-                      View Photo
+                      View Details
                     </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Features Column */}
             <div className="lg:w-72 flex-shrink-0">
-              <div className="p-4 rounded-lg bg-[var(--bg-secondary)]
-                border border-[var(--border-primary)]">
-                <h4 className="text-xs font-medium text-[var(--text-secondary)] mb-3">
-                  STANDOUT FEATURES
+              <div className="p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+                <h4 className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-3">
+                  Key Features
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {featuredSpotData.unique_features.map((feature, index) => (
                     <div key={index} className="flex items-start gap-2">
                       <div className="p-1 rounded-md bg-[var(--accent-primary)]/10 mt-0.5">
@@ -214,7 +192,7 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
                   <div className="flex items-center gap-2">
                     <Clock size={14} className="text-[var(--text-secondary)]" />
                     <span className="text-xs text-[var(--text-secondary)]">
-                      Best time: {featuredSpotData.best_time_to_visit}
+                      Recommended time: {featuredSpotData.best_time_to_visit}
                     </span>
                   </div>
                 </div>
@@ -348,60 +326,60 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
   const insights = [
     {
       icon: Wifi,
-      title: "Fastest WiFi",
-      question: "What's the fastest wifi?",
-      content: fastestWifi.length ? (
-        <PlacesList places={fastestWifi} onPhotoClick={onPhotoClick} />
+      title: "Fast WiFi Spots",
+      subtitle: "Places with highest connection speeds",
+      content: getFastestWifi().length ? (
+        <PlacesList places={getFastestWifi()} onPhotoClick={onPhotoClick} />
       ) : "No WiFi speed data available",
       color: isDark ? "text-blue-400" : "text-blue-600",
       bgColor: isDark ? "bg-blue-400/10" : "bg-blue-600/10"
     },
     {
       icon: Phone,
-      title: "Call-Friendly Spots",
-      question: "Where can I take a video or phone call?",
-      content: callSpaces.length ? (
-        <PlacesList places={callSpaces} onPhotoClick={onPhotoClick} />
-      ) : "No suitable call spaces found",
+      title: "Meeting-Ready Spaces",
+      subtitle: "Quiet spots suitable for calls",
+      content: getCallSpaces().length ? (
+        <PlacesList places={getCallSpaces()} onPhotoClick={onPhotoClick} />
+      ) : "No suitable meeting spaces found",
       color: isDark ? "text-green-400" : "text-green-600",
       bgColor: isDark ? "bg-green-400/10" : "bg-green-600/10"
     },
     {
       icon: Users,
-      title: "Lively Atmosphere",
-      question: "Where can I get a more lively vibe?",
-      content: livelySpaces.length ? (
-        <PlacesList places={livelySpaces} onPhotoClick={onPhotoClick} />
-      ) : "No particularly lively spaces found",
+      title: "Social Spaces",
+      subtitle: "Energetic spots with a buzz",
+      content: getLivelySpaces().length ? (
+        <PlacesList places={getLivelySpaces()} onPhotoClick={onPhotoClick} />
+      ) : "No social spaces found",
       color: isDark ? "text-purple-400" : "text-purple-600",
       bgColor: isDark ? "bg-purple-400/10" : "bg-purple-600/10"
     },
     {
       icon: Focus,
-      title: "Cozy Focus Spots",
-      question: "Where can I concentrate and feel cozy?",
-      content: cozySpaces.length ? (
-        <PlacesList places={cozySpaces} onPhotoClick={onPhotoClick} />
-      ) : "No cozy quiet spaces found",
+      title: "Focus Spots",
+      subtitle: "Quiet spaces for concentration",
+      content: getCozySpaces().length ? (
+        <PlacesList places={getCozySpaces()} onPhotoClick={onPhotoClick} />
+      ) : "No focus spaces found",
       color: isDark ? "text-amber-400" : "text-amber-600",
       bgColor: isDark ? "bg-amber-400/10" : "bg-amber-600/10"
     },
     {
       icon: Coffee,
-      title: "Meeting Spots",
-      question: "Where is an ideal place to meet up?",
-      content: meetupSpaces.length ? (
-        <PlacesList places={meetupSpaces} onPhotoClick={onPhotoClick} />
-      ) : "No meeting-friendly spaces found",
+      title: "Group Spaces",
+      subtitle: "Perfect for team meetings",
+      content: getMeetupSpaces().length ? (
+        <PlacesList places={getMeetupSpaces()} onPhotoClick={onPhotoClick} />
+      ) : "No group spaces found",
       color: isDark ? "text-rose-400" : "text-rose-600",
       bgColor: isDark ? "bg-rose-400/10" : "bg-rose-600/10"
     },
     {
       icon: Lock,
       title: "Private Spaces",
-      question: "Where can I find a private space?",
-      content: privateSpaces.length ? (
-        <PlacesList places={privateSpaces} onPhotoClick={onPhotoClick} />
+      subtitle: "Secluded spots for focused work",
+      content: getPrivateSpaces().length ? (
+        <PlacesList places={getPrivateSpaces()} onPhotoClick={onPhotoClick} />
       ) : "No private spaces found",
       color: isDark ? "text-indigo-400" : "text-indigo-600",
       bgColor: isDark ? "bg-indigo-400/10" : "bg-indigo-600/10"
@@ -419,40 +397,37 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
         {insights.map((insight, index) => (
           <div
             key={index}
-            className="flex flex-col gap-3 p-4 rounded-lg border border-[var(--border-primary)]
+            className="flex flex-col p-4 rounded-lg border border-[var(--border-primary)]
               bg-[var(--bg-primary)]"
           >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex items-center gap-2.5">
                 <div className={`w-8 h-8 rounded-lg ${insight.bgColor}
-                  flex items-center justify-center`}>
+                  flex items-center justify-center flex-shrink-0`}>
                   <insight.icon className={`w-4 h-4 ${insight.color}`} />
                 </div>
-                <span className="text-sm font-medium text-[var(--text-primary)]">
-                  {insight.title}
-                </span>
+                <div>
+                  <h3 className="text-sm font-medium text-[var(--text-primary)]">
+                    {insight.title}
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    {insight.subtitle}
+                  </p>
+                </div>
               </div>
               <Sparkles size={16} className="text-[var(--accent-primary)] opacity-50" />
             </div>
-            <div className="space-y-1">
-              <p className="hidden text-sm text-[var(--text-secondary)]">
-                {insight.question}
-              </p>
-              <div className="mt-2">
-                {insight.content}
-              </div>
-            </div>
+            {insight.content}
           </div>
         ))}
       </div>
 
-      <div className="border-t border-[var(--border-primary)] bg-[var(--bg-primary)] p-3 sm:p-4">
-        <div className="flex items-start gap-2">
-          <MessageSquare className="w-4 h-4 text-[var(--accent-primary)] mt-0.5" />
-          <p className="text-sm text-[var(--text-secondary)]">
-            Pro tip: Most spaces welcome short calls, but consider booking private rooms 
-            for longer meetings. Don't forget to check individual listings for current amenities 
-            and peak hours.
+      <div className="border-t border-[var(--border-primary)] bg-[var(--bg-primary)] p-4">
+        <div className="flex items-start gap-2.5">
+          <MessageSquare className="w-4 h-4 text-[var(--accent-primary)] mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            Note: Most spaces welcome brief calls, but consider booking private rooms for longer meetings. 
+            Always check current amenities and peak hours at each location.
           </p>
         </div>
       </div>

@@ -16,17 +16,113 @@ import DistanceDisplay from './DistanceDisplay';
 import { useTheme } from './ThemeProvider';
 import { getWifiStatus } from './wifiUtils';
 
-const MetricBadge = ({ icon: Icon, label, color, className = "" }) => (
-  <div className={`
-    inline-flex items-center gap-1.5 px-2 py-1 
-    rounded-md border border-[var(--border-primary)]
-    bg-[var(--bg-primary)]
-    ${className}
-  `}>
-    <Icon size={14} className={color} />
-    <span className={`text-xs font-medium ${color}`}>{label}</span>
-  </div>
-);
+const MetricBadge = ({ icon: Icon, label, color, className = "" }) => {
+  const { isDark } = useTheme();
+  
+  // Color mapping for different metrics
+  const colorStyles = {
+    wifi: {
+      available: {
+        icon: isDark ? "text-emerald-400" : "text-emerald-600",
+        text: isDark ? "text-emerald-300" : "text-emerald-700",
+        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
+        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
+      },
+      unavailable: {
+        icon: isDark ? "text-red-400" : "text-red-600",
+        text: isDark ? "text-red-300" : "text-red-700",
+        bg: isDark ? "bg-red-400/10" : "bg-red-50",
+        border: isDark ? "border-red-400/20" : "border-red-100"
+      },
+      unknown: {
+        icon: isDark ? "text-slate-400" : "text-slate-600",
+        text: isDark ? "text-slate-300" : "text-slate-700",
+        bg: isDark ? "bg-slate-400/10" : "bg-slate-50",
+        border: isDark ? "border-slate-400/20" : "border-slate-100"
+      }
+    },
+    power: {
+      full: {
+        icon: isDark ? "text-emerald-400" : "text-emerald-600",
+        text: isDark ? "text-emerald-300" : "text-emerald-700",
+        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
+        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
+      },
+      limited: {
+        icon: isDark ? "text-amber-400" : "text-amber-600",
+        text: isDark ? "text-amber-300" : "text-amber-700",
+        bg: isDark ? "bg-amber-400/10" : "bg-amber-50",
+        border: isDark ? "border-amber-400/20" : "border-amber-100"
+      },
+      none: {
+        icon: isDark ? "text-red-400" : "text-red-600",
+        text: isDark ? "text-red-300" : "text-red-700",
+        bg: isDark ? "bg-red-400/10" : "bg-red-50",
+        border: isDark ? "border-red-400/20" : "border-red-100"
+      }
+    },
+    noise: {
+      quiet: {
+        icon: isDark ? "text-emerald-400" : "text-emerald-600",
+        text: isDark ? "text-emerald-300" : "text-emerald-700",
+        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
+        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
+      },
+      moderate: {
+        icon: isDark ? "text-amber-400" : "text-amber-600",
+        text: isDark ? "text-amber-300" : "text-amber-700",
+        bg: isDark ? "bg-amber-400/10" : "bg-amber-50",
+        border: isDark ? "border-amber-400/20" : "border-amber-100"
+      },
+      noisy: {
+        icon: isDark ? "text-blue-400" : "text-blue-600",
+        text: isDark ? "text-blue-300" : "text-blue-700",
+        bg: isDark ? "bg-blue-400/10" : "bg-blue-50",
+        border: isDark ? "border-blue-400/20" : "border-blue-100"
+      }
+    }
+  };
+
+  const getWifiStyle = (label) => {
+    if (label.includes('No WiFi')) return colorStyles.wifi.unavailable;
+    if (label === 'Unknown') return colorStyles.wifi.unknown;
+    return colorStyles.wifi.available;
+  };
+
+  const getPowerStyle = (label) => {
+    if (label.includes('Many') || label.includes('Good')) return colorStyles.power.full;
+    if (label.includes('Limited') || label.includes('Some')) return colorStyles.power.limited;
+    return colorStyles.power.none;
+  };
+
+  const getNoiseStyle = (label) => {
+    if (label === 'Quiet') return colorStyles.noise.quiet;
+    if (label === 'Moderate') return colorStyles.noise.moderate;
+    return colorStyles.noise.noisy;
+  };
+
+  let style;
+  if (Icon === Wifi || Icon === WifiOff) {
+    style = getWifiStyle(label);
+  } else if (Icon === Battery) {
+    style = getPowerStyle(label);
+  } else if (Icon === Volume2) {
+    style = getNoiseStyle(label);
+  }
+
+  return (
+    <div className={`
+      inline-flex items-center gap-1.5 px-2 py-1 rounded-md
+      ${style.bg} ${style.border} border
+      ${className}
+    `}>
+      <Icon size={14} className={style.icon} />
+      <span className={`text-xs font-medium ${style.text}`}>
+        {label}
+      </span>
+    </div>
+  );
+};
 
 const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
   const { isDark } = useTheme();
@@ -35,30 +131,30 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
   const getPowerStatus = () => {
     const powerValue = String(place.power || '').toLowerCase();
     if (powerValue === 'none' || powerValue === '') {
-      return { label: "No Power", color: isDark ? "text-red-400" : "text-red-500" };
+      return { label: "No Power" };
     }
     if (powerValue.includes('range3') || powerValue.includes('good')) {
-      return { label: "Many Outlets", color: isDark ? "text-green-400" : "text-green-500" };
+      return { label: "Many Outlets" };
     }
     if (powerValue.includes('range2')) {
-      return { label: "Some Outlets", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+      return { label: "Some Outlets" };
     }
-    return { label: "Limited Power", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+    return { label: "Limited Power" };
   };
 
   // Helper function for noise level
   const getNoiseLevel = () => {
     const noise = (place.noise_level || place.noise || "").toLowerCase();
     if (noise.includes('quiet')) {
-      return { label: "Quiet", color: isDark ? "text-green-400" : "text-green-500" };
+      return { label: "Quiet" };
     }
     if (noise.includes('moderate')) {
-      return { label: "Moderate", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+      return { label: "Moderate" };
     }
     if (noise.includes('noisy')) {
-      return { label: "Lively", color: isDark ? "text-yellow-400" : "text-yellow-500" };
+      return { label: "Lively" };
     }
-    return { label: "Unknown", color: isDark ? "text-gray-400" : "text-gray-500" };
+    return { label: "Unknown" };
   };
 
   const wifiStatus = getWifiStatus(place, isDark);
@@ -147,18 +243,15 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
               <div className="flex flex-wrap gap-1.5">
                 <MetricBadge 
                   icon={wifiStatus.icon === 'WifiOff' ? WifiOff : Wifi}
-                  label={wifiStatus.label} 
-                  color={wifiStatus.color}
+                  label={wifiStatus.label}
                 />
                 <MetricBadge 
                   icon={Battery} 
-                  label={powerStatus.label} 
-                  color={powerStatus.color}
+                  label={powerStatus.label}
                 />
                 <MetricBadge 
                   icon={Volume2} 
-                  label={noiseLevel.label} 
-                  color={noiseLevel.color}
+                  label={noiseLevel.label}
                 />
               </div>
 
@@ -169,11 +262,14 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
                     <div 
                       key={index}
                       className="inline-flex items-center gap-1.5 px-2 py-1 
-                        rounded-md bg-[var(--bg-tertiary)]
-                        text-[var(--text-secondary)]"
+                        rounded-md border border-[var(--border-primary)]
+                        bg-[var(--bg-primary)]
+                        text-[var(--text-primary)]"
                     >
-                      <amenity.icon size={14} />
-                      <span className="text-xs">{amenity.label}</span>
+                      <amenity.icon size={14} className="text-[var(--text-secondary)]" />
+                      <span className="text-xs font-medium">
+                        {amenity.label}
+                      </span>
                     </div>
                   ))}
                 </div>

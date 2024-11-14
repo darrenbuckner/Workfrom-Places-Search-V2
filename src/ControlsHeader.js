@@ -43,22 +43,16 @@ const ControlsHeader = ({
     if (viewMode === 'insights') {
       return (
         <div className="flex items-start sm:items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 
+          <div className="w-8 h-5 rounded-full bg-[var(--accent-primary)]/10 
             flex items-center justify-center flex-shrink-0">
-            <Brain className="w-4 h-4 text-[var(--accent-primary)]" />
+            <Brain className="w-4 h-4 text-[var(--text-secondary)]" />
           </div>
           <div>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-base font-medium text-[var(--text-primary)]">
-                Near you in {locationName || 'this area'}
+              <h3 className="text-sm font-medium text-[var(--text-primary)]">
+                AI-powered insights and recommendations
               </h3>
-              <span className="text-sm text-[var(--text-secondary)]">
-                • {totalPlaces} places analyzed
-              </span>
             </div>
-            <p className="text-sm text-[var--text-secondary)]">
-              AI-powered insights and recommendations
-            </p>
           </div>
         </div>
       );
