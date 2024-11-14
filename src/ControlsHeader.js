@@ -69,7 +69,7 @@ const ControlsHeader = ({
         <MapPin className="w-4 h-4 text-[var(--text-secondary)]" />
         <div className="text-sm">
           <span className="font-medium text-[var(--text-primary)]">
-            {totalPlaces} places found
+            {totalPlaces} places
           </span>
           <span className="text-[var(--text-secondary)] ml-1">
             within {radius} miles

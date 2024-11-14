@@ -318,6 +318,7 @@ const WorkfromPlacesContent = () => {
               radius={lastSearchedRadius}
               sortBy={sortBy}
               setSortBy={setSortBy}
+              locationName={locationName}
               disabled={searchPhase !== SearchPhases.COMPLETE}
             />
 
