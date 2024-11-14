@@ -52,7 +52,7 @@ const WorkfromPlacesContent = () => {
   const [radius, setRadius] = useState(2);
   const [lastSearchedRadius, setLastSearchedRadius] = useState(2);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [viewMode, setViewMode] = useState('list');
+  const [viewMode, setViewMode] = useState('insights');
   const [showFilters, setShowFilters] = useState(false);
   const [isSearchPerformed, setIsSearchPerformed] = useState(false);
   const [error, setError] = useState(null);
