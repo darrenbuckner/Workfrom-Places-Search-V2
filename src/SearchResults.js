@@ -91,7 +91,7 @@ const NoResultsState = ({ onRetry, className = "" }) => (
 );
 
 const SearchResults = ({ 
-  places,
+  places = [],
   sortBy,
   filters,
   itemsPerPage = 10,

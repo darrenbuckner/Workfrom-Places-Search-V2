@@ -291,30 +291,28 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
   const getPrivateSpaces = () => {
     return places.filter(p => {
       const type = String(p.type || "").toLowerCase();
-      const noise = String(p.noise_level || p.noise || "").toLowerCase();
       
-      return (
-        type.includes('coworking') ||
-        type.includes('library') ||
-        (noise.includes('quiet') && p.power?.includes('range')) ||
-        (p.workabilityScore >= 7 && noise.includes('quiet'))
-      );
+      // Only include coworking spaces and business centers
+      return type.includes('coworking') || type.includes('dedicated');
     }).sort((a, b) => {
       const scoreA = getPrivacyScore(a);
       const scoreB = getPrivacyScore(b);
       return scoreB - scoreA || parseFloat(a.distance) - parseFloat(b.distance);
     });
-  };
+    };
 
-  const getPrivacyScore = (place) => {
+    const getPrivacyScore = (place) => {
     let score = 0;
     const type = String(place.type || "").toLowerCase();
+
+    // Prioritize dedicated coworking spaces
     if (type.includes('coworking')) score += 3;
-    if (type.includes('library')) score += 2;
-    if (place.noise_level?.toLowerCase().includes('quiet')) score += 2;
+    if (type.includes('dedicated')) score += 2;
+
+    // Additional factors that might indicate better privacy
     if (place.workabilityScore >= 7) score += 1;
     return score;
-  };
+    };
 
   const fastestWifi = getFastestWifi();
   const callSpaces = getCallSpaces();
