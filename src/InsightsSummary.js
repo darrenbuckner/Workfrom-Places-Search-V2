@@ -53,15 +53,41 @@ const PlacesList = ({ places, onPhotoClick, limit = 2 }) => {
       {displayPlaces.map((place, index) => (
         <div 
           key={place.ID} 
-          className={`${index > 0 ? "mt-3 pt-3 border-t border-[var(--border-primary)]" : ""}`}
+          className={`flex items-start gap-3 ${index > 0 ? "mt-3 pt-3 border-t border-[var(--border-primary)]" : ""}`}
         >
-          <ClickableTitle 
-            place={place} 
-            onPhotoClick={onPhotoClick}
-          />
-          <p className="text-sm text-[var(--text-secondary)]">
-            {place.distance} miles away
-          </p>
+          {/* Thumbnail */}
+          <div 
+            onClick={() => onPhotoClick(place)}
+            className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer
+              bg-[var(--bg-tertiary)] transition-transform hover:scale-105 
+              border border-[var(--border-primary)]"
+          >
+            {place.thumbnail_img ? (
+              <img
+                src={place.thumbnail_img}
+                alt={place.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = `/api/placeholder/48/48?text=No+image`;
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                <ImageIcon size={16} className="text-[var(--text-tertiary)]" />
+              </div>
+            )}
+          </div>
+
+          {/* Title and Distance */}
+          <div className="flex-1 min-w-0">
+            <ClickableTitle 
+              place={place} 
+              onPhotoClick={onPhotoClick}
+            />
+            <p className="text-sm text-[var(--text-secondary)]">
+              {place.distance} miles away
+            </p>
+          </div>
         </div>
       ))}
     </div>

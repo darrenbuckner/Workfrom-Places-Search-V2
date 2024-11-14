@@ -168,53 +168,52 @@ const WorkfromPlacesContent = () => {
       if (fetchedPlaces.length > 0) {
         setLastSearchedRadius(radius);
 
-        // Start analysis if we're in insights view or it's the first search
-        if (viewMode === 'insights' || !isSearchPerformed) {
-          setIsAnalyzing(true);
-          setAnalysisProgress(0);
+        // Always perform analysis when fetching places
+        // This ensures we have analysis data ready when switching to insights view
+        setIsAnalyzing(true);
+        setAnalysisProgress(0);
 
-          const placesData = fetchedPlaces.map(place => ({
-            name: place.title,
-            type: place.type || '',
-            distance: parseFloat(place.distance) || 0,
-            noise: place.noise_level || place.noise || '',
-            power: place.power || '',
-            workabilityScore: place.workabilityScore || 0,
-            wifi: place.download ? `${Math.round(place.download)} Mbps` : 
-                  place.no_wifi === "1" ? "No WiFi" : "Unknown",
-            amenities: {
-              coffee: place.coffee === "1",
-              food: place.food === "1",
-              alcohol: place.alcohol === "1",
-              outdoorSeating: place.outdoor_seating === "1" || place.outside === "1"
-            }
-          }));
-
-          try {
-            const analysisResponse = await fetch(
-              `${API_CONFIG.baseUrl}/analyze-workspaces?appid=${API_CONFIG.appId}`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ places: placesData })
-              }
-            );
-
-            if (analysisResponse.ok) {
-              const analysisData = await analysisResponse.json();
-              if (analysisData.insights) {
-                setAnalysisProgress(100);
-                await new Promise(resolve => setTimeout(resolve, 500));
-                setWorkspaceAnalysis(analysisData.insights);
-              }
-            }
-          } catch (err) {
-            console.error('Analysis failed:', err);
-          } finally {
-            setIsAnalyzing(false);
+        const placesData = fetchedPlaces.map(place => ({
+          name: place.title,
+          type: place.type || '',
+          distance: parseFloat(place.distance) || 0,
+          noise: place.noise_level || place.noise || '',
+          power: place.power || '',
+          workabilityScore: place.workabilityScore || 0,
+          wifi: place.download ? `${Math.round(place.download)} Mbps` : 
+                place.no_wifi === "1" ? "No WiFi" : "Unknown",
+          amenities: {
+            coffee: place.coffee === "1",
+            food: place.food === "1",
+            alcohol: place.alcohol === "1",
+            outdoorSeating: place.outdoor_seating === "1" || place.outside === "1"
           }
+        }));
+
+        try {
+          const analysisResponse = await fetch(
+            `${API_CONFIG.baseUrl}/analyze-workspaces?appid=${API_CONFIG.appId}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ places: placesData })
+            }
+          );
+
+          if (analysisResponse.ok) {
+            const analysisData = await analysisResponse.json();
+            if (analysisData.insights) {
+              setAnalysisProgress(100);
+              await new Promise(resolve => setTimeout(resolve, 500));
+              setWorkspaceAnalysis(analysisData.insights);
+            }
+          }
+        } catch (err) {
+          console.error('Analysis failed:', err);
+        } finally {
+          setIsAnalyzing(false);
         }
 
         if (!isSearchPerformed) {

@@ -3,11 +3,12 @@ import {
   X, Loader, Navigation, Quote, ChevronLeft, Wifi, Battery, 
   Volume2, Clock, WifiOff, Users, Info, Star, StarHalf, StarOff, 
   Coffee, AlertCircle, ImageIcon,
-  ZoomIn 
+  ZoomIn, ArrowRight 
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 import { getWifiStatus } from './wifiUtils';
 import WorkabilityScore from './WorkabilityScore';
+import ExpandableMetricBadge from './ExpandableMetricBadge';
 import LocationSection from './LocationSection';
 import { useScrollLock } from './useScrollLock';
 
@@ -40,84 +41,298 @@ const useScrollPosition = (ref) => {
   return progress;
 };
 
+const MetricBadge = ({ icon: Icon, label, color, className = "" }) => {
+  const { isDark } = useTheme();
+  
+  const colorStyles = {
+    wifi: {
+      available: {
+        icon: isDark ? "text-emerald-400" : "text-emerald-600",
+        text: isDark ? "text-emerald-300" : "text-emerald-700",
+        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
+        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
+      },
+      unavailable: {
+        icon: isDark ? "text-red-400" : "text-red-600",
+        text: isDark ? "text-red-300" : "text-red-700",
+        bg: isDark ? "bg-red-400/10" : "bg-red-50",
+        border: isDark ? "border-red-400/20" : "border-red-100"
+      },
+      unknown: {
+        icon: isDark ? "text-slate-400" : "text-slate-600",
+        text: isDark ? "text-slate-300" : "text-slate-700",
+        bg: isDark ? "bg-slate-400/10" : "bg-slate-50",
+        border: isDark ? "border-slate-400/20" : "border-slate-100"
+      }
+    },
+    power: {
+      full: {
+        icon: isDark ? "text-emerald-400" : "text-emerald-600",
+        text: isDark ? "text-emerald-300" : "text-emerald-700",
+        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
+        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
+      },
+      limited: {
+        icon: isDark ? "text-amber-400" : "text-amber-600",
+        text: isDark ? "text-amber-300" : "text-amber-700",
+        bg: isDark ? "bg-amber-400/10" : "bg-amber-50",
+        border: isDark ? "border-amber-400/20" : "border-amber-100"
+      },
+      none: {
+        icon: isDark ? "text-red-400" : "text-red-600",
+        text: isDark ? "text-red-300" : "text-red-700",
+        bg: isDark ? "bg-red-400/10" : "bg-red-50",
+        border: isDark ? "border-red-400/20" : "border-red-100"
+      }
+    },
+    noise: {
+      quiet: {
+        icon: isDark ? "text-emerald-400" : "text-emerald-600",
+        text: isDark ? "text-emerald-300" : "text-emerald-700",
+        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
+        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
+      },
+      moderate: {
+        icon: isDark ? "text-amber-400" : "text-amber-600",
+        text: isDark ? "text-amber-300" : "text-amber-700",
+        bg: isDark ? "bg-amber-400/10" : "bg-amber-50",
+        border: isDark ? "border-amber-400/20" : "border-amber-100"
+      },
+      noisy: {
+        icon: isDark ? "text-blue-400" : "text-blue-600",
+        text: isDark ? "text-blue-300" : "text-blue-700",
+        bg: isDark ? "bg-blue-400/10" : "bg-blue-50",
+        border: isDark ? "border-blue-400/20" : "border-blue-100"
+      }
+    }
+  };
+
+  const getWifiStyle = (label) => {
+    if (label.includes('No WiFi')) return colorStyles.wifi.unavailable;
+    if (label === 'Unknown') return colorStyles.wifi.unknown;
+    return colorStyles.wifi.available;
+  };
+
+  const getPowerStyle = (label) => {
+    if (label.includes('Many') || label.includes('Good')) return colorStyles.power.full;
+    if (label.includes('Limited') || label.includes('Some')) return colorStyles.power.limited;
+    return colorStyles.power.none;
+  };
+
+  const getNoiseStyle = (label) => {
+    if (label === 'Quiet') return colorStyles.noise.quiet;
+    if (label === 'Moderate') return colorStyles.noise.moderate;
+    return colorStyles.noise.noisy;
+  };
+
+  let style;
+  if (Icon === Wifi || Icon === WifiOff) {
+    style = getWifiStyle(label);
+  } else if (Icon === Battery) {
+    style = getPowerStyle(label);
+  } else if (Icon === Volume2) {
+    style = getNoiseStyle(label);
+  }
+
+  return (
+    <div className={`
+      inline-flex items-center gap-1.5 px-2 py-1 rounded-md
+      ${style.bg} ${style.border} border
+      ${className}
+    `}>
+      <Icon size={14} className={style.icon} />
+      <span className={`text-xs font-medium ${style.text}`}>
+        {label}
+      </span>
+    </div>
+  );
+};
+
 const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal }) => {
   const { isDark } = useTheme();
   const contentRef = useRef(null);
   const progress = useScrollPosition(contentRef);
-  useScrollLock(true);
+  
+  const getWifiStyle = (place) => {
+    if (place.no_wifi === "1") return 'unavailable';
+    if (!place.download) return 'unknown';
+    return 'available';
+  };
+
+  const getPowerStyle = (place) => {
+    const powerValue = String(place.power || '').toLowerCase();
+    if (powerValue.includes('range3') || powerValue.includes('good')) return 'full';
+    if (powerValue.includes('range2')) return 'limited';
+    return 'none';
+  };
+
+  const getNoiseStyle = (place) => {
+    const noise = String(place.noise_level || place.noise || '').toLowerCase();
+    if (noise.includes('quiet')) return 'quiet';
+    if (noise.includes('moderate')) return 'moderate';
+    return 'noisy';
+  };
 
   const getWorkabilityMetrics = (place) => {
-    const metrics = [];
-    
-    // Add WiFi metric
-    const wifiStatus = getWifiStatus(place, isDark);
-    metrics.push({
-      icon: wifiStatus.icon === 'WifiOff' ? WifiOff : Wifi,
-      label: "WiFi",
-      value: wifiStatus.value,
-      color: wifiStatus.color,
-      iconColor: wifiStatus.iconColor
-    });
+    // WiFi Metric
+    const getWifiMetric = () => {
+      if (place.no_wifi === "1") {
+        return {
+          type: 'wifi',
+          icon: WifiOff,
+          noWifi: true,
+          label: "No WiFi",
+          details: "This location does not provide WiFi access",
+          recommendations: "Consider bringing a mobile hotspot"
+        };
+      }
 
-    // Power Availability
-    const powerValue = String(place.power || '').toLowerCase();
-    let powerStatus = { value: "Unknown" };
-    if (powerValue === 'none' || powerValue === '') {
-      powerStatus = { 
-        value: "Not Available", 
-        color: isDark ? "text-red-400" : "text-red-500",
-        iconColor: isDark ? "text-red-400" : "text-red-500" 
-      };
-    } else if (powerValue.includes('range3') || powerValue.includes('good')) {
-      powerStatus = { 
-        value: "Abundant",
-        color: isDark ? "text-green-400" : "text-green-500",
-        iconColor: isDark ? "text-green-400" : "text-green-500"
-      };
-    } else if (powerValue.includes('range2')) {
-      powerStatus = { 
-        value: "Good",
-        color: isDark ? "text-yellow-400" : "text-yellow-500",
-        iconColor: isDark ? "text-yellow-400" : "text-yellow-500"
-      };
-    } else if (powerValue.includes('range1') || powerValue.includes('little')) {
-      powerStatus = { 
-        value: "Limited",
-        color: isDark ? "text-yellow-400" : "text-yellow-500",
-        iconColor: isDark ? "text-yellow-400" : "text-yellow-500"
-      };
-    }
-    metrics.push({ icon: Battery, label: "Power", ...powerStatus });
+      if (place.download) {
+        const speed = Math.round(place.download);
+        return {
+          type: 'wifi',
+          icon: Wifi,
+          download: speed,
+          label: speed >= 50 ? "Fast WiFi" : speed >= 25 ? "Very Good WiFi" : speed >= 10 ? "Good WiFi" : `${speed} Mbps`,
+          details: `${speed}+ Mbps download speed`,
+          recommendations: speed >= 50 ? "Excellent for video calls and large file transfers" :
+                          speed >= 25 ? "Good for most remote work needs" :
+                          speed >= 10 ? "Suitable for basic work tasks" :
+                          "Best for light web browsing",
+          stats: [
+            speed >= 50 ? "HD Video Calls ✓" : "Video Calls: May be unstable",
+            speed >= 25 ? "Multiple Devices ✓" : "Limited Devices",
+            speed >= 10 ? "Web Browsing ✓" : "Basic Web Only"
+          ]
+        };
+      }
 
-    // Noise Level
-    const noise = place.noise_level || place.noise || "Unknown";
-    let noiseStatus = { 
-      value: noise, 
-      color: isDark ? "text-gray-400" : "text-gray-500",
-      iconColor: isDark ? "text-gray-400" : "text-gray-500"
+      return {
+        type: 'wifi',
+        icon: Wifi,
+        download: 0,
+        label: "WiFi Available",
+        details: "Speed data not available",
+        recommendations: "Ask staff about typical speeds"
+      };
     };
-    if (noise.toLowerCase().includes('quiet')) {
-      noiseStatus = {
-        value: "Quiet",
-        color: isDark ? "text-green-400" : "text-green-500",
-        iconColor: isDark ? "text-green-400" : "text-green-500"
-      };
-    } else if (noise.toLowerCase().includes('moderate')) {
-      noiseStatus = {
-        value: "Moderate",
-        color: isDark ? "text-yellow-400" : "text-yellow-500",
-        iconColor: isDark ? "text-yellow-400" : "text-yellow-500"
-      };
-    } else if (noise.toLowerCase().includes('noisy')) {
-      noiseStatus = {
-        value: "Noisy",
-        color: isDark ? "text-yellow-400" : "text-yellow-500",
-        iconColor: isDark ? "text-yellow-400" : "text-yellow-500"
-      };
-    }
-    metrics.push({ icon: Volume2, label: "Noise", ...noiseStatus });
 
-    return metrics;
+    // Power Metric
+    const getPowerMetric = () => {
+      const powerValue = String(place.power || '').toLowerCase();
+      
+      if (powerValue.includes('range3') || powerValue.includes('good')) {
+        return {
+          type: 'power',
+          icon: Battery,
+          powerValue: powerValue,
+          label: "Many Outlets",
+          details: "Abundant power access throughout",
+          recommendations: "Most seats have easy outlet access",
+          stats: [
+            "Outlets at >75% of seats",
+            "High availability throughout",
+            "Extension cords usually allowed"
+          ]
+        };
+      }
+      
+      if (powerValue.includes('range2')) {
+        return {
+          type: 'power',
+          icon: Battery,
+          powerValue: powerValue,
+          label: "Some Outlets",
+          details: "Moderate power availability",
+          recommendations: "Choose seating strategically for outlet access",
+          stats: [
+            "Outlets at ~50% of seats",
+            "Moderate availability",
+            "May need to plan seating"
+          ]
+        };
+      }
+      
+      if (powerValue.includes('range1') || powerValue.includes('little')) {
+        return {
+          type: 'power',
+          icon: Battery,
+          powerValue: powerValue,
+          label: "Limited Power",
+          details: "Sparse outlet availability",
+          recommendations: "Arrive with devices charged",
+          stats: [
+            "Outlets at <25% of seats",
+            "Limited availability",
+            "Best to bring backup power"
+          ]
+        };
+      }
+      
+      if (powerValue === 'none') {
+        return {
+          type: 'power',
+          icon: Battery,
+          powerValue: powerValue,
+          label: "No Power",
+          details: "No power outlets available",
+          recommendations: "Bring fully charged devices",
+          stats: [
+            "No public outlets",
+            "Not suitable for long sessions",
+            "Backup power recommended"
+          ]
+        };
+      }
+      
+      return {
+        type: 'power',
+        icon: Battery,
+        powerValue: powerValue,
+        label: "Power Unknown",
+        details: "Power outlet availability not confirmed",
+        recommendations: "Check with staff about outlet access",
+        stats: [
+          "Availability varies",
+          "Ask staff for locations",
+          "Consider bringing backup"
+        ]
+      };
+    };
+
+    // Noise Metric
+    const getNoiseMetric = () => {
+      const noiseLevel = (place.noise_level || place.noise || "").toLowerCase();
+      return {
+        type: 'noise',
+        icon: Volume2,
+        noiseLevel: noiseLevel,
+        label: noiseLevel.includes('quiet') ? "Quiet" :
+               noiseLevel.includes('moderate') ? "Moderate" :
+               noiseLevel.includes('noisy') ? "Lively" : "Unknown",
+        details: noiseLevel.includes('quiet') ? "Library-like atmosphere" :
+                 noiseLevel.includes('moderate') ? "Balanced noise level" :
+                 noiseLevel.includes('noisy') ? "Energetic atmosphere" : "Noise level varies",
+        recommendations: noiseLevel.includes('quiet') ? "Ideal for focused work" :
+                        noiseLevel.includes('moderate') ? "Good for most work styles" :
+                        noiseLevel.includes('noisy') ? "Best with noise-canceling headphones" :
+                        "Levels may vary by time of day",
+        stats: noiseLevel ? [
+          noiseLevel.includes('quiet') ? "Good for concentration" :
+          noiseLevel.includes('moderate') ? "Normal conversation level" :
+          noiseLevel.includes('noisy') ? "Higher conversation level" : "Variable noise levels",
+          noiseLevel.includes('quiet') ? "Minimal conversation" :
+          noiseLevel.includes('moderate') ? "Some background noise" :
+          noiseLevel.includes('noisy') ? "Notable background noise" : "Noise levels not confirmed"
+        ] : undefined
+      };
+    };
+
+    return [
+      getWifiMetric(),
+      getPowerMetric(),
+      getNoiseMetric()
+    ];
   };
 
   const getMissingInfo = (place) => {
@@ -133,7 +348,9 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     const missingAmenities = [];
     if (place.coffee === undefined) missingAmenities.push("coffee availability");
     if (place.food === undefined) missingAmenities.push("food options");
-    if (place.outdoor_seating === undefined && !place.outside) missingAmenities.push("outdoor seating");
+    if (place.outdoor_seating === undefined && !place.outside) {
+      missingAmenities.push("outdoor seating");
+    }
     
     if (missingAmenities.length > 0) {
       missing.push("amenity details (" + missingAmenities.join(", ") + ")");
@@ -173,10 +390,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col md:overflow-hidden">
-      {/* Theme-consistent backdrop */}
       <div className="absolute inset-0 bg-[var(--modal-backdrop)] backdrop-blur-xl" />
       
-      {/* Mobile Header */}
       <div className="flex-shrink-0 md:hidden sticky top-0 z-20 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
         <div className="flex items-center justify-between p-3">
           <button 
@@ -193,14 +408,12 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="relative flex-grow flex md:items-center md:justify-center overflow-hidden">
         <div className="w-full h-full md:w-[90vw] md:max-w-6xl md:h-[85vh] md:flex 
           md:rounded-lg overflow-hidden relative
           bg-[var(--bg-primary)] border border-[var(--border-primary)]
-          shadow-lg"
-        >
-          {/* Desktop Close Button */}
+          shadow-lg">
+          
           <button 
             onClick={() => setShowPhotoModal(false)}
             className="hidden md:flex absolute right-4 top-4 z-20 items-center justify-center 
@@ -211,10 +424,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
             <X size={20} />
           </button>
 
-          {/* Content Container */}
           <div ref={contentRef} className="h-full overflow-y-auto md:flex flex-grow">
             <div className="relative md:flex md:w-full">
-              {/* Image Section */}
               <div className="relative md:w-3/5 flex-shrink-0 bg-black transform-gpu overflow-hidden"
                 style={{ height: window.innerWidth >= 768 ? '100%' : '35vh' }}>
                 <div className={`h-full ${window.innerWidth >= 768 ? 'absolute inset-0' : ''}`}>
@@ -258,20 +469,16 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 </div>
               </div>
 
-              {/* Details Section */}
               <div className="relative flex-1 md:w-2/5 border-l border-[var(--modal-border)]">
                 <div className="p-4 space-y-4">
-                  {/* Title - Only show on desktop */}
                   <div className="hidden md:block">
                     <h2 className="text-xl font-semibold text-[var(--text-primary)]">
                       {selectedPlace?.title}
                     </h2>
                   </div>
 
-                  {/* Location Section */}
                   <LocationSection place={selectedPlace} />
 
-                  {/* Workability Score Section */}
                   <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-4">
@@ -284,7 +491,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                         <div className="flex items-center gap-1">
                           {[...Array(3)].map((_, i) => {
                             const quality = getScoreQuality(selectedPlace.workabilityScore);
-                            const StarIcon = i < quality.stars ? Star : i === quality.stars - 0.5 ? StarHalf : StarOff;
+                            const StarIcon = i < quality.stars ? Star : 
+                                           i === quality.stars - 0.5 ? StarHalf : StarOff;
                             return (
                               <StarIcon 
                                 key={i} 
@@ -301,25 +509,19 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                         {getScoreQuality(selectedPlace.workabilityScore).label} for Remote Work
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2">
-                        {metrics.map((metric, index) => (
-                          <div key={index} 
-                            className="p-2.5 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-primary)]"
-                          >
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <metric.icon size={14} className={metric.iconColor} />
-                              <span className="text-xs text-[var(--text-secondary)]">{metric.label}</span>
-                            </div>
-                            <div className={`text-sm font-medium ${metric.color}`}>
-                              {metric.value}
-                            </div>
-                          </div>
+                      {/* Metrics Section - Updated Layout */}
+                      <div className="flex flex-wrap gap-2">
+                        {getWorkabilityMetrics(selectedPlace).map((metric, index) => (
+                          <ExpandableMetricBadge
+                            key={index}
+                            metric={metric}
+                            className="flex-shrink-0"
+                          />
                         ))}
                       </div>
                     </div>
                   </div>
 
-                  {/* Community Perspective Section */}
                   {sanitizedDescription && (
                     <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                       <div className="p-4">
@@ -351,7 +553,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                     </div>
                   )}
 
-                  {/* Missing Info Section */}
                   {getMissingInfo(selectedPlace).length > 0 && (
                     <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                       <div className="p-4">
@@ -367,6 +568,22 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       </div>
                     </div>
                   )}
+                  
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                        `${selectedPlace.street}, ${selectedPlace.city}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md
+                        bg-[var(--bg-tertiary)] text-[var(--text-primary)]
+                        hover:text-[var(--accent-primary)] transition-colors text-sm"
+                    >
+                      <Navigation size={14} />
+                      <span>Get Directions</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
