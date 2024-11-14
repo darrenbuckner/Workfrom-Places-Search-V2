@@ -40,28 +40,12 @@ const ControlsHeader = ({
   ];
 
   const renderContextInfo = () => {
-    if (viewMode === 'insights') {
-      return (
-        <div className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-[var(--text-secondary)]" />
-          <div className="text-sm">
-            <span className="font-medium text-[var(--text-primary)]">
-              Located {totalPlaces} places
-            </span>
-            <span className="text-[var(--text-secondary)] ml-1">
-              within {radius} miles
-            </span>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="flex items-center gap-2">
         <MapPin className="w-4 h-4 text-[var(--text-secondary)]" />
         <div className="text-sm">
           <span className="font-medium text-[var(--text-primary)]">
-            {totalPlaces} places
+            Located {totalPlaces} places
           </span>
           <span className="text-[var(--text-secondary)] ml-1">
             within {radius} miles
