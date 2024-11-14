@@ -143,25 +143,35 @@ const NearbyPlacesMap = ({
           <div style="
             width: 100%;
             height: 100%;
-            background-color: ${themeColors.accent.primary};
-            border-radius: 50%;
-            opacity: 0.15;
             position: absolute;
             top: 0;
             left: 0;
-          "></div>
-          <div style="
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 16px;
-            height: 16px;
-            background-color: ${themeColors.accent.primary};
-            border-radius: 50%;
-            border: 3px solid ${themeColors.bg.primary};
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          "></div>
+          ">
+            <div style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 100%;
+              height: 100%;
+              background-color: ${themeColors.accent.primary};
+              border-radius: 50%;
+              opacity: 0.15;
+              animation: locationPulse 2s infinite;
+            "></div>
+            <div style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 16px;
+              height: 16px;
+              background-color: ${themeColors.accent.primary};
+              border-radius: 50%;
+              border: 3px solid ${themeColors.bg.primary};
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            "></div>
+          </div>
         </div>
       `,
       className: 'user-location-marker',
@@ -315,7 +325,8 @@ const NearbyPlacesMap = ({
             color: themeColors.accent.primary,
             fillColor: themeColors.accent.primary,
             fillOpacity: 0.1,
-            weight: 1
+            weight: 1,
+            className: 'search-radius-circle'  // Add this custom class
           }}
         />
 
@@ -563,7 +574,7 @@ const NearbyPlacesMap = ({
         }
 
         /* Search radius circle animation */
-        .leaflet-interactive {
+        .leaflet-interactive.search-radius-circle {
           animation: pulse 2s infinite;
         }
 
@@ -588,34 +599,20 @@ const NearbyPlacesMap = ({
           border: none;
         }
 
-        .user-location-marker::before {
-          content: '';
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 48px;
-          height: 48px;
-          margin: -24px 0 0 -24px;
-          background: var(--accent-primary);
-          border-radius: 50%;
-          animation: ripple 2s infinite ease-out;
-          opacity: 0;
+        @keyframes locationPulse {
+          0% {
+            transform: translate(-50%, -50%) scale(0.5);
+            opacity: 0.4;
+          }
+          100% {
+            transform: translate(-50%, -50%) scale(1.5);
+            opacity: 0;
+          }
         }
 
         .leaflet-popup-content a {
           color: inherit !important;
           text-decoration: none !important;
-        }
-
-        @keyframes ripple {
-          0% {
-            transform: scale(0.5);
-            opacity: 0.4;
-          }
-          100% {
-            transform: scale(2);
-            opacity: 0;
-          }
         }
         
         /* Dark theme specific styles */
