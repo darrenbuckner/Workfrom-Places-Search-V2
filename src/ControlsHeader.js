@@ -50,7 +50,7 @@ const ControlsHeader = ({
           <div>
             <div className="flex items-baseline gap-2">
               <h3 className="text-sm font-medium text-[var(--text-primary)]">
-                The Inside Scoop on Work-Friendly Spots Close By
+                The Inside Scoop on Work-Friendly Spots
               </h3>
             </div>
           </div>
