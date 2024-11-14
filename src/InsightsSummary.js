@@ -113,35 +113,9 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
         <div className="p-4">
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="flex-1 space-y-4">
-              <div>
-                <ClickableTitle 
-                  place={place} 
-                  onPhotoClick={onPhotoClick}
-                  className="text-lg mb-1.5"
-                />
-                <div className="text-sm text-[var(--text-secondary)]">
-                  {formatDistance(place.distance)}
-                </div>
-                <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed">
-                  {featuredSpotData.highlight}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {featuredSpotData.best_for.map((activity, index) => (
-                  <div
-                    key={index}
-                    className="px-2.5 py-1 rounded-md text-xs bg-[var(--bg-secondary)] 
-                      text-[var(--text-secondary)] border border-[var(--border-primary)]"
-                  >
-                    Ideal for {activity}
-                  </div>
-                ))}
-              </div>
-
               <div 
                 onClick={() => onPhotoClick(place)}
-                className="relative mt-4 rounded-lg overflow-hidden group cursor-pointer
+                className="relative mt-2 rounded-lg overflow-hidden group cursor-pointer
                   border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
               >
                 <div className="aspect-w-16 aspect-h-9">
@@ -171,10 +145,23 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
                   </div>
                 </div>
               </div>
+              <div>
+                <ClickableTitle 
+                  place={place} 
+                  onPhotoClick={onPhotoClick}
+                  className="text-lg mb-1.5"
+                />
+                <div className="text-sm text-[var(--text-secondary)]">
+                  {formatDistance(place.distance)}
+                </div>
+                <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed">
+                  {featuredSpotData.highlight}
+                </p>
+              </div>
             </div>
 
             <div className="lg:w-72 flex-shrink-0">
-              <div className="p-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+              <div className="p-4 mb-4 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
                 <h4 className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide mb-3">
                   Key Features
                 </h4>
@@ -196,6 +183,17 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
                     </span>
                   </div>
                 </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {featuredSpotData.best_for.map((activity, index) => (
+                  <div
+                    key={index}
+                    className="px-2.5 py-1 rounded-md text-xs bg-[var(--bg-secondary)] 
+                      text-[var(--text-secondary)] border border-[var(--border-primary)]"
+                  >
+                    Ideal for {activity}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

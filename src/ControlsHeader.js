@@ -42,17 +42,15 @@ const ControlsHeader = ({
   const renderContextInfo = () => {
     if (viewMode === 'insights') {
       return (
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="w-8 h-5 rounded-full bg-[var(--accent-primary)]/10 
-            flex items-center justify-center flex-shrink-0">
-            <Brain className="w-4 h-4 text-[var(--text-secondary)]" />
-          </div>
-          <div>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-sm font-medium text-[var(--text-primary)]">
-                The Inside Scoop on Work-Friendly Spots
-              </h3>
-            </div>
+        <div className="flex items-center gap-2">
+          <Brain className="w-4 h-4 text-[var(--text-secondary)]" />
+          <div className="text-sm">
+            <span className="font-medium text-[var(--text-primary)]">
+              Located {totalPlaces} places
+            </span>
+            <span className="text-[var(--text-secondary)] ml-1">
+              within {radius} miles
+            </span>
           </div>
         </div>
       );
