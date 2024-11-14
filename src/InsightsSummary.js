@@ -130,7 +130,7 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
                       }}
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center">
+                    <div className="w-full h-full p-4 flex flex-col items-center justify-center">
                       <ImageIcon size={24} className="text-[var(--text-tertiary)] mb-2" />
                       <span className="text-sm text-[var(--text-tertiary)]">No image available</span>
                     </div>
