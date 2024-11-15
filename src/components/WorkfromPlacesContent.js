@@ -11,6 +11,7 @@ import SearchControls from '../SearchControls';
 import SearchResults from '../SearchResults';
 import NearbyPlacesMap from '../NearbyPlacesMap';
 import PhotoModal from '../PhotoModal';
+import UnifiedLoadingState from '../UnifiedLoadingState';
 import PostSearchFilters from '../PostSearchFilters';
 import WorkabilityControls from '../WorkabilityControls';
 import InsightsSummary from '../InsightsSummary';
@@ -230,21 +231,19 @@ const WorkfromPlacesContent = () => {
   };
 
   const renderContent = () => {
-    if (searchPhase === SearchPhases.INITIAL) {
-      return null;
-    }
-
-    if ((searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING) && viewMode === 'insights') {
-      return <AIInsightsLoading locationName={locationName} />;
-    }
-
     if (searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING) {
-      if (viewMode === 'list') {
-        return <SearchResults isLoading={true} />;
-      }
-      if (viewMode === 'map') {
-        return <div className="h-[500px] rounded-lg bg-[var(--bg-secondary)] animate-pulse" />;
-      }
+      return (
+        <>
+          <UnifiedLoadingState 
+            viewMode={viewMode}
+            searchPhase={searchPhase}
+            locationName={locationName}
+          />
+          {viewMode === 'insights' && isAnalyzing && (
+            <AIInsightsLoading locationName={locationName} />
+          )}
+        </>
+      );
     }
 
     if (viewMode === 'list') {
