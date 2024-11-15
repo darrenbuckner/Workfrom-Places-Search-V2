@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Search, Loader, History, X } from 'lucide-react';
 import { SearchPhases } from './constants';
 import RadiusSelect from './RadiusSelect';
@@ -17,6 +17,44 @@ const SearchControls = ({
 }) => {
   const isSearching = searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING;
   const isInitialSearch = !isSearching && searchPhase === SearchPhases.INITIAL;
+  const [loadingMessage, setLoadingMessage] = useState('');
+
+  useEffect(() => {
+    if (searchPhase === SearchPhases.LOCATING) {
+      const messages = [
+        'Getting your location...',
+        'Determining your coordinates...',
+        'Accessing location services...',
+        'Preparing to find workspaces...'
+      ];
+      let currentIndex = 0;
+      
+      const interval = setInterval(() => {
+        setLoadingMessage(messages[currentIndex]);
+        currentIndex = (currentIndex + 1) % messages.length;
+      }, 2000);
+
+      return () => clearInterval(interval);
+    } else if (searchPhase === SearchPhases.LOADING) {
+      const messages = [
+        'Finding places nearby...',
+        'Checking workspace availability...',
+        'Analyzing WiFi speeds...',
+        'Gathering workspace details...',
+        'Calculating distances...',
+        'Checking amenities...',
+        'Getting community insights...'
+      ];
+      let currentIndex = 0;
+      
+      const interval = setInterval(() => {
+        setLoadingMessage(messages[currentIndex]);
+        currentIndex = (currentIndex + 1) % messages.length;
+      }, 2000);
+
+      return () => clearInterval(interval);
+    }
+  }, [searchPhase]);
 
   return (
     <div className={`flex flex-col ${className}`}>
@@ -41,7 +79,7 @@ const SearchControls = ({
 
       {/* Main Search Section */}
       <div className="flex flex-col gap-4">
-        {/* Search Controls - Added position-relative here */}
+        {/* Search Controls */}
         <div className="flex gap-2 relative">
           <button
             onClick={onSearch}
@@ -61,7 +99,7 @@ const SearchControls = ({
             {isSearching ? (
               <>
                 <Loader className="w-5 h-5 animate-spin" />
-                <span>{searchPhase === SearchPhases.LOCATING ? 'Getting Location...' : 'Finding Places...'}</span>
+                <span>{loadingMessage}</span>
               </>
             ) : (
               <>
@@ -71,7 +109,6 @@ const SearchControls = ({
             )}
           </button>
 
-          {/* Changed div wrapper to static positioning */}
           <div className="static">
             <RadiusSelect
               radius={radius}

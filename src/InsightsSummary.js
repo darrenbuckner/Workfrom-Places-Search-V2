@@ -94,7 +94,7 @@ const PlacesList = ({ places, onPhotoClick, limit = 2 }) => {
   );
 };
 
-const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
+const FeaturedSpot = ({ place, analysisData, onPhotoClick, locationName }) => {
   const { isDark } = useTheme();
   const featuredSpotData = analysisData?.insights?.featured_spot;
   
@@ -122,10 +122,10 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick }) => {
               </div>
               <div>
                 <h3 className="text-base font-medium text-[var(--text-primary)]">
-                  Featured Workspace
+                  Featured Space
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  Standout spot in your area
+                  Standout spot in {'your area of ' + locationName || 'your area'}
                 </p>
               </div>
             </div>
@@ -389,7 +389,7 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
     {
       icon: Coffee,
       title: "Group Spaces",
-      subtitle: "Perfect for team meetings",
+      subtitle: "Good for small meetups",
       content: getMeetupSpaces().length ? (
         <PlacesList places={getMeetupSpaces()} onPhotoClick={onPhotoClick} />
       ) : "No group spaces found",
@@ -415,6 +415,7 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
           place={places.find(p => p.title === analysisData?.insights?.featured_spot?.place_name)}
           analysisData={analysisData}
           onPhotoClick={onPhotoClick}
+          locationName={locationName}
         />
         {insights.map((insight, index) => (
           <div

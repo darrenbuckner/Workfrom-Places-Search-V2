@@ -16,7 +16,6 @@ import PostSearchFilters from '../PostSearchFilters';
 import WorkabilityControls from '../WorkabilityControls';
 import InsightsSummary from '../InsightsSummary';
 import WelcomeBanner from '../WelcomeBanner';
-import AIInsightsLoading from '../AIInsightsLoading';
 import ViewModeToggle from '../ViewModeToggle';
 import ErrorMessage from '../ErrorMessage';
 import API_CONFIG from '../config';
@@ -59,7 +58,6 @@ const WorkfromPlacesContent = () => {
   const [error, setError] = useState(null);
   const [workspaceAnalysis, setWorkspaceAnalysis] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
 
   const {
     location,
@@ -92,16 +90,6 @@ const WorkfromPlacesContent = () => {
     handlePhotoClick,
     closePhotoModal
   } = usePhotoModal();
-
-  useEffect(() => {
-    let progressInterval;
-    if (isAnalyzing && analysisProgress < 90) {
-      progressInterval = setInterval(() => {
-        setAnalysisProgress(prev => Math.min(prev + 1, 90));
-      }, 50);
-    }
-    return () => clearInterval(progressInterval);
-  }, [isAnalyzing, analysisProgress]);
 
   const handlePostSearchFilter = (key, value) => {
     setPostSearchFilters(prev => ({ ...prev, [key]: value }));
@@ -146,7 +134,6 @@ const WorkfromPlacesContent = () => {
     setLocationError(null);
     setWorkspaceAnalysis(null);
     setIsAnalyzing(false);
-    setAnalysisProgress(0);
     setPostSearchFilters({
       type: 'any',
       power: 'any',
@@ -169,52 +156,50 @@ const WorkfromPlacesContent = () => {
       if (fetchedPlaces.length > 0) {
         setLastSearchedRadius(radius);
 
-        // Always perform analysis when fetching places
-        // This ensures we have analysis data ready when switching to insights view
-        setIsAnalyzing(true);
-        setAnalysisProgress(0);
+        // Start analysis if we're in insights view or it's the first search
+        if (viewMode === 'insights' || !isSearchPerformed) {
+          setIsAnalyzing(true);
 
-        const placesData = fetchedPlaces.map(place => ({
-          name: place.title,
-          type: place.type || '',
-          distance: parseFloat(place.distance) || 0,
-          noise: place.noise_level || place.noise || '',
-          power: place.power || '',
-          workabilityScore: place.workabilityScore || 0,
-          wifi: place.download ? `${Math.round(place.download)} Mbps` : 
-                place.no_wifi === "1" ? "No WiFi" : "Unknown",
-          amenities: {
-            coffee: place.coffee === "1",
-            food: place.food === "1",
-            alcohol: place.alcohol === "1",
-            outdoorSeating: place.outdoor_seating === "1" || place.outside === "1"
-          }
-        }));
+          try {
+            const analysisResponse = await fetch(
+              `${API_CONFIG.baseUrl}/analyze-workspaces?appid=${API_CONFIG.appId}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                  places: fetchedPlaces.map(place => ({
+                    name: place.title,
+                    type: place.type || '',
+                    distance: parseFloat(place.distance) || 0,
+                    noise: place.noise_level || place.noise || '',
+                    power: place.power || '',
+                    workabilityScore: place.workabilityScore || 0,
+                    wifi: place.download ? `${Math.round(place.download)} Mbps` : 
+                          place.no_wifi === "1" ? "No WiFi" : "Unknown",
+                    amenities: {
+                      coffee: place.coffee === "1",
+                      food: place.food === "1",
+                      alcohol: place.alcohol === "1",
+                      outdoorSeating: place.outdoor_seating === "1" || place.outside === "1"
+                    }
+                  }))
+                })
+              }
+            );
 
-        try {
-          const analysisResponse = await fetch(
-            `${API_CONFIG.baseUrl}/analyze-workspaces?appid=${API_CONFIG.appId}`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ places: placesData })
+            if (analysisResponse.ok) {
+              const analysisData = await analysisResponse.json();
+              if (analysisData.insights) {
+                setWorkspaceAnalysis(analysisData.insights);
+              }
             }
-          );
-
-          if (analysisResponse.ok) {
-            const analysisData = await analysisResponse.json();
-            if (analysisData.insights) {
-              setAnalysisProgress(100);
-              await new Promise(resolve => setTimeout(resolve, 500));
-              setWorkspaceAnalysis(analysisData.insights);
-            }
+          } catch (err) {
+            console.error('Analysis failed:', err);
+          } finally {
+            setIsAnalyzing(false);
           }
-        } catch (err) {
-          console.error('Analysis failed:', err);
-        } finally {
-          setIsAnalyzing(false);
         }
 
         if (!isSearchPerformed) {
@@ -231,18 +216,17 @@ const WorkfromPlacesContent = () => {
   };
 
   const renderContent = () => {
+    if (searchPhase === SearchPhases.INITIAL) {
+      return null;
+    }
+
     if (searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING) {
       return (
-        <>
-          <UnifiedLoadingState 
-            viewMode={viewMode}
-            searchPhase={searchPhase}
-            locationName={locationName}
-          />
-          {viewMode === 'insights' && isAnalyzing && (
-            <AIInsightsLoading locationName={locationName} />
-          )}
-        </>
+        <UnifiedLoadingState 
+          viewMode={viewMode}
+          searchPhase={searchPhase}
+          locationName={locationName}
+        />
       );
     }
 
@@ -271,7 +255,11 @@ const WorkfromPlacesContent = () => {
 
     if (viewMode === 'insights') {
       if (isAnalyzing) {
-        return <AIInsightsLoading locationName={locationName} />;
+        return <UnifiedLoadingState 
+          viewMode={viewMode}
+          searchPhase={searchPhase}
+          locationName={locationName}
+        />;
       }
       return (
         <InsightsSummary
