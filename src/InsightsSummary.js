@@ -122,7 +122,7 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick, locationName }) => {
               </div>
               <div>
                 <h3 className="text-base font-medium text-[var(--text-primary)]">
-                  Featured Space
+                  Try This Space
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)]">
                   Standout spot in {'your area of ' + locationName || 'your area'}
