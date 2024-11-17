@@ -49,8 +49,8 @@ const ControlsHeader = ({
 }) => {
   const views = [
     { id: 'insights', label: 'Insights', icon: Brain },
-    { id: 'list', label: 'List View', icon: List },
-    { id: 'map', label: 'Map View', icon: Map }
+    { id: 'list', label: 'List', icon: List },
+    { id: 'map', label: 'Map', icon: Map }
   ];
 
   const renderContextInfo = () => {

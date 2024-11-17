@@ -13,7 +13,8 @@ import {
   ChevronRight,
   Clock,
   ImageIcon,
-  ZoomIn
+  ZoomIn,
+  Navigation
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
@@ -183,6 +184,35 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick, locationName }) => {
                 <p className="mt-3 text-sm text-[var(--text-secondary)] leading-relaxed">
                   {featuredSpotData.highlight}
                 </p>
+
+                {/* Added Action Buttons */}
+                <div className="flex items-center gap-3 mt-4">
+                  <button
+                    onClick={() => onPhotoClick(place)}
+                    className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md
+                      transition-colors
+                      bg-[var(--accent-primary)] text-[var(--button-text)]
+                      hover:bg-[var(--accent-secondary)]"
+                  >
+                    View Details
+                    <ArrowRight size={16} />
+                  </button>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                      `${place.street}, ${place.city}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-sm font-medium
+                      bg-[var(--bg-tertiary)] text-[var(--interactive-text)]
+                      hover:text-[var(--interactive-hover)]
+                      hover:bg-[var(--bg-tertiary)]/80
+                      px-3 py-1.5 rounded-md transition-colors"
+                  >
+                    <Navigation size={16} />
+                    Directions
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -349,7 +379,7 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
     {
       icon: Wifi,
       title: "Fast WiFi Spots",
-      subtitle: "Places with highest connection speeds",
+      subtitle: "Places with best connection speeds",
       content: getFastestWifi().length ? (
         <PlacesList places={getFastestWifi()} onPhotoClick={onPhotoClick} />
       ) : "No WiFi speed data available",
