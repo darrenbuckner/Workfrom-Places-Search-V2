@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Wifi, 
   Phone, 
@@ -14,7 +14,9 @@ import {
   Clock,
   ImageIcon,
   ZoomIn,
-  Navigation
+  Navigation,
+  MapPin,
+  AlertCircle
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
@@ -79,15 +81,30 @@ const PlacesList = ({ places, onPhotoClick, limit = 2 }) => {
             )}
           </div>
 
-          {/* Title and Distance */}
+          {/* Content Section */}
           <div className="flex-1 min-w-0">
-            <ClickableTitle 
-              place={place} 
-              onPhotoClick={onPhotoClick}
-            />
-            <p className="text-sm text-[var(--text-secondary)]">
-              {place.distance} miles away
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <ClickableTitle 
+                  place={place} 
+                  onPhotoClick={onPhotoClick}
+                />
+                <p className="text-sm text-[var(--text-secondary)]">
+                  {place.distance} miles away
+                </p>
+              </div>
+              
+              {/* Workability Score Badge */}
+              <div 
+                onClick={() => onPhotoClick(place)}
+                className="flex-shrink-0 w-8 h-8 rounded-md cursor-pointer
+                  flex items-center justify-center font-bold text-sm
+                  bg-[var(--accent-primary)] text-[var(--button-text)]
+                  transition-transform hover:scale-105"
+              >
+                {place.workabilityScore}
+              </div>
+            </div>
           </div>
         </div>
       ))}
@@ -123,10 +140,10 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick, locationName }) => {
               </div>
               <div>
                 <h3 className="text-base font-medium text-[var(--text-primary)]">
-                  Try This Space
+                  Notable Space
                 </h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  Standout spot in {'your area of ' + locationName || 'your area'}
+                  Standout spot in {locationName || 'your area'}
                 </p>
               </div>
             </div>
@@ -142,7 +159,7 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick, locationName }) => {
             <div className="flex-1 space-y-4">
               <div 
                 onClick={() => onPhotoClick(place)}
-                className="relative mt-2 rounded-lg overflow-hidden group cursor-pointer
+                className="relative rounded-lg overflow-hidden group cursor-pointer
                   border border-[var(--border-primary)] bg-[var(--bg-secondary)]"
               >
                 <div className="aspect-w-16 aspect-h-9">
@@ -185,7 +202,6 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick, locationName }) => {
                   {featuredSpotData.highlight}
                 </p>
 
-                {/* Added Action Buttons */}
                 <div className="flex items-center gap-3 mt-4">
                   <button
                     onClick={() => onPhotoClick(place)}
@@ -261,6 +277,18 @@ const FeaturedSpot = ({ place, analysisData, onPhotoClick, locationName }) => {
 
 const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) => {
   const { isDark } = useTheme();
+  const [showAnalysisError, setShowAnalysisError] = useState(false);
+  const [partialInsights, setPartialInsights] = useState(true);
+
+  useEffect(() => {
+    if (!analysisData && places.length > 0) {
+      setShowAnalysisError(true);
+      setPartialInsights(true);
+    } else {
+      setShowAnalysisError(false);
+      setPartialInsights(false);
+    }
+  }, [analysisData, places]);
 
   if (!places?.length) return null;
 
@@ -345,28 +373,26 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
   const getPrivateSpaces = () => {
     return places.filter(p => {
       const type = String(p.type || "").toLowerCase();
-      
-      // Only include coworking spaces and business centers
       return type.includes('coworking') || type.includes('dedicated');
     }).sort((a, b) => {
       const scoreA = getPrivacyScore(a);
       const scoreB = getPrivacyScore(b);
       return scoreB - scoreA || parseFloat(a.distance) - parseFloat(b.distance);
     });
-    };
+  };
 
-    const getPrivacyScore = (place) => {
+  const getPrivacyScore = (place) => {
     let score = 0;
     const type = String(place.type || "").toLowerCase();
-
-    // Prioritize dedicated coworking spaces
     if (type.includes('coworking')) score += 3;
     if (type.includes('dedicated')) score += 2;
-
-    // Additional factors that might indicate better privacy
     if (place.workabilityScore >= 7) score += 1;
     return score;
-    };
+  };
+
+  const getClosestSpaces = () => {
+    return [...places].sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+  };
 
   const fastestWifi = getFastestWifi();
   const callSpaces = getCallSpaces();
@@ -374,14 +400,25 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
   const cozySpaces = getCozySpaces();
   const meetupSpaces = getMeetupSpaces();
   const privateSpaces = getPrivateSpaces();
+  const closestSpaces = getClosestSpaces();
 
   const insights = [
+    {
+      icon: MapPin,
+      title: "Closest Spaces",
+      subtitle: "Nearest workspace options",
+      content: closestSpaces.length ? (
+        <PlacesList places={closestSpaces} onPhotoClick={onPhotoClick} />
+      ) : "No spaces found",
+      color: isDark ? "text-teal-400" : "text-teal-600",
+      bgColor: isDark ? "bg-teal-400/10" : "bg-teal-600/10"
+    },
     {
       icon: Wifi,
       title: "Fast WiFi Spots",
       subtitle: "Places with best connection speeds",
-      content: getFastestWifi().length ? (
-        <PlacesList places={getFastestWifi()} onPhotoClick={onPhotoClick} />
+      content: fastestWifi.length ? (
+        <PlacesList places={fastestWifi} onPhotoClick={onPhotoClick} />
       ) : "No WiFi speed data available",
       color: isDark ? "text-blue-400" : "text-blue-600",
       bgColor: isDark ? "bg-blue-400/10" : "bg-blue-600/10"
@@ -390,8 +427,8 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
       icon: Phone,
       title: "Meeting-Ready Spaces",
       subtitle: "Quiet spots suitable for calls",
-      content: getCallSpaces().length ? (
-        <PlacesList places={getCallSpaces()} onPhotoClick={onPhotoClick} />
+      content: callSpaces.length ? (
+        <PlacesList places={callSpaces} onPhotoClick={onPhotoClick} />
       ) : "No suitable meeting spaces found",
       color: isDark ? "text-green-400" : "text-green-600",
       bgColor: isDark ? "bg-green-400/10" : "bg-green-600/10"
@@ -400,8 +437,8 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
       icon: Users,
       title: "Social Spaces",
       subtitle: "Energetic spots with a buzz",
-      content: getLivelySpaces().length ? (
-        <PlacesList places={getLivelySpaces()} onPhotoClick={onPhotoClick} />
+      content: livelySpaces.length ? (
+        <PlacesList places={livelySpaces} onPhotoClick={onPhotoClick} />
       ) : "No social spaces found",
       color: isDark ? "text-purple-400" : "text-purple-600",
       bgColor: isDark ? "bg-purple-400/10" : "bg-purple-600/10"
@@ -410,8 +447,8 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
       icon: Focus,
       title: "Focus Spots",
       subtitle: "Quiet spaces for concentration",
-      content: getCozySpaces().length ? (
-        <PlacesList places={getCozySpaces()} onPhotoClick={onPhotoClick} />
+      content: cozySpaces.length ? (
+        <PlacesList places={cozySpaces} onPhotoClick={onPhotoClick} />
       ) : "No focus spaces found",
       color: isDark ? "text-amber-400" : "text-amber-600",
       bgColor: isDark ? "bg-amber-400/10" : "bg-amber-600/10"
@@ -420,8 +457,8 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
       icon: Coffee,
       title: "Group Spaces",
       subtitle: "Good for small meetups",
-      content: getMeetupSpaces().length ? (
-        <PlacesList places={getMeetupSpaces()} onPhotoClick={onPhotoClick} />
+      content: meetupSpaces.length ? (
+        <PlacesList places={meetupSpaces} onPhotoClick={onPhotoClick} />
       ) : "No group spaces found",
       color: isDark ? "text-rose-400" : "text-rose-600",
       bgColor: isDark ? "bg-rose-400/10" : "bg-rose-600/10"
@@ -429,9 +466,9 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
     {
       icon: Lock,
       title: "Private Spaces",
-      subtitle: "Secluded spots for focused work",
-      content: getPrivateSpaces().length ? (
-        <PlacesList places={getPrivateSpaces()} onPhotoClick={onPhotoClick} />
+      subtitle: "Dedicated spots for focused work",
+      content: privateSpaces.length ? (
+        <PlacesList places={privateSpaces} onPhotoClick={onPhotoClick} />
       ) : "No private spaces found",
       color: isDark ? "text-indigo-400" : "text-indigo-600",
       bgColor: isDark ? "bg-indigo-400/10" : "bg-indigo-600/10"
@@ -441,12 +478,35 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
   return (
     <div className="rounded-lg border border-[var(--border-primary)] overflow-hidden bg-[var(--bg-secondary)]">
       <div className="p-2 sm:p-4 grid gap-2 sm:gap-4 sm:grid-cols-2">
-        <FeaturedSpot 
-          place={places.find(p => p.title === analysisData?.insights?.featured_spot?.place_name)}
-          analysisData={analysisData}
-          onPhotoClick={onPhotoClick}
-          locationName={locationName}
-        />
+        {showAnalysisError && (
+          <div className="col-span-full">
+            <div className="flex items-start gap-3 p-4 rounded-lg 
+              bg-[var(--bg-primary)] border border-[var(--border-primary)]">
+              <AlertCircle 
+                className="w-5 h-5 text-[var(--warning)] flex-shrink-0 mt-0.5" 
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-[var(--text-primary)]">
+                  Some insights may be limited
+                </p>
+                <p className="text-sm text-[var(--text-secondary)] mt-1">
+                  We're showing basic workspace information while our analysis system is busy. 
+                  Try refreshing in a few minutes for full insights.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!partialInsights && (
+          <FeaturedSpot 
+            place={places.find(p => p.title === analysisData?.insights?.featured_spot?.place_name)}
+            analysisData={analysisData}
+            onPhotoClick={onPhotoClick}
+            locationName={locationName}
+          />
+        )}
+
         {insights.map((insight, index) => (
           <div
             key={index}
@@ -479,8 +539,11 @@ const InsightsSummary = ({ analysisData, places, locationName, onPhotoClick }) =
         <div className="flex items-start gap-2.5">
           <MessageSquare className="w-4 h-4 text-[var(--accent-primary)] mt-0.5 flex-shrink-0" />
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            Note: Most spaces welcome brief calls, but consider booking private rooms for longer meetings. 
-            Always check current amenities and peak hours at each location.
+            {partialInsights ? (
+              "Basic information shown. Refresh for detailed insights about workspace features and amenities."
+            ) : (
+              "Note: Most spaces welcome brief calls, but consider booking private rooms for longer meetings. Always check current amenities and peak hours at each location."
+            )}
           </p>
         </div>
       </div>

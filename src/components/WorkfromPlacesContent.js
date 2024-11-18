@@ -18,6 +18,7 @@ import InsightsSummary from '../InsightsSummary';
 import WelcomeBanner from '../WelcomeBanner';
 import ViewModeToggle from '../ViewModeToggle';
 import ErrorMessage from '../ErrorMessage';
+import MessageBanner from '../MessageBanner';
 import API_CONFIG from '../config';
 
 const ITEMS_PER_PAGE = 10;
@@ -30,22 +31,6 @@ const StyledSearchContainer = ({ children }) => (
       <div className="relative p-4 sm:p-6">{children}</div>
     </div>
   </div>
-);
-
-const ViewModeButton = ({ mode, currentMode, icon: Icon, onClick }) => (
-  <button
-    onClick={() => onClick(mode)}
-    className={`
-      p-2 rounded transition-colors
-      ${currentMode === mode
-        ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-        : 'text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]'
-      }
-    `}
-    aria-label={`${mode} view`}
-  >
-    <Icon size={18} />
-  </button>
 );
 
 const WorkfromPlacesContent = () => {
@@ -96,6 +81,16 @@ const WorkfromPlacesContent = () => {
   };
 
   const handleSearchError = (error) => {
+    // Don't set error state for no-results case as we'll handle it in the UI
+    if (error.code === 404 && error.type === 'empty_dataset') {
+      setError({
+        code: 404,
+        type: 'empty_dataset',
+        message: error.message
+      });
+      return;
+    }
+
     if (error.name === 'GeolocationPositionError') {
       switch (error.code) {
         case 1:
@@ -140,6 +135,14 @@ const WorkfromPlacesContent = () => {
       noise: 'any',
       openNow: false
     });
+  };
+
+  const handleNoResultsAction = (action) => {
+    if (action === 'radius') {
+      const newRadius = Math.min(radius + 2, 25);
+      setRadius(newRadius);
+      performSearch();
+    }
   };
 
   const performSearch = async () => {
@@ -226,6 +229,27 @@ const WorkfromPlacesContent = () => {
           viewMode={viewMode}
           searchPhase={searchPhase}
           locationName={locationName}
+        />
+      );
+    }
+
+    // Handle no results case
+    if (error?.code === 404 && error?.type === 'empty_dataset') {
+      return (
+        <MessageBanner
+          type="no-results"
+          onAction={handleNoResultsAction}
+        />
+      );
+    }
+
+    // Handle other errors
+    if (error) {
+      return (
+        <ErrorMessage
+          error={error}
+          onRetry={performSearch}
+          className="mb-6"
         />
       );
     }

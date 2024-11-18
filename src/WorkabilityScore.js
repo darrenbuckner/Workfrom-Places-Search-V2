@@ -32,7 +32,14 @@ export const calculateWorkabilityScore = (place) => {
   // Power Availability (0-2.5 points)
   maxScore += 2.5;
   const powerValue = String(place.power || '').toLowerCase();
-  if (powerValue === 'none' || powerValue === '') {
+  const type = String(place.type || '').toLowerCase();
+  const isCoworkingOrBusiness = type.includes('coworking') || type.includes('dedicated');
+
+  // Assume maximum power availability for coworking spaces
+  if (isCoworkingOrBusiness) {
+    score += 2.5;
+    factors.push({ name: 'Power Outlets', score: 2.5, max: 2.5, detail: 'Abundant (Coworking Space)' });
+  } else if (powerValue === 'none' || powerValue === '') {
     factors.push({ name: 'Power Outlets', score: 0, max: 2.5, detail: 'No outlets' });
   } else if (powerValue.includes('range3') || powerValue.includes('good')) {
     score += 2.5;
