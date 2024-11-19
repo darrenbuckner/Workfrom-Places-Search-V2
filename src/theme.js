@@ -58,14 +58,15 @@ export const darkTheme = {
   'modal-bg': '#FFFFFF',             // Clean, bright surface
   'modal-border': 'rgba(0, 0, 0, 0.08)',
   
+  // Status colors - Clear feedback
+  'status-success': '#4CAF50',
+  'status-warning': '#FF9800',
+  'status-error': '#F44336',
+  
   // Surface overlays for different elevations
   'overlay-hover': 'rgba(0, 0, 0, 0.02)',
   'overlay-active': 'rgba(0, 0, 0, 0.04)',
-  'overlay-raised': 'rgba(0, 0, 0, 0.1)',
-
-  'success': '#4CAF50',
-  'warning': '#FF9800',
-  'error': '#F44336'
+  'overlay-raised': 'rgba(0, 0, 0, 0.1)'
 };
 
 export const lightTheme = {
@@ -128,14 +129,15 @@ export const lightTheme = {
   'modal-bg': '#FFFFFF',             // Clean, bright surface
   'modal-border': 'rgba(0, 0, 0, 0.08)',
   
+  // Status colors - Clear feedback
+  'status-success': '#2D8A54',
+  'status-warning': '#B95000',
+  'status-error': '#CC3340',
+  
   // Surface overlays for different elevations
   'overlay-hover': 'rgba(0, 0, 0, 0.02)',
   'overlay-active': 'rgba(0, 0, 0, 0.04)',
-  'overlay-raised': 'rgba(0, 0, 0, 0.1)',
-
-  'success': '#2D8A54',
-  'warning': '#B95000',
-  'error': '#CC3340'
+  'overlay-raised': 'rgba(0, 0, 0, 0.1)'
 };
 
 // Helper functions remain unchanged
