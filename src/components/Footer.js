@@ -5,7 +5,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="footer-wrapper">
+    <div className="footer-wrapper hidden">
       <footer className="fixed-footer">
         <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 px-4">
           <div className="flex items-center gap-2 text-[var(--text-secondary)]">
