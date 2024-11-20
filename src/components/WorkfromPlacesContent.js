@@ -8,7 +8,7 @@ import HowItWorksModal from '../HowItWorksModal';
 import WorkspaceLayout from './WorkspaceLayout';
 
 const WorkfromPlacesContent = () => {
-  const [radius, setRadius] = useState(1);
+  const [radius, setRadius] = useState(.5);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   const {
