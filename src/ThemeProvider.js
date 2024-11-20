@@ -53,18 +53,20 @@ export const ThemeToggle = () => {
   return (
     <button
       onClick={toggleTheme}
-      className={`
-        p-2 rounded transition-colors
-        bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)]
-        text-[var(--button-text)] shadow-[0_0_20px_var(--action-primary-border)]
-        border border-[var(--action-primary-border)]
-      `}
-      aria-label="Toggle theme"
+      className="p-1.5 rounded-md transition-colors text-text-tertiary 
+        hover:text-text-primary hover:bg-bg-secondary group"
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
     >
       {isDark ? (
-        <Sun size={16} className="text-[var(--button-text)]" />
+        <Sun 
+          size={16} 
+          className="group-hover:text-amber-400 transition-colors" 
+        />
       ) : (
-        <Moon size={16} className="text-[var(--button-text)]" />
+        <Moon 
+          size={16}
+          className="group-hover:text-blue-500 transition-colors" 
+        />
       )}
     </button>
   );

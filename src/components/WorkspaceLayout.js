@@ -61,7 +61,8 @@ const WorkspaceLayout = ({
   onLocationChange,
   onPhotoClick,
   radius,
-  setRadius
+  setRadius,
+  onShowHowItWorks
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -79,7 +80,10 @@ const WorkspaceLayout = ({
 	  return (
 	    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
 	      <div className="container mx-auto px-4 max-w-2xl">
-	        <WorkfromHeader className="mt-6 mb-4" />
+	        <WorkfromHeader 
+	          className="mt-6 mb-4" 
+	          onShowHowItWorks={onShowHowItWorks}
+	        />
 	        <WelcomeBanner />
 	        <div className="mt-6">
 	          <SearchControls

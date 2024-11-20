@@ -4,10 +4,11 @@ import { usePlaces } from '../hooks/usePlaces';
 import { usePhotoModal } from '../hooks/usePhotoModal';
 import { SearchPhases } from '../constants';
 import PhotoModal from '../PhotoModal';
+import HowItWorksModal from '../HowItWorksModal';
 import WorkspaceLayout from './WorkspaceLayout';
 
 const WorkfromPlacesContent = () => {
-  const [radius, setRadius] = useState(.5);
+  const [radius, setRadius] = useState(1);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   const {
@@ -110,6 +111,7 @@ const WorkfromPlacesContent = () => {
         onPhotoClick={handlePhotoClick}
         radius={radius}
         setRadius={setRadius}
+        onShowHowItWorks={() => setShowHowItWorks(true)}
       />
       
       {showPhotoModal && (
@@ -119,6 +121,10 @@ const WorkfromPlacesContent = () => {
           isPhotoLoading={isPhotoLoading}
           setShowPhotoModal={closePhotoModal}
         />
+      )}
+
+      {showHowItWorks && (
+        <HowItWorksModal setShowModal={setShowHowItWorks} />
       )}
     </>
   );
