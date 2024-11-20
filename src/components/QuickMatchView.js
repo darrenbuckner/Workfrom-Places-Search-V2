@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Focus, Users, Phone, Coffee, Sparkles, ArrowRight,
   Navigation, MapPin, Wifi, Battery, Volume2, ImageIcon,
@@ -101,7 +101,7 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
                     flex items-center gap-1.5 px-2 py-0.5 rounded-md text-sm font-medium
                     ${isHighlighted 
                       ? 'bg-[var(--accent-primary)] text-[var(--button-text)]' 
-                      : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'}
+                      : 'bg-[var(--bg-primary)] text-[var(--text-primary)]'}
                   `}>
                     {place.workabilityScore}/10
                   </div>
@@ -189,6 +189,7 @@ const calculateLocalScore = (place, workStyle) => {
 const QuickMatchView = ({ places, onViewDetails }) => {
   const [selectedWorkStyle, setSelectedWorkStyle] = useState(null);
   const [displayCount, setDisplayCount] = useState(4);
+  const scrollTargetRef = useRef(null);
 
   useEffect(() => {
     setDisplayCount(4);
@@ -278,6 +279,25 @@ const QuickMatchView = ({ places, onViewDetails }) => {
     );
   };
 
+  const handleShowMore = () => {
+    const newDisplayCount = Math.min(displayCount + 4, totalMatchingPlaces);
+    setDisplayCount(newDisplayCount);
+    
+    // Wait for DOM update before scrolling
+    setTimeout(() => {
+      const lastVisibleCard = scrollTargetRef.current?.querySelector(
+        `.place-card:nth-child(${displayCount + 1})`
+      );
+      
+      if (lastVisibleCard) {
+        lastVisibleCard.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }
+    }, 100);
+  };
+
   const recommendedPlaces = getRecommendedPlaces();
   const totalMatchingPlaces = selectedWorkStyle ? 
     places.filter(p => calculateLocalScore(p, selectedWorkStyle) >= 3).length : places.length;
@@ -311,16 +331,16 @@ const QuickMatchView = ({ places, onViewDetails }) => {
       {getInitialContextMessage()}
 
       {selectedWorkStyle && totalMatchingPlaces > 0 && (
-        <div className="text-xs text-[var(--text-secondary)]">
+        <div className="text-sm text-[var(--text-secondary)]">
           Showing {Math.min(displayCount, recommendedPlaces.length)} of {totalMatchingPlaces} matches
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-3" ref={scrollTargetRef}>
         {recommendedPlaces.map((place, index) => (
           <div
             key={place.ID}
-            className="transform transition-all duration-300 ease-out"
+            className="place-card transform transition-all duration-300 ease-out"
             style={{
               animation: index >= displayCount - 4 
                 ? `fadeSlideIn 0.3s ease-out ${index % 4 * 0.1}s both` 
@@ -328,7 +348,6 @@ const QuickMatchView = ({ places, onViewDetails }) => {
             }}
           >
             <PlaceCard
-              key={place.ID}
               place={place}
               isHighlighted={index === 0}
               onViewDetails={onViewDetails}
@@ -339,12 +358,12 @@ const QuickMatchView = ({ places, onViewDetails }) => {
 
       {hasMoreToShow && (
         <button
-          onClick={() => setDisplayCount(prev => Math.min(prev + 4, totalMatchingPlaces))}
+          onClick={handleShowMore}
           className="w-full mt-4 p-3 rounded-lg border border-dashed
             border-[var(--border-primary)] bg-[var(--bg-secondary)]
-            hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]
+            hover:border-[var(--accent-primary)]hover:bg-[var(--bg-primary)]
             text-[var(--text-secondary)] hover:text-[var(--accent-primary)]
-            transitiontransition-all duration-200 group"
+            transition-all duration-200 group"
         >
           <div className="flex items-center justify-center gap-2">
             <ChevronDown 
