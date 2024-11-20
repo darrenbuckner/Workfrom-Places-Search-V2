@@ -306,7 +306,7 @@ const QuickMatchView = ({ places, onViewDetails }) => {
     displayCount < totalMatchingPlaces;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mb-24 sm:mb-16">
       <div className="overflow-x-auto pb-2 -mx-4 px-4 -mb-2">
         <div className="flex items-center gap-2">
           {workStyles.map(({ id, label, icon: Icon }) => (
@@ -361,7 +361,7 @@ const QuickMatchView = ({ places, onViewDetails }) => {
           onClick={handleShowMore}
           className="w-full mt-4 p-3 rounded-lg border border-dashed
             border-[var(--border-primary)] bg-[var(--bg-secondary)]
-            hover:border-[var(--accent-primary)]hover:bg-[var(--bg-primary)]
+            hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]
             text-[var(--text-secondary)] hover:text-[var(--accent-primary)]
             transition-all duration-200 group"
         >
