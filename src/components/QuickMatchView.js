@@ -303,15 +303,6 @@ const QuickMatchView = ({ places, onViewDetails }) => {
             >
               <Icon size={16} />
               <span className="text-sm font-medium whitespace-nowrap">{label}</span>
-              <span className={`
-                text-xs px-1.5 rounded-full
-                ${selectedWorkStyle === id
-                  ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
-                  : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
-                }
-              `}>
-                {getWorkStyleCount(id)}
-              </span>
             </button>
           ))}
         </div>
@@ -320,7 +311,7 @@ const QuickMatchView = ({ places, onViewDetails }) => {
       {getInitialContextMessage()}
 
       {selectedWorkStyle && totalMatchingPlaces > 0 && (
-        <div className="text-sm text-[var(--text-secondary)]">
+        <div className="text-xs text-[var(--text-secondary)]">
           Showing {Math.min(displayCount, recommendedPlaces.length)} of {totalMatchingPlaces} matches
         </div>
       )}
