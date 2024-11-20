@@ -1,40 +1,33 @@
 import React from 'react';
-import { Coffee, Github, Heart } from 'lucide-react';
+import { Coffee, Heart } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="pb-6 px-4 mt-auto">
-      <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[var(--border-primary)]">
-        <div className="flex items-center gap-2 text-[var(--text-secondary)]">
-          <Coffee size={14} className="text-[var(--accent-primary)]" />
-          <span className="text-xs">
-            Find great workspaces, anywhere.
-          </span>
-        </div>
-        
-        <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-[var(--text-secondary)]">
-          <a 
-            href="https://github.com/workfrom" 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 hover:text-[var(--text-primary)] transition-colors"
-          >
-            <Github size={14} />
-            <span>Open Source</span>
-          </a>
+    <>
+      {/* Spacer div to ensure content isn't hidden behind footer */}
+      <div className="h-36 sm:h-24" /> 
+
+      <footer className="sticky bottom-0 w-full bg-[var(--bg-primary)] border-t border-[var(--border-primary)] py-4 px-4 z-10">
+        <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-[var(--text-secondary)]">
+            <Coffee size={14} className="text-[var(--accent-primary)]" />
+            <span className="text-xs">
+              Find great workspaces, anywhere.
+            </span>
+          </div>
           
-          <span className="hidden sm:inline text-[var(--text-tertiary)]">•</span>
-          
-          <div className="flex items-center gap-1.5">
-            <span>Made with</span>
-            <Heart size={12} className="text-[var(--accent-primary)]" />
-            <span>© {currentYear}</span>
+          <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-[var(--text-secondary)]">
+            <div className="flex items-center gap-1.5">
+              <span>Made with</span>
+              <Heart size={12} className="text-[var(--accent-primary)]" />
+              <span>© {currentYear}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 };
 

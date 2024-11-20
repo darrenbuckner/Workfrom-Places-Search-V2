@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Focus, Users, Phone, Coffee, Sparkles, ArrowRight, 
+  Focus, Users, Phone, Coffee, Sparkles, ArrowRight,
   Navigation, MapPin, Wifi, Battery, Volume2, ImageIcon,
-  Map, Trophy, Video, Music, ChevronDown
+  Video, Music, ChevronDown
 } from 'lucide-react';
-import { useTheme } from '../ThemeProvider';
 
+// Component for displaying metric badges
 const MetricBadge = ({ icon: Icon, label, variant }) => {
   const getVariantStyles = () => {
     switch (variant) {
@@ -28,6 +28,7 @@ const MetricBadge = ({ icon: Icon, label, variant }) => {
   );
 };
 
+// Card component for displaying place information
 const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
   if (!place) return null;
 
@@ -36,20 +37,20 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
       onClick={() => onViewDetails(place)}
       className={`
         relative w-full text-left rounded-lg border transition-all
-        hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]/50
         ${isHighlighted 
-          ? 'border-[var(--accent-primary)] bg-[var(--bg-primary)]' 
-          : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'
+          ? 'border-[var(--accent-primary)] bg-gradient-to-br from-[var(--accent-primary)]/5 to-[var(--accent-primary)]/10' 
+          : 'border-[var(--border-primary)] bg-[var(--bg-secondary)] hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]/50'
         }
       `}
     >
-      <div className="p-4">
+      <div className={`p-4 ${isHighlighted ? 'pb-5' : ''}`}>
         <div className="flex items-start gap-4">
           {/* Thumbnail */}
-          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 
+          <div className={`
+            w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 
             bg-[var(--bg-tertiary)] transition-transform hover:scale-105
-            border border-[var(--border-primary)]"
-          >
+            border ${isHighlighted ? 'border-[var(--accent-primary)]/25' : 'border-[var(--border-primary)]'}
+          `}>
             {place.thumbnail_img ? (
               <img
                 src={place.thumbnail_img}
@@ -72,27 +73,38 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 {isHighlighted && (
-                  <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
-                    bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] 
-                    text-xs font-medium w-fit mb-1"
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full 
+                    bg-[var(--accent-primary)] text-[var(--button-text)]
+                    text-xs font-medium w-fit mb-2"
                   >
                     <Sparkles className="w-3 h-3" />
-                    <span>AI Pick</span>
+                    <span>Best Match</span>
                   </div>
                 )}
-                <h3 className="text-lg font-semibold text-[var(--text-primary)] truncate">
+                <h3 className={`text-lg font-semibold truncate
+                  ${isHighlighted ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}
+                `}>
                   {place.title}
                 </h3>
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between mt-1.5">
                   <div className="flex items-center gap-1.5">
-                    <MapPin size={14} className="text-[var(--text-secondary)]" />
-                    <span className="text-sm text-[var(--text-secondary)]">
+                    <MapPin size={14} className={
+                      isHighlighted ? 'text-[var(--accent-primary)]/75' : 'text-[var(--text-secondary)]'
+                    } />
+                    <span className={
+                      isHighlighted ? 'text-sm text-[var(--accent-primary)]/75' : 'text-sm text-[var(--text-secondary)]'
+                    }>
                       {place.distance} miles away
                     </span>
                   </div>
-                  <span className="text-sm font-medium text-[var(--accent-primary)]">
-                    Score: {place.workabilityScore}
-                  </span>
+                  <div className={`
+                    flex items-center gap-1.5 px-2 py-0.5 rounded-md text-sm font-medium
+                    ${isHighlighted 
+                      ? 'bg-[var(--accent-primary)] text-[var(--button-text)]' 
+                      : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)]'}
+                  `}>
+                    {place.workabilityScore}/10
+                  </div>
                 </div>
               </div>
             </div>
@@ -101,7 +113,10 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
       </div>
 
       {isHighlighted && (
-        <div className="absolute -top-px left-0 right-0 h-1 bg-[var(--accent-primary)]" />
+        <>
+          <div className="absolute -top-px left-0 right-0 h-1 bg-[var(--accent-primary)]" />
+          <div className="absolute -left-px top-1 bottom-0 w-1 bg-[var(--accent-primary)]" />
+        </>
       )}
     </button>
   );
@@ -180,7 +195,6 @@ const QuickMatchView = ({ places, onViewDetails }) => {
   }, [selectedWorkStyle]);
 
   const workStyles = [
-    { id: 'nearby', label: 'Nearby', icon: Map },
     { id: 'casual', label: 'Casual', icon: Coffee },
     { id: 'lively', label: 'Lively', icon: Music },
     { id: 'focus', label: 'Focus', icon: Focus },
@@ -189,8 +203,6 @@ const QuickMatchView = ({ places, onViewDetails }) => {
   ];
 
   const getWorkStyleCount = (workStyle) => {
-    if (workStyle === 'nearby') return places.length;
-    
     return places.filter(p => {
       const score = calculateLocalScore(p, workStyle);
       return score >= 3;
@@ -203,18 +215,6 @@ const QuickMatchView = ({ places, onViewDetails }) => {
     if (!selectedWorkStyle) {
       return [...places]
         .sort((a, b) => b.workabilityScore - a.workabilityScore)
-        .slice(0, displayCount);
-    }
-
-    if (selectedWorkStyle === 'nearby') {
-      return [...places]
-        .sort((a, b) => {
-          const distanceDiff = parseFloat(a.distance) - parseFloat(b.distance);
-          if (distanceDiff === 0) {
-            return b.workabilityScore - a.workabilityScore;
-          }
-          return distanceDiff;
-        })
         .slice(0, displayCount);
     }
 
@@ -238,20 +238,9 @@ const QuickMatchView = ({ places, onViewDetails }) => {
     if (!selectedWorkStyle) {
       return (
         <div className="flex items-center gap-2 px-3 py-2 mb-3 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <Trophy className="w-4 h-4 text-[var(--accent-primary)]" />
+          <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
           <span className="text-[var(--text-secondary)]">
             Showing highest rated workspaces
-          </span>
-        </div>
-      );
-    }
-    
-    if (selectedWorkStyle === 'nearby') {
-      return (
-        <div className="flex items-center gap-2 px-3 py-2 mb-3 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <MapPin className="w-4 h-4 text-[var(--accent-primary)]" />
-          <span className="text-[var(--text-secondary)]">
-            Showing closest workspaces
           </span>
         </div>
       );
@@ -290,9 +279,8 @@ const QuickMatchView = ({ places, onViewDetails }) => {
   };
 
   const recommendedPlaces = getRecommendedPlaces();
-  const totalMatchingPlaces = selectedWorkStyle === 'nearby' 
-    ? places.length 
-    : places.filter(p => calculateLocalScore(p, selectedWorkStyle) >= 3).length;
+  const totalMatchingPlaces = selectedWorkStyle ? 
+    places.filter(p => calculateLocalScore(p, selectedWorkStyle) >= 3).length : places.length;
 
   const hasMoreToShow = recommendedPlaces.length === displayCount && 
     displayCount < totalMatchingPlaces;
@@ -365,7 +353,7 @@ const QuickMatchView = ({ places, onViewDetails }) => {
             border-[var(--border-primary)] bg-[var(--bg-secondary)]
             hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]
             text-[var(--text-secondary)] hover:text-[var(--accent-primary)]
-            transition-all duration-200 group"
+            transitiontransition-all duration-200 group"
         >
           <div className="flex items-center justify-center gap-2">
             <ChevronDown 

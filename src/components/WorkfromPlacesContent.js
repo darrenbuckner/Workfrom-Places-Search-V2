@@ -7,7 +7,7 @@ import PhotoModal from '../PhotoModal';
 import WorkspaceLayout from './WorkspaceLayout';
 
 const WorkfromPlacesContent = () => {
-  const [radius, setRadius] = useState(3);
+  const [radius, setRadius] = useState(1);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   const {

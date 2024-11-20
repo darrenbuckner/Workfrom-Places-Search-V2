@@ -568,22 +568,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       </div>
                     </div>
                   )}
-                  
-                  <div className="flex items-center gap-3">
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                        `${selectedPlace.street}, ${selectedPlace.city}`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md
-                        bg-[var(--bg-tertiary)] text-[var(--text-primary)]
-                        hover:text-[var(--accent-primary)] transition-colors text-sm"
-                    >
-                      <Navigation size={14} />
-                      <span>Get Directions</span>
-                    </a>
-                  </div>
+  
                 </div>
               </div>
             </div>
