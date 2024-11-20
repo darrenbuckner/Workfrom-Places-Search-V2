@@ -4,6 +4,7 @@ import {
   Navigation, MapPin, Wifi, Battery, Volume2, ImageIcon,
   Video, Music, ChevronDown
 } from 'lucide-react';
+import StarRating from './StarRating';
 
 // Component for displaying metric badges
 const MetricBadge = ({ icon: Icon, label, variant }) => {
@@ -97,14 +98,18 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
                       {place.distance} miles away
                     </span>
                   </div>
-                  <div className={`
-                    flex items-center gap-1.5 px-2 py-0.5 rounded-md text-sm font-medium
-                    ${isHighlighted 
-                      ? 'bg-[var(--accent-primary)] text-[var(--button-text)]' 
-                      : 'bg-[var(--bg-primary)] text-[var(--text-primary)]'}
-                  `}>
-                    {place.workabilityScore}/10
-                  </div>
+                  <div className="flex items-center gap-2">
+									  <StarRating score={place.workabilityScore} />
+									  <span className={`
+									    text-xs font-medium
+									    ${isHighlighted 
+									      ? 'text-[var(--accent-primary)]/75' 
+									      : 'text-[var(--text-secondary)]'
+									    }
+									  `}>
+									    {place.workabilityScore.toFixed(1)}
+									  </span>
+									</div>
                 </div>
               </div>
             </div>
@@ -186,7 +191,7 @@ const calculateLocalScore = (place, workStyle) => {
   return Math.min(10, score);
 };
 
-const QuickMatchView = ({ places, onViewDetails }) => {
+const QuickMatchView = ({ places, onViewDetails, radius }) => {
   const [selectedWorkStyle, setSelectedWorkStyle] = useState(null);
   const [displayCount, setDisplayCount] = useState(4);
   const scrollTargetRef = useRef(null);
@@ -241,7 +246,7 @@ const QuickMatchView = ({ places, onViewDetails }) => {
         <div className="flex items-center gap-2 px-3 py-2 mb-3 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
           <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
           <span className="text-[var(--text-secondary)]">
-            Showing highest rated workspaces
+            Highest rated workspaces
           </span>
         </div>
       );
@@ -273,7 +278,7 @@ const QuickMatchView = ({ places, onViewDetails }) => {
       <div className="flex items-center gap-2 px-3 py-2 mb-3 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
         <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
         <span className="text-[var(--text-secondary)]">
-          Showing best matches for {selectedWorkStyle} work
+          Best matches for {selectedWorkStyle} work
         </span>
       </div>
     );
@@ -332,7 +337,7 @@ const QuickMatchView = ({ places, onViewDetails }) => {
 
       {selectedWorkStyle && totalMatchingPlaces > 0 && (
         <div className="text-sm text-[var(--text-secondary)]">
-          Showing {Math.min(displayCount, recommendedPlaces.length)} of {totalMatchingPlaces} matches
+          Showing {Math.min(displayCount, recommendedPlaces.length)} of {totalMatchingPlaces} places within {radius} miles
         </div>
       )}
 

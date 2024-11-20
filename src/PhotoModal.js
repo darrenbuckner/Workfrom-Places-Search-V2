@@ -8,6 +8,7 @@ import {
 import { useTheme } from './ThemeProvider';
 import { getWifiStatus } from './wifiUtils';
 import WorkabilityScore from './WorkabilityScore';
+import StarRating from './components/StarRating';
 import ExpandableMetricBadge from './ExpandableMetricBadge';
 import LocationSection from './LocationSection';
 import { useScrollLock } from './useScrollLock';
@@ -482,26 +483,15 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                   <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-2xl font-bold text-[var(--accent-primary)]">
-                            {selectedPlace.workabilityScore}
+                        <div className="flex items-baseline gap-3">
+                          <StarRating score={selectedPlace.workabilityScore} variant="large" />
+                          <span className="text-sm text-[var(--text-secondary)]">
+                            {selectedPlace.workabilityScore.toFixed(1)}/10
                           </span>
-                          <span className="text-sm text-[var(--text-secondary)]">/10</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          {[...Array(3)].map((_, i) => {
-                            const quality = getScoreQuality(selectedPlace.workabilityScore);
-                            const StarIcon = i < quality.stars ? Star : 
-                                           i === quality.stars - 0.5 ? StarHalf : StarOff;
-                            return (
-                              <StarIcon 
-                                key={i} 
-                                size={16} 
-                                className="text-[var(--accent-primary)]"
-                                fill={i < quality.stars ? "currentColor" : "none"}
-                              />
-                            );
-                          })}
+                        <div className="px-2.5 py-1 rounded-full text-xs font-medium
+                          bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+                          {getScoreQuality(selectedPlace.workabilityScore).label}
                         </div>
                       </div>
                       

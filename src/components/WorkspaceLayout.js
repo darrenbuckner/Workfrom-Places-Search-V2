@@ -160,6 +160,7 @@ const WorkspaceLayout = ({
             <QuickMatchView
               places={places}
               onViewDetails={handleViewDetails}
+              radius={radius}
             />
           )}
         </div>

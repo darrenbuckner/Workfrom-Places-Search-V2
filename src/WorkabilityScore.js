@@ -1,5 +1,6 @@
 import React from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Star, StarHalf, StarOff } from 'lucide-react';
+import StarRating from './components/StarRating';
 import { useTheme } from './ThemeProvider';
 
 export const calculateWorkabilityScore = (place) => {
@@ -32,14 +33,7 @@ export const calculateWorkabilityScore = (place) => {
   // Power Availability (0-2.5 points)
   maxScore += 2.5;
   const powerValue = String(place.power || '').toLowerCase();
-  const type = String(place.type || '').toLowerCase();
-  const isCoworkingOrBusiness = type.includes('coworking') || type.includes('dedicated');
-
-  // Assume maximum power availability for coworking spaces
-  if (isCoworkingOrBusiness) {
-    score += 2.5;
-    factors.push({ name: 'Power Outlets', score: 2.5, max: 2.5, detail: 'Abundant (Coworking Space)' });
-  } else if (powerValue === 'none' || powerValue === '') {
+  if (powerValue === 'none' || powerValue === '') {
     factors.push({ name: 'Power Outlets', score: 0, max: 2.5, detail: 'No outlets' });
   } else if (powerValue.includes('range3') || powerValue.includes('good')) {
     score += 2.5;
@@ -127,63 +121,55 @@ const WorkabilityScore = ({
   const { score, factors, reliability } = calculateWorkabilityScore(place);
   const { earned, possible } = calculateTotalPoints(factors);
 
+  // Get rating description based on score
+  const getRatingDescription = (score) => {
+    if (score >= 9) return 'Exceptional';
+    if (score >= 8) return 'Excellent';
+    if (score >= 7) return 'Very Good';
+    if (score >= 6) return 'Good';
+    if (score >= 5) return 'Average';
+    return 'Basic';
+  };
+
   // Compact version for list view
   if (variant === 'compact') {
     return (
       <div 
         onClick={onClick}
         className={`
-          flex items-center space-x-2 
+          flex items-center gap-2 
           ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}
           ${showPointer ? 'cursor-pointer' : ''}
         `}
         role={onClick ? "button" : undefined}
         aria-label={onClick ? "View workability score details" : undefined}
       >
-        <div className={`
-          text-sm font-semibold 
-          ${isDark ? 'text-blue-400' : 'text-blue-600'}
-          ${showPointer ? 'hover:text-accent-primary transition-colors' : ''}
-        `}>
-          {earned}/10
-        </div>
+        <StarRating score={score} />
         {reliability < 1 && (
-          <AlertCircle size={14} className={isDark ? 'text-blue-300' : 'text-blue-400'} />
+          <AlertCircle size={14} className="text-[var(--accent-primary)] opacity-60" />
         )}
       </div>
     );
   }
 
-  // Full version with progress bars
+  // Full version with detailed breakdown
   return (
-    <div className={`rounded-lg p-4 ${isDark ? 'bg-[#2a3142]' : 'bg-gray-50'}`}>
+    <div className="rounded-lg p-4 bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
       <div className="flex flex-col mb-6">
-        <div className="flex items-center justify-between">
-          <h3 className={`text-lg font-semibold ${isDark ? 'text-blue-300' : 'text-blue-600'}`}>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-semibold text-[var(--text-primary)]">
             Workability Score
           </h3>
-          <div className="flex items-baseline">
-            <span className={`text-2xl font-bold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
-              {earned}
-            </span>
-            <span className={`text-sm ml-1 ${isDark ? 'text-blue-200' : 'text-[var(--action-primary)]'}`}>
-              /10
-            </span>
-          </div>
+          <span className="text-sm font-medium text-[var(--text-secondary)]">
+            {getRatingDescription(score)}
+          </span>
         </div>
         
-        {/* Overall progress bar */}
-        <div className="mt-3">
-          <div className={`h-2 w-full rounded-full overflow-hidden ${
-            isDark ? 'bg-[#1a1f2c]' : 'bg-gray-200'
-          }`}>
-            <div 
-              className={`h-full transition-all duration-500 ${
-                isDark ? 'bg-blue-500' : 'bg-blue-600'
-              }`}
-              style={{ width: `${(earned / 10) * 100}%` }}
-            />
-          </div>
+        <div className="flex items-center gap-3">
+          <StarRating score={score} variant="large" />
+          <span className="text-sm text-[var(--text-secondary)]">
+            {score.toFixed(1)}/10
+          </span>
         </div>
       </div>
 
@@ -192,26 +178,22 @@ const WorkabilityScore = ({
           <div key={index} className="space-y-2">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
               <div className="flex items-baseline">
-                <span className={`font-medium ${
-                  isDark ? 'text-blue-100' : 'text-gray-900'
-                }`}>
+                <span className="font-medium text-[var(--text-primary)]">
                   {factor.name}
                 </span>
               </div>
-              <span className={isDark ? 'text-blue-300' : 'text-blue-600'}>
+              <span className="text-[var(--text-secondary)]">
                 {factor.detail}
               </span>
             </div>
-            <div className={`h-1 w-full rounded-full overflow-hidden ${
-              isDark ? 'bg-[#1a1f2c]' : 'bg-gray-200'
-            }`}>
+            <div className="h-1 w-full rounded-full overflow-hidden bg-[var(--bg-tertiary)]">
               <div 
                 className={`h-full transition-all duration-500 ${
                   factor.score === 0 
-                    ? isDark ? 'bg-[#1a1f2c]' : 'bg-gray-200'
+                    ? 'bg-[var(--bg-tertiary)]'
                     : factor.score === factor.max 
-                      ? isDark ? 'bg-blue-400' : 'bg-blue-500'
-                      : isDark ? 'bg-blue-500' : 'bg-blue-600'
+                      ? 'bg-[var(--accent-primary)]'
+                      : 'bg-[var(--accent-primary)]/75'
                 }`}
                 style={{ width: `${(factor.score / factor.max) * 100}%` }}
               />
@@ -221,14 +203,12 @@ const WorkabilityScore = ({
       </div>
 
       {reliability < 1 && (
-        <div className="mt-6 flex items-start space-x-2 text-sm">
+        <div className="mt-6 flex items-start gap-2 text-sm">
           <AlertCircle 
             size={16} 
-            className={`flex-shrink-0 mt-0.5 ${
-              isDark ? 'text-blue-300' : 'text-[var(--action-primary)]'
-            }`} 
+            className="flex-shrink-0 mt-0.5 text-[var(--accent-primary)]" 
           />
-          <p className={isDark ? 'text-blue-200' : 'text-blue-600'}>
+          <p className="text-[var(--text-secondary)]">
             Some metrics are missing. Score may not reflect complete workspace quality.
           </p>
         </div>
