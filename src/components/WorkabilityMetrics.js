@@ -5,15 +5,15 @@ const MetricInsight = ({ icon: Icon, title, detail, quality, className = "" }) =
   const getQualityColor = (quality) => {
     switch (quality) {
       case 'excellent':
-        return 'text-emerald-400 dark:text-emerald-300';
+        return 'text-[var(--success)] dark:text-[var(--success)]';
       case 'good':
-        return 'text-blue-400 dark:text-blue-300';
+        return 'text-[var(--info)] dark:text-[var(--info)]';
       case 'limited':
-        return 'text-amber-400 dark:text-amber-300';
+        return 'text-[var(--warning)] dark:text-[var(--warning)]';
       case 'poor':
-        return 'text-red-400 dark:text-red-300';
+        return 'text-[var(--error)] dark:text-[var(--error)]';
       default:
-        return 'text-gray-400 dark:text-gray-300';
+        return 'text-[var(--text-tertiary)]';
     }
   };
 

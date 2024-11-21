@@ -43,111 +43,151 @@ const useScrollPosition = (ref) => {
   return progress;
 };
 
-const MetricBadge = ({ icon: Icon, label, color, className = "" }) => {
-  const { isDark } = useTheme();
-  
-  const colorStyles = {
-    wifi: {
-      available: {
-        icon: isDark ? "text-emerald-400" : "text-emerald-600",
-        text: isDark ? "text-emerald-300" : "text-emerald-700",
-        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
-        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
-      },
-      unavailable: {
-        icon: isDark ? "text-red-400" : "text-red-600",
-        text: isDark ? "text-red-300" : "text-red-700",
-        bg: isDark ? "bg-red-400/10" : "bg-red-50",
-        border: isDark ? "border-red-400/20" : "border-red-100"
-      },
-      unknown: {
-        icon: isDark ? "text-slate-400" : "text-slate-600",
-        text: isDark ? "text-slate-300" : "text-slate-700",
-        bg: isDark ? "bg-slate-400/10" : "bg-slate-50",
-        border: isDark ? "border-slate-400/20" : "border-slate-100"
-      }
-    },
-    power: {
-      full: {
-        icon: isDark ? "text-emerald-400" : "text-emerald-600",
-        text: isDark ? "text-emerald-300" : "text-emerald-700",
-        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
-        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
-      },
-      limited: {
-        icon: isDark ? "text-amber-400" : "text-amber-600",
-        text: isDark ? "text-amber-300" : "text-amber-700",
-        bg: isDark ? "bg-amber-400/10" : "bg-amber-50",
-        border: isDark ? "border-amber-400/20" : "border-amber-100"
-      },
-      none: {
-        icon: isDark ? "text-red-400" : "text-red-600",
-        text: isDark ? "text-red-300" : "text-red-700",
-        bg: isDark ? "bg-red-400/10" : "bg-red-50",
-        border: isDark ? "border-red-400/20" : "border-red-100"
-      }
-    },
-    noise: {
-      quiet: {
-        icon: isDark ? "text-emerald-400" : "text-emerald-600",
-        text: isDark ? "text-emerald-300" : "text-emerald-700",
-        bg: isDark ? "bg-emerald-400/10" : "bg-emerald-50",
-        border: isDark ? "border-emerald-400/20" : "border-emerald-100"
-      },
-      moderate: {
-        icon: isDark ? "text-amber-400" : "text-amber-600",
-        text: isDark ? "text-amber-300" : "text-amber-700",
-        bg: isDark ? "bg-amber-400/10" : "bg-amber-50",
-        border: isDark ? "border-amber-400/20" : "border-amber-100"
-      },
-      noisy: {
-        icon: isDark ? "text-blue-400" : "text-blue-600",
-        text: isDark ? "text-blue-300" : "text-blue-700",
-        bg: isDark ? "bg-blue-400/10" : "bg-blue-50",
-        border: isDark ? "border-blue-400/20" : "border-blue-100"
-      }
-    }
-  };
+// Power related functions
+const getPowerLabel = (place) => {
+  const powerValue = String(place.power || '').toLowerCase();
+  if (powerValue.includes('range3') || powerValue.includes('good')) return "Many Outlets";
+  if (powerValue.includes('range2')) return "Some Outlets";
+  if (powerValue.includes('range1') || powerValue.includes('little')) return "Limited Power";
+  if (powerValue === 'none') return "No Power";
+  return "Power Unknown";
+};
 
-  const getWifiStyle = (label) => {
-    if (label.includes('No WiFi')) return colorStyles.wifi.unavailable;
-    if (label === 'Unknown') return colorStyles.wifi.unknown;
-    return colorStyles.wifi.available;
-  };
+const getPowerDetails = (place) => {
+  const powerValue = String(place.power || '').toLowerCase();
+  if (powerValue.includes('range3') || powerValue.includes('good')) return "Abundant power access throughout";
+  if (powerValue.includes('range2')) return "Moderate power availability";
+  if (powerValue.includes('range1') || powerValue.includes('little')) return "Sparse outlet availability";
+  if (powerValue === 'none') return "No power outlets available";
+  return "Power outlet availability not confirmed";
+};
 
-  const getPowerStyle = (label) => {
-    if (label.includes('Many') || label.includes('Good')) return colorStyles.power.full;
-    if (label.includes('Limited') || label.includes('Some')) return colorStyles.power.limited;
-    return colorStyles.power.none;
-  };
+const getPowerRecommendations = (place) => {
+  const powerValue = String(place.power || '').toLowerCase();
+  if (powerValue.includes('range3') || powerValue.includes('good')) return "Most seats have easy outlet access";
+  if (powerValue.includes('range2')) return "Choose seating strategically for outlet access";
+  if (powerValue.includes('range1') || powerValue.includes('little')) return "Arrive with devices charged";
+  if (powerValue === 'none') return "Bring fully charged devices";
+  return "Check with staff about outlet access";
+};
 
-  const getNoiseStyle = (label) => {
-    if (label === 'Quiet') return colorStyles.noise.quiet;
-    if (label === 'Moderate') return colorStyles.noise.moderate;
-    return colorStyles.noise.noisy;
-  };
-
-  let style;
-  if (Icon === Wifi || Icon === WifiOff) {
-    style = getWifiStyle(label);
-  } else if (Icon === Battery) {
-    style = getPowerStyle(label);
-  } else if (Icon === Volume2) {
-    style = getNoiseStyle(label);
+const getPowerStats = (place) => {
+  const powerValue = String(place.power || '').toLowerCase();
+  if (powerValue.includes('range3') || powerValue.includes('good')) {
+    return [
+      "Outlets at >75% of seats",
+      "High availability throughout",
+      "Extension cords usually allowed"
+    ];
   }
+  if (powerValue.includes('range2')) {
+    return [
+      "Outlets at ~50% of seats",
+      "Moderate availability",
+      "May need to plan seating"
+    ];
+  }
+  if (powerValue.includes('range1') || powerValue.includes('little')) {
+    return [
+      "Outlets at <25% of seats",
+      "Limited availability",
+      "Best to bring backup power"
+    ];
+  }
+  if (powerValue === 'none') {
+    return [
+      "No public outlets",
+      "Not suitable for long sessions",
+      "Backup power recommended"
+    ];
+  }
+  return [
+    "Availability varies",
+    "Ask staff for locations",
+    "Consider bringing backup"
+  ];
+};
 
-  return (
-    <div className={`
-      inline-flex items-center gap-1.5 px-2 py-1 rounded-md
-      ${style.bg} ${style.border} border
-      ${className}
-    `}>
-      <Icon size={14} className={style.icon} />
-      <span className={`text-xs font-medium ${style.text}`}>
-        {label}
-      </span>
-    </div>
-  );
+// Noise related functions
+const getNoiseLabel = (place) => {
+  const noise = String(place.noise_level || place.noise || "").toLowerCase();
+  if (noise.includes('quiet')) return "Quiet";
+  if (noise.includes('moderate')) return "Moderate";
+  if (noise.includes('noisy')) return "Lively";
+  return "Noise Unknown";
+};
+
+const getNoiseDetails = (place) => {
+  const noise = String(place.noise_level || place.noise || "").toLowerCase();
+  if (noise.includes('quiet')) return "Library-like atmosphere";
+  if (noise.includes('moderate')) return "Balanced noise level";
+  if (noise.includes('noisy')) return "Energetic atmosphere";
+  return "Noise level varies";
+};
+
+const getNoiseRecommendations = (place) => {
+  const noise = String(place.noise_level || place.noise || "").toLowerCase();
+  if (noise.includes('quiet')) return "Ideal for focused work";
+  if (noise.includes('moderate')) return "Good for most work styles";
+  if (noise.includes('noisy')) return "Best with noise-canceling headphones";
+  return "Levels may vary by time of day";
+};
+
+const getNoiseStats = (place) => {
+  const noise = String(place.noise_level || place.noise || "").toLowerCase();
+  if (!noise) return undefined;
+
+  return [
+    noise.includes('quiet') ? "Good for concentration" :
+    noise.includes('moderate') ? "Normal conversation level" :
+    noise.includes('noisy') ? "Higher conversation level" : "Variable noise levels",
+    
+    noise.includes('quiet') ? "Minimal conversation" :
+    noise.includes('moderate') ? "Some background noise" :
+    noise.includes('noisy') ? "Notable background noise" : "Noise levels not confirmed"
+  ];
+};
+
+// WiFi related functions
+const getWifiLabel = (place) => {
+  if (place.no_wifi === "1") return "No WiFi";
+  if (!place.download) return "WiFi Available";
+  const speed = Math.round(place.download);
+  return speed >= 50 ? "Fast WiFi" :
+         speed >= 25 ? "Very Good WiFi" :
+         speed >= 10 ? "Good WiFi" :
+         `${speed} Mbps`;
+};
+
+const getWifiDetails = (place) => {
+  if (place.no_wifi === "1") return "No WiFi service available";
+  if (!place.download) return "WiFi available, speed unknown";
+  const speed = Math.round(place.download);
+  return `${speed}+ Mbps download speed`;
+};
+
+const getWifiRecommendations = (place) => {
+  if (place.no_wifi === "1") return "Consider bringing a mobile hotspot";
+  if (!place.download) return "Ask staff about typical speeds";
+  const speed = Math.round(place.download);
+  return speed >= 50 ? "Excellent for video calls and large file transfers" :
+         speed >= 25 ? "Good for most remote work needs" :
+         speed >= 10 ? "Suitable for basic work tasks" :
+         "Best for light web browsing";
+};
+
+const getWifiStats = (place) => {
+  if (place.no_wifi === "1") {
+    return ["No public WiFi", "Mobile data recommended", "Hotspot may be needed"];
+  }
+  if (!place.download) return undefined;
+  
+  const speed = Math.round(place.download);
+  return [
+    speed >= 50 ? "HD Video Calls ✓" : "Video Calls: May be unstable",
+    speed >= 25 ? "Multiple Devices ✓" : "Limited Devices",
+    speed >= 10 ? "Web Browsing ✓" : "Basic Web Only"
+  ];
 };
 
 const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal }) => {
@@ -155,187 +195,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   const contentRef = useRef(null);
   const progress = useScrollPosition(contentRef);
   
-  const getWifiStyle = (place) => {
-    if (place.no_wifi === "1") return 'unavailable';
-    if (!place.download) return 'unknown';
-    return 'available';
-  };
-
-  const getPowerStyle = (place) => {
-    const powerValue = String(place.power || '').toLowerCase();
-    if (powerValue.includes('range3') || powerValue.includes('good')) return 'full';
-    if (powerValue.includes('range2')) return 'limited';
-    return 'none';
-  };
-
-  const getNoiseStyle = (place) => {
-    const noise = String(place.noise_level || place.noise || '').toLowerCase();
-    if (noise.includes('quiet')) return 'quiet';
-    if (noise.includes('moderate')) return 'moderate';
-    return 'noisy';
-  };
-
-  const getWorkabilityMetrics = (place) => {
-    // WiFi Metric
-    const getWifiMetric = () => {
-      if (place.no_wifi === "1") {
-        return {
-          type: 'wifi',
-          icon: WifiOff,
-          noWifi: true,
-          label: "No WiFi",
-          details: "This location does not provide WiFi access",
-          recommendations: "Consider bringing a mobile hotspot"
-        };
-      }
-
-      if (place.download) {
-        const speed = Math.round(place.download);
-        return {
-          type: 'wifi',
-          icon: Wifi,
-          download: speed,
-          label: speed >= 50 ? "Fast WiFi" : speed >= 25 ? "Very Good WiFi" : speed >= 10 ? "Good WiFi" : `${speed} Mbps`,
-          details: `${speed}+ Mbps download speed`,
-          recommendations: speed >= 50 ? "Excellent for video calls and large file transfers" :
-                          speed >= 25 ? "Good for most remote work needs" :
-                          speed >= 10 ? "Suitable for basic work tasks" :
-                          "Best for light web browsing",
-          stats: [
-            speed >= 50 ? "HD Video Calls ✓" : "Video Calls: May be unstable",
-            speed >= 25 ? "Multiple Devices ✓" : "Limited Devices",
-            speed >= 10 ? "Web Browsing ✓" : "Basic Web Only"
-          ]
-        };
-      }
-
-      return {
-        type: 'wifi',
-        icon: Wifi,
-        download: 0,
-        label: "WiFi Available",
-        details: "Speed data not available",
-        recommendations: "Ask staff about typical speeds"
-      };
-    };
-
-    // Power Metric
-    const getPowerMetric = () => {
-      const powerValue = String(place.power || '').toLowerCase();
-      
-      if (powerValue.includes('range3') || powerValue.includes('good')) {
-        return {
-          type: 'power',
-          icon: Battery,
-          powerValue: powerValue,
-          label: "Many Outlets",
-          details: "Abundant power access throughout",
-          recommendations: "Most seats have easy outlet access",
-          stats: [
-            "Outlets at >75% of seats",
-            "High availability throughout",
-            "Extension cords usually allowed"
-          ]
-        };
-      }
-      
-      if (powerValue.includes('range2')) {
-        return {
-          type: 'power',
-          icon: Battery,
-          powerValue: powerValue,
-          label: "Some Outlets",
-          details: "Moderate power availability",
-          recommendations: "Choose seating strategically for outlet access",
-          stats: [
-            "Outlets at ~50% of seats",
-            "Moderate availability",
-            "May need to plan seating"
-          ]
-        };
-      }
-      
-      if (powerValue.includes('range1') || powerValue.includes('little')) {
-        return {
-          type: 'power',
-          icon: Battery,
-          powerValue: powerValue,
-          label: "Limited Power",
-          details: "Sparse outlet availability",
-          recommendations: "Arrive with devices charged",
-          stats: [
-            "Outlets at <25% of seats",
-            "Limited availability",
-            "Best to bring backup power"
-          ]
-        };
-      }
-      
-      if (powerValue === 'none') {
-        return {
-          type: 'power',
-          icon: Battery,
-          powerValue: powerValue,
-          label: "No Power",
-          details: "No power outlets available",
-          recommendations: "Bring fully charged devices",
-          stats: [
-            "No public outlets",
-            "Not suitable for long sessions",
-            "Backup power recommended"
-          ]
-        };
-      }
-      
-      return {
-        type: 'power',
-        icon: Battery,
-        powerValue: powerValue,
-        label: "Power Unknown",
-        details: "Power outlet availability not confirmed",
-        recommendations: "Check with staff about outlet access",
-        stats: [
-          "Availability varies",
-          "Ask staff for locations",
-          "Consider bringing backup"
-        ]
-      };
-    };
-
-    // Noise Metric
-    const getNoiseMetric = () => {
-      const noiseLevel = (place.noise_level || place.noise || "").toLowerCase();
-      return {
-        type: 'noise',
-        icon: Volume2,
-        noiseLevel: noiseLevel,
-        label: noiseLevel.includes('quiet') ? "Quiet" :
-               noiseLevel.includes('moderate') ? "Moderate" :
-               noiseLevel.includes('noisy') ? "Lively" : "Unknown",
-        details: noiseLevel.includes('quiet') ? "Library-like atmosphere" :
-                 noiseLevel.includes('moderate') ? "Balanced noise level" :
-                 noiseLevel.includes('noisy') ? "Energetic atmosphere" : "Noise level varies",
-        recommendations: noiseLevel.includes('quiet') ? "Ideal for focused work" :
-                        noiseLevel.includes('moderate') ? "Good for most work styles" :
-                        noiseLevel.includes('noisy') ? "Best with noise-canceling headphones" :
-                        "Levels may vary by time of day",
-        stats: noiseLevel ? [
-          noiseLevel.includes('quiet') ? "Good for concentration" :
-          noiseLevel.includes('moderate') ? "Normal conversation level" :
-          noiseLevel.includes('noisy') ? "Higher conversation level" : "Variable noise levels",
-          noiseLevel.includes('quiet') ? "Minimal conversation" :
-          noiseLevel.includes('moderate') ? "Some background noise" :
-          noiseLevel.includes('noisy') ? "Notable background noise" : "Noise levels not confirmed"
-        ] : undefined
-      };
-    };
-
-    return [
-      getWifiMetric(),
-      getPowerMetric(),
-      getNoiseMetric()
-    ];
-  };
+  useScrollLock(true);
 
   const getMissingInfo = (place) => {
     const missing = [];
@@ -388,12 +248,12 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   if (!selectedPlace) return null;
 
   const sanitizedDescription = stripHtml(selectedPlace?.description);
-  const metrics = getWorkabilityMetrics(selectedPlace);
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col md:overflow-hidden">
       <div className="absolute inset-0 bg-[var(--modal-backdrop)] backdrop-blur-xl" />
       
+      {/* Mobile Header */}
       <div className="flex-shrink-0 md:hidden sticky top-0 z-20 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
         <div className="flex items-center justify-between p-3">
           <button 
@@ -414,25 +274,27 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
         <div className="w-full h-full md:w-[90vw] md:max-w-6xl md:h-[85vh] md:flex 
           md:rounded-lg overflow-hidden relative
           bg-[var(--bg-primary)] border border-[var(--border-primary)]
-          shadow-lg">
+          shadow-[var(--shadow-lg)]">
           
+          {/* Close Button */}
           <button 
             onClick={() => setShowPhotoModal(false)}
             className="hidden md:flex absolute right-4 top-4 z-20 items-center justify-center 
-              w-8 h-8 rounded-full transition-colors
-              bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)]
-              text-[var(--text-primary)]"
+              w-8 h-8 rounded-full
+              bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] 
+              text-[var(--text-primary)] transition-colors"
           >
             <X size={20} />
           </button>
 
           <div ref={contentRef} className="h-full overflow-y-auto md:flex flex-grow">
             <div className="relative md:flex md:w-full">
-              <div className="relative md:w-3/5 flex-shrink-0 bg-black transform-gpu overflow-hidden"
+              {/* Image Section */}
+              <div className="relative md:w-3/5 flex-shrink-0 bg-[var(--bg-primary)] transform-gpu overflow-hidden"
                 style={{ height: window.innerWidth >= 768 ? '100%' : '35vh' }}>
                 <div className={`h-full ${window.innerWidth >= 768 ? 'absolute inset-0' : ''}`}>
                   {isPhotoLoading ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black">
+                    <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-primary)]">
                       <Loader size={32} className="text-[var(--accent-primary)] animate-spin" />
                     </div>
                   ) : fullImg ? (
@@ -453,7 +315,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                         />
                       </div>
                       <div className="absolute inset-x-0 -bottom-1 h-32 pointer-events-none md:hidden
-                        bg-gradient-to-t from-black via-black/80 to-transparent"
+                        bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/80 to-transparent"
                         style={{ 
                           opacity: 0.3 + Math.min(progress * 0.7, 0.7),
                           transition: 'opacity 0.2s ease-out'
@@ -471,7 +333,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 </div>
               </div>
 
-              <div className="relative flex-1 md:w-2/5 border-l border-[var(--modal-border)]">
+              {/* Content Section */}
+              <div className="relative flex-1 md:w-2/5 border-l border-[var(--border-primary)]">
                 <div className="p-4 space-y-4">
                   <div className="hidden md:block">
                     <h2 className="text-xl font-semibold text-[var(--text-primary)]">
@@ -500,7 +363,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                         {getScoreQuality(selectedPlace.workabilityScore).label} for Remote Work
                       </div>
 
-                      {/* Metrics Section - Updated Layout */}
                       <WorkabilityMetrics place={selectedPlace} />
                     </div>
                   </div>
@@ -551,7 +413,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       </div>
                     </div>
                   )}
-  
                 </div>
               </div>
             </div>

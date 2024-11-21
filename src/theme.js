@@ -28,10 +28,12 @@ export const darkTheme = {
   'interactive-hover': '#0A84FF',
   'interactive-muted': 'rgba(255, 255, 255, 0.64)',
   
-  // Accent colors - Vibrant touches
+  // Accent colors - Adding soft red accent
   'accent-primary': '#0A84FF',
-  'accent-secondary': '#30C7FF',  // Lighter blue for contrast
+  'accent-secondary': '#fca5a5',      // New soft red accent
+  'accent-tertiary': '#30C7FF',       // Light blue as third accent
   'accent-muted': 'rgba(10, 132, 255, 0.16)',
+  'accent-soft': 'rgba(252, 165, 165, 0.16)', // Soft red with opacity
   
   // Borders - Subtle definition
   'border-primary': 'rgba(255, 255, 255, 0.1)',
@@ -52,18 +54,18 @@ export const darkTheme = {
   'focus-ring': 'rgba(10, 132, 255, 0.6)',
   'focus-ring-offset': '#0A0A0C',
 
-  // Modal and overlay colors - Sophisticated blur effects
+  // Modal and overlay colors
   'modal-backdrop': 'rgba(0, 0, 0, 0.5)',
   'modal-backdrop-filter': 'blur(20px)',
-  'modal-bg': '#FFFFFF',             // Clean, bright surface
+  'modal-bg': '#FFFFFF',
   'modal-border': 'rgba(0, 0, 0, 0.08)',
   
-  // Status colors - Clear feedback
+  // Status colors
   'status-success': '#4CAF50',
   'status-warning': '#FF9800',
   'status-error': '#F44336',
   
-  // Surface overlays for different elevations
+  // Surface overlays
   'overlay-hover': 'rgba(0, 0, 0, 0.02)',
   'overlay-active': 'rgba(0, 0, 0, 0.04)',
   'overlay-raised': 'rgba(0, 0, 0, 0.1)'
@@ -99,10 +101,12 @@ export const lightTheme = {
   'interactive-hover': '#007AFF',
   'interactive-muted': 'rgba(29, 29, 31, 0.65)',
   
-  // Accent colors - Vibrant touches
+  // Accent colors - Adding coral accent to complement dark theme's soft red
   'accent-primary': '#007AFF',
-  'accent-secondary': '#40A9FF',
+  'accent-secondary': '#F87171',      // Warmer red for light theme
+  'accent-tertiary': '#40A9FF',       // Light blue as third accent
   'accent-muted': 'rgba(0, 122, 255, 0.12)',
+  'accent-soft': 'rgba(248, 113, 113, 0.12)', // Coral with opacity
   
   // Borders - Subtle definition
   'border-primary': 'rgba(0, 0, 0, 0.1)',
@@ -123,24 +127,24 @@ export const lightTheme = {
   'focus-ring': 'rgba(0, 122, 255, 0.6)',
   'focus-ring-offset': '#FFFFFF',
 
-  // Modal and overlay colors - Sophisticated blur effects
+  // Modal and overlay colors
   'modal-backdrop': 'rgba(0, 0, 0, 0.5)',
   'modal-backdrop-filter': 'blur(20px)',
-  'modal-bg': '#FFFFFF',             // Clean, bright surface
+  'modal-bg': '#FFFFFF',
   'modal-border': 'rgba(0, 0, 0, 0.08)',
   
-  // Status colors - Clear feedback
+  // Status colors
   'status-success': '#2D8A54',
   'status-warning': '#B95000',
   'status-error': '#CC3340',
   
-  // Surface overlays for different elevations
+  // Surface overlays
   'overlay-hover': 'rgba(0, 0, 0, 0.02)',
   'overlay-active': 'rgba(0, 0, 0, 0.04)',
   'overlay-raised': 'rgba(0, 0, 0, 0.1)'
 };
 
-// Helper functions remain unchanged
+// Helper functions
 export const getColorWithOpacity = (color, opacity) => {
   if (color.startsWith('#')) {
     const r = parseInt(color.slice(1, 3), 16);
