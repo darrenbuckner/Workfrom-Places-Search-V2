@@ -96,143 +96,122 @@ const calculateWorkStyleScores = (place) => {
   return scores;
 };
 
-const generateWorkStyleInsights = (place, scores) => {
+const generateWorkStyleInsights = (place) => {
   const insights = {};
-  const noise = String(place.noise_level || place.noise || '').toLowerCase();
-  const wifiSpeed = place.wifi?.speed || (place.download ? parseInt(place.download) : 0);
-  const type = String(place.type || '').toLowerCase();
+  
+  // Parse place characteristics
+  const noise = String(place.noise_level || place.noise || "").toLowerCase();
+  const type = String(place.type || "").toLowerCase();
+  const wifiSpeed = place.download ? parseInt(place.download) : 0;
+  const hasCoffee = place.coffee === "1";
+  const hasFood = place.food === "1";
+  const hasOutdoor = place.outdoor_seating === "1" || place.outside === "1";
+  const powerValue = String(place.power || "").toLowerCase();
+  const hasPower = powerValue.includes('range3') || powerValue.includes('range2');
 
-  // Focus Insights
-  if (scores.focus >= 8) {
-    insights.focus = {
-      description: "Excellent environment for focused work",
-      recommendations: [
-        "Ideal for deep work sessions",
-        "Good power access for long sessions",
-        noise.includes('quiet') ? "Consistently quiet environment" : "Find a quiet corner"
-      ],
-      best_times: "Early mornings or late afternoons"
-    };
-  } else if (scores.focus >= 6) {
-    insights.focus = {
-      description: "Good for focused work during quieter hours",
-      recommendations: [
-        "Consider bringing noise-canceling headphones",
-        "Best during off-peak hours",
-        "Choose a secluded spot"
-      ],
-      best_times: "Before 10am or after 2pm"
-    };
-  } else {
-    insights.focus = {
-      description: "Better suited for casual work than deep focus",
-      recommendations: [
-        "Short focus sessions only",
-        "Bring headphones",
-        "Consider alternative locations for deep work"
-      ],
-      best_times: "Early mornings"
-    };
-  }
+  // Helper function to get noise description
+  const getNoiseDesc = () => {
+    if (noise.includes('quiet')) return 'quiet';
+    if (noise.includes('moderate')) return 'moderate';
+    if (noise.includes('noisy') || noise.includes('lively')) return 'lively';
+    return 'moderate';
+  };
 
-  // Group Work Insights
-  if (scores.group >= 8) {
-    insights.group = {
-      description: "Perfect for team collaboration",
-      recommendations: [
-        "Ample space for groups",
-        place.features?.hasFood ? "Food available for longer sessions" : "Consider food options",
-        "Good mix of seating options"
-      ],
-      best_times: "Mid-morning to afternoon"
-    };
-  } else if (scores.group >= 6) {
-    insights.group = {
-      description: "Suitable for small group work",
-      recommendations: [
-        "Best for smaller teams",
-        "Consider peak hours",
-        "Check ahead for space availability"
-      ],
-      best_times: "Varied, check location"
-    };
-  } else {
-    insights.group = {
-      description: "Limited options for group work",
-      recommendations: [
-        "Better for pairs than larger groups",
-        "Consider alternative locations for teams",
-        "Check ahead for availability"
-      ],
-      best_times: "Off-peak hours only"
-    };
-  }
+  // Helper function to get type description
+  const getTypeDesc = () => {
+    if (type.includes('library')) return 'library';
+    if (type.includes('coworking')) return 'coworking';
+    if (type.includes('cafe') || type.includes('coffee')) return 'cafe';
+    return 'space';
+  };
 
-  // Calls Insights
-  if (scores.calls >= 8) {
-    insights.calls = {
-      description: "Excellent for video calls and virtual meetings",
-      recommendations: [
-        wifiSpeed >= 50 ? "Strong WiFi for video calls" : "Good WiFi available",
-        "Multiple quiet areas available",
-        "Power access for longer sessions"
-      ],
-      best_times: "Any time during business hours"
-    };
-  } else if (scores.calls >= 6) {
-    insights.calls = {
-      description: "Can accommodate video calls with planning",
-      recommendations: [
-        "Test WiFi before important calls",
-        "Scout quiet areas in advance",
-        "Consider peak hours"
-      ],
-      best_times: "Off-peak hours recommended"
-    };
-  } else {
-    insights.calls = {
-      description: "Not ideal for important calls",
-      recommendations: [
-        "Emergency calls only",
-        "Consider alternative locations",
-        "Very short calls if necessary"
-      ],
-      best_times: "Early morning or late afternoon"
-    };
-  }
+  // Helper function to get wifi quality
+  const getWifiQuality = () => {
+    if (place.no_wifi === "1") return 'none';
+    if (wifiSpeed >= 50) return 'excellent';
+    if (wifiSpeed >= 25) return 'good';
+    if (wifiSpeed >= 10) return 'moderate';
+    return 'unknown';
+  };
 
-  // Casual Work Insights
-  if (scores.casual >= 8) {
-    insights.casual = {
-      description: "Perfect for casual remote work",
-      recommendations: [
-        "Great atmosphere for light work",
-        place.features?.hasOutdoor ? "Outdoor seating available" : "Comfortable seating",
-        "Multiple amenities available"
-      ],
-      best_times: "Flexible throughout the day"
-    };
-  } else if (scores.casual >= 6) {
-    insights.casual = {
-      description: "Good spot for occasional remote work",
-      recommendations: [
-        "Suitable for shorter sessions",
-        "Basic amenities available",
-        "Check peak hours"
-      ],
-      best_times: "Varies by day"
-    };
-  } else {
-    insights.casual = {
-      description: "Limited amenities for casual work",
-      recommendations: [
-        "Short sessions only",
-        "Basic amenities",
-        "Consider alternatives"
-      ],
-      best_times: "Off-peak hours"
-    };
-  }
+  // Generate insights for each work style
+  const noiseLevel = getNoiseDesc();
+  const spaceType = getTypeDesc();
+  const wifiQuality = getWifiQuality();
+
+  // Focus insights
+  insights.focus = {
+    description: (() => {
+      if (spaceType === 'library') {
+        return `${place.title} is a library with a ${noiseLevel} environment, ${hasPower ? 'reliable power access, ' : ''}making it excellent for focused work`;
+      }
+      if (noiseLevel === 'quiet') {
+        return `This ${spaceType} maintains a quiet atmosphere${hasPower ? ' with good power access' : ''}, ideal for concentration`;
+      }
+      if (noiseLevel === 'moderate' && hasPower) {
+        return `A ${spaceType} with moderate noise levels and power outlets, suitable for focused work with headphones`;
+      }
+      return `This ${spaceType} can accommodate focused work during quieter hours${hasPower ? ', with power available' : ''}`;
+    })()
+  };
+
+  // Group insights
+  insights.group = {
+    description: (() => {
+      if (spaceType === 'coworking') {
+        return `A dedicated coworking space with ${hasPower ? 'ample power and ' : ''}${wifiQuality} WiFi, perfect for team collaboration`;
+      }
+      if (spaceType === 'cafe' && hasFood && hasPower) {
+        return `Cafe environment with food options and power access, good for casual group meetings`;
+      }
+      if (spaceType === 'library') {
+        return `Library setting best suited for quiet group study sessions`;
+      }
+      return `${hasFood ? 'Food available' : 'Basic amenities'} in a ${noiseLevel} environment, ${hasPower ? 'with power access ' : ''}suitable for small groups`;
+    })()
+  };
+
+  // Calls insights
+  insights.calls = {
+    description: (() => {
+      if (wifiQuality === 'excellent' && noiseLevel === 'quiet') {
+        return `Excellent for video calls with fast WiFi and quiet atmosphere`;
+      }
+      if (wifiQuality === 'good' && noiseLevel !== 'lively') {
+        return `Good WiFi and manageable noise levels make this suitable for video calls`;
+      }
+      if (spaceType === 'coworking') {
+        return `Coworking space with dedicated areas suitable for calls`;
+      }
+      if (noiseLevel === 'lively') {
+        return `Lively environment - calls may be challenging without a quiet corner`;
+      }
+      return `Best for brief calls during quiet periods`;
+    })()
+  };
+
+  // Casual insights
+  insights.casual = {
+    description: (() => {
+      const amenities = [];
+      if (hasCoffee) amenities.push('coffee');
+      if (hasFood) amenities.push('food');
+      if (hasOutdoor) amenities.push('outdoor seating');
+
+      if (spaceType === 'cafe' && amenities.length > 1) {
+        return `Welcoming cafe with ${amenities.join(' and ')}, perfect for casual work`;
+      }
+      if (spaceType === 'coworking') {
+        return `Professional coworking environment with flexible spaces for casual work`;
+      }
+      if (spaceType === 'library') {
+        return `Quiet library setting, ideal for focused casual work`;
+      }
+      return `${noiseLevel.charAt(0).toUpperCase() + noiseLevel.slice(1)} space with ${
+        amenities.length ? amenities.join(' and ') : 'basic amenities'
+      }`;
+    })()
+  };
 
   return insights;
 };
@@ -427,66 +406,31 @@ api.get('/places/:id', async (req, res) => {
   }
 });
 
-api.all('/analyze-workspaces', async (req, res) => {
+api.post('/analyze-workspaces', async (req, res) => {
   try {
-    const { appid } = req.query;
+    const { places } = req.body;
     
-    if (!appid) {
-      return res.status(400).json({
-        meta: { 
-          code: 400, 
-          error_type: 'missing_parameter',
-          error_detail: 'Missing required appid parameter' 
-        }
-      });
-    }
-
-    // For POST requests, expect places data in body
-    const places = req.method === 'POST' ? req.body?.places : [];
-    const context = req.method === 'POST' ? req.body?.context : {
-      timeOfDay: new Date().getHours(),
-      dayOfWeek: new Date().getDay()
-    };
-
-    if (!Array.isArray(places) || places.length === 0) {
-      return res.status(400).json({
-        meta: { 
-          code: 400, 
-          error_type: 'invalid_request',
-          error_detail: 'Please provide an array of places to analyze' 
-        }
-      });
-    }
-
     const placeInsights = places.map(place => {
-      const scores = calculateWorkStyleScores(place);
-      const insights = generateWorkStyleInsights(place, scores);
+    const scores = calculateWorkStyleScores(place);
+    const insights = generateWorkStyleInsights(place);
 
-      return {
-        id: place.id,
-        scores,
-        insights,
-        best_times: {
-          focus: "Early mornings (7-10am)",
-          group: "Late mornings to afternoons (10am-4pm)",
-          calls: "Off-peak hours",
-          casual: "Anytime during business hours"
-        },
-        crowd_levels: {
-          morning: "Usually quieter",
-          afternoon: "Moderate to busy",
-          evening: "Varies by location"
-        }
-      };
-    });
-
-    const contextualInsights = generateContextualInsights(places, context);
+    return {
+      id: place.id || place.ID,
+      scores,
+      insights,
+      best_times: {
+        focus: scores.focus >= 7 ? "Any time" : "Early mornings or late evenings",
+        group: scores.group >= 7 ? "Business hours" : "Off-peak hours",
+        calls: scores.calls >= 7 ? "Any time" : "Quieter hours",
+        casual: "Any time during business hours"
+      }
+    };
+  });
 
     return res.json({
       meta: { code: 200 },
       insights: {
-        places: placeInsights,
-        context: contextualInsights
+        places: placeInsights
       }
     });
   } catch (error) {
@@ -495,7 +439,7 @@ api.all('/analyze-workspaces', async (req, res) => {
       meta: {
         code: 500,
         error_type: 'analysis_failed',
-        error_detail: error.message || 'Unable to analyze workspaces. Please try again.'
+        error_detail: error.message
       }
     });
   }

@@ -6,32 +6,80 @@ import {
 } from 'lucide-react';
 import StarRating from './StarRating';
 
-// Component for displaying metric badges
-const MetricBadge = ({ icon: Icon, label, variant }) => {
-  const getVariantStyles = () => {
-    switch (variant) {
-      case 'success':
-        return 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-400/10';
-      case 'warning':
-        return 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-400/10';
-      case 'error':
-        return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-400/10';
-      default:
-        return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-400/10';
+const DEBUG = true;
+
+const PlaceCard = ({ 
+  place, 
+  isHighlighted, 
+  onViewDetails, 
+  workStyle, 
+  insights 
+}) => {
+  const getPlaceInsight = () => {
+    if (!place || !insights?.places) return '';
+
+    const placeInsight = insights.places.find(p => String(p.id) === String(place.ID));
+    
+    // Debug logs for insight data
+    console.group(`Insight data for place ${place.ID} (${place.title})`);
+    console.log('Raw place insight:', placeInsight);
+    if (placeInsight) {
+      console.log('Available insight categories:', Object.keys(placeInsight.insights));
+      console.log('Scores:', placeInsight.scores);
+      if (workStyle) {
+        const styleMap = {
+          'focus': 'focus',
+          'group': 'group',
+          'video': 'calls',
+          'lively': 'casual',
+          'casual': 'casual'
+        };
+        const mappedStyle = styleMap[workStyle];
+        console.log('Selected work style:', workStyle);
+        console.log('Mapped style:', mappedStyle);
+        console.log('Style-specific insight:', placeInsight.insights[mappedStyle]?.description);
+      } else {
+        const bestStyle = Object.entries(placeInsight.scores)
+          .sort((a, b) => b[1] - a[1])[0];
+        console.log('Best scoring style:', bestStyle[0], 'with score:', bestStyle[1]);
+        console.log('Best style insight:', placeInsight.insights[bestStyle[0]]?.description);
+      }
     }
+    console.groupEnd();
+
+    if (!placeInsight?.insights) return '';
+
+    const styleMap = {
+      'focus': 'focus',
+      'group': 'group',
+      'video': 'calls',
+      'lively': 'casual',
+      'casual': 'casual'
+    };
+
+    // If we have a selected work style, use that specific insight
+    if (workStyle && styleMap[workStyle]) {
+      const mappedStyle = styleMap[workStyle];
+      const styleInsight = placeInsight.insights[mappedStyle]?.description;
+      
+      // Debug style-specific insight
+      if (styleInsight) {
+        return styleInsight;
+      }
+    }
+
+    // Otherwise find the highest scoring category
+    const scores = placeInsight.scores;
+    if (!scores) return '';
+
+    const bestStyle = Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])[0][0];
+    
+    return placeInsight.insights[bestStyle]?.description || '';
   };
 
-  return (
-    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs ${getVariantStyles()}`}>
-      <Icon size={12} />
-      <span className="font-medium">{label}</span>
-    </div>
-  );
-};
-
-// Card component for displaying place information
-const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
-  if (!place) return null;
+  // Cache insight to avoid recalculation
+  const insight = getPlaceInsight();
 
   return (
     <button
@@ -69,49 +117,62 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
             )}
           </div>
 
-          {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                {isHighlighted && (
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full 
-                    bg-[var(--accent-primary)] text-[var(--button-text)]
-                    text-xs font-medium w-fit mb-2"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Best Match</span>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  {isHighlighted && (
+                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full 
+                      bg-[var(--accent-primary)] text-[var(--button-text)]
+                      text-xs font-medium w-fit mb-2"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Best Match</span>
+                    </div>
+                  )}
+                  <h3 className={`text-lg font-semibold truncate
+                    ${isHighlighted ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}
+                  `}>
+                    {place.title}
+                  </h3>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <MapPin size={14} className={
+                        isHighlighted ? 'text-[var(--accent-primary)]/75' : 'text-[var(--text-secondary)]'
+                      } />
+                      <span className={
+                        isHighlighted ? 'text-sm text-[var(--accent-primary)]/75' : 'text-sm text-[var(--text-secondary)]'
+                      }>
+                        {place.distance} miles away
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <StarRating score={place.workabilityScore} />
+                      <span className={`
+                        text-xs font-medium
+                        ${isHighlighted 
+                          ? 'text-[var(--accent-primary)]/75' 
+                          : 'text-[var(--text-secondary)]'
+                        }
+                      `}>
+                        {place.workabilityScore.toFixed(1)}
+                      </span>
+                    </div>
                   </div>
-                )}
-                <h3 className={`text-lg font-semibold truncate
-                  ${isHighlighted ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}
-                `}>
-                  {place.title}
-                </h3>
-                <div className="flex items-center justify-between mt-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <MapPin size={14} className={
-                      isHighlighted ? 'text-[var(--accent-primary)]/75' : 'text-[var(--text-secondary)]'
-                    } />
-                    <span className={
-                      isHighlighted ? 'text-sm text-[var(--accent-primary)]/75' : 'text-sm text-[var(--text-secondary)]'
-                    }>
-                      {place.distance} miles away
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-									  <StarRating score={place.workabilityScore} />
-									  <span className={`
-									    text-xs font-medium
-									    ${isHighlighted 
-									      ? 'text-[var(--accent-primary)]/75' 
-									      : 'text-[var(--text-secondary)]'
-									    }
-									  `}>
-									    {place.workabilityScore.toFixed(1)}
-									  </span>
-									</div>
                 </div>
               </div>
+
+              {insight && (
+                <div className={`
+                  text-sm leading-relaxed
+                  ${isHighlighted 
+                    ? 'text-[var(--accent-primary)]/90' 
+                    : 'text-[var(--text-secondary)]'
+                  }
+                `}>
+                  {insight}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -127,78 +188,25 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails }) => {
   );
 };
 
-const calculateLocalScore = (place, workStyle) => {
-  const noise = String(place.noise_level || place.noise || '').toLowerCase();
-  const wifiSpeed = place.download ? parseInt(place.download) : 0;
-  const hasPower = place.power?.toLowerCase().includes('range3') || 
-                  place.power?.toLowerCase().includes('good');
-  const type = String(place.type || '').toLowerCase();
-  const hasFood = place.food === "1";
-  const hasCoffee = place.coffee === "1";
-  const hasOutdoor = place.outdoor_seating === "1" || place.outside === "1";
-
-  let score = 0;
-
-  switch (workStyle) {
-    case 'focus':
-      score += noise.includes('quiet') ? 4 : noise.includes('moderate') ? 2 : 0;
-      score += hasPower ? 3 : 0;
-      score += wifiSpeed >= 25 ? 3 : wifiSpeed >= 10 ? 2 : 0;
-      score += type.includes('library') ? 2 : type.includes('coworking') ? 1 : 0;
-      break;
-
-    case 'group':
-      score += hasFood ? 3 : 0;
-      score += hasCoffee ? 2 : 0;
-      score += hasOutdoor ? 2 : 0;
-      score += (noise.includes('moderate') || noise.includes('noisy')) ? 3 : 0;
-      score += type.includes('coworking') ? 2 : type.includes('cafe') ? 1 : 0;
-      score += wifiSpeed >= 25 ? 1 : 0;
-      break;
-
-    case 'video':
-      score += wifiSpeed >= 50 ? 5 : wifiSpeed >= 25 ? 3 : wifiSpeed >= 10 ? 1 : 0;
-      score += noise.includes('quiet') ? 4 : noise.includes('moderate') ? 2 : 0;
-      score += hasPower ? 2 : 0;
-      score += type.includes('coworking') ? 2 : 0;
-      break;
-
-    case 'casual':
-      score += hasCoffee ? 3 : 0;
-      score += hasFood ? 2 : 0;
-      score += hasOutdoor ? 2 : 0;
-      score += noise.includes('moderate') ? 2 : noise.includes('lively') ? 1 : 0;
-      score += type.includes('cafe') ? 2 : type.includes('coworking') ? 1 : 0;
-      score += wifiSpeed >= 10 ? 1 : 0;
-      break;
-
-    case 'lively':
-      score += noise.includes('noisy') || noise.includes('lively') ? 4 :
-               noise.includes('moderate') ? 2 : 0;
-      score += hasFood ? 2 : 0;
-      score += hasCoffee ? 2 : 0;
-      score += hasOutdoor ? 2 : 0;
-      score += type.includes('cafe') || type.includes('coffee') ? 2 :
-               type.includes('commercial') ? 1 : 0;
-      score += wifiSpeed >= 25 ? 1 : 0;
-      score += hasPower ? 1 : 0;
-      break;
-
-    default:
-      return place.workabilityScore || 5;
-  }
-
-  return Math.min(10, score);
-};
-
-const QuickMatchView = ({ places, onViewDetails, radius }) => {
+const QuickMatchView = ({ 
+  places, 
+  onViewDetails, 
+  radius, 
+  analyzedPlaces,
+  isAnalyzing 
+}) => {
   const [selectedWorkStyle, setSelectedWorkStyle] = useState(null);
   const [displayCount, setDisplayCount] = useState(4);
   const scrollTargetRef = useRef(null);
 
   useEffect(() => {
-    setDisplayCount(4);
-  }, [selectedWorkStyle]);
+    if (DEBUG) {
+      console.group('QuickMatchView Data');
+      console.log('Places count:', places?.length);
+      console.log('Analyzed data:', analyzedPlaces);
+      console.groupEnd();
+    }
+  }, [places, analyzedPlaces]);
 
   const workStyles = [
     { id: 'casual', label: 'Casual', icon: Coffee },
@@ -208,11 +216,70 @@ const QuickMatchView = ({ places, onViewDetails, radius }) => {
     { id: 'video', label: 'Video Calls', icon: Video }
   ];
 
-  const getWorkStyleCount = (workStyle) => {
-    return places.filter(p => {
-      const score = calculateLocalScore(p, workStyle);
-      return score >= 3;
-    }).length;
+  const calculateLocalScore = (place, workStyle) => {
+    let score = 0;
+    const noise = String(place.noise_level || place.noise || '').toLowerCase();
+    const wifiSpeed = place.download ? parseInt(place.download) : 0;
+    const hasPower = place.power?.toLowerCase().includes('range3') || 
+      place.power?.toLowerCase().includes('good');
+    const hasFood = place.food === "1";
+    const hasCoffee = place.coffee === "1";
+    const hasOutdoor = place.outdoor_seating === "1" || place.outside === "1";
+    const type = String(place.type || '').toLowerCase();
+
+    switch (workStyle) {
+      case 'focus':
+        if (noise.includes('quiet')) score += 3;
+        else if (noise.includes('moderate')) score += 1;
+        if (hasPower) score += 2;
+        if (wifiSpeed >= 25) score += 2;
+        else if (wifiSpeed >= 10) score += 1;
+        if (type.includes('library')) score += 2;
+        else if (type.includes('coworking')) score += 1;
+        break;
+
+      case 'group':
+        if (hasFood) score += 2;
+        if (hasCoffee) score += 1;
+        if (hasOutdoor) score += 1;
+        if (noise.includes('moderate') || noise.includes('lively')) score += 2;
+        if (type.includes('coworking')) score += 2;
+        else if (type.includes('cafe')) score += 1;
+        if (hasPower) score += 1;
+        break;
+
+      case 'video':
+        if (wifiSpeed >= 50) score += 3;
+        else if (wifiSpeed >= 25) score += 2;
+        if (noise.includes('quiet')) score += 3;
+        else if (noise.includes('moderate')) score += 1;
+        if (hasPower) score += 2;
+        if (type.includes('coworking')) score += 1;
+        break;
+
+      case 'lively':
+        if (noise.includes('noisy') || noise.includes('lively')) score += 3;
+        else if (noise.includes('moderate')) score += 2;
+        if (hasFood) score += 2;
+        if (hasCoffee) score += 1;
+        if (hasOutdoor) score += 2;
+        if (type.includes('cafe')) score += 1;
+        break;
+
+      case 'casual':
+        if (hasCoffee) score += 2;
+        if (hasFood) score += 2;
+        if (hasOutdoor) score += 2;
+        if (noise.includes('moderate')) score += 2;
+        else if (noise.includes('lively')) score += 1;
+        if (type.includes('cafe')) score += 1;
+        break;
+
+      default:
+        return place.workabilityScore;
+    }
+
+    return score;
   };
 
   const getRecommendedPlaces = () => {
@@ -240,69 +307,6 @@ const QuickMatchView = ({ places, onViewDetails, radius }) => {
       .slice(0, displayCount);
   };
 
-  const getInitialContextMessage = () => {
-    if (!selectedWorkStyle) {
-      return (
-        <div className="flex items-center gap-2 px-3 py-2 mb-3 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
-          <span className="text-[var(--text-secondary)]">
-            Highest rated workspaces
-          </span>
-        </div>
-      );
-    }
-
-    if (selectedWorkStyle === 'video') {
-      return (
-        <div className="flex items-center gap-2 px-3 py-2 mb-3 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <Video className="w-4 h-4 text-[var(--accent-primary)]" />
-          <span className="text-[var(--text-secondary)]">
-            Best spots for video calls
-          </span>
-        </div>
-      );
-    }
-
-    if (selectedWorkStyle === 'lively') {
-      return (
-        <div className="flex items-center gap-2 px-3 py-2 mb-3 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <Music className="w-4 h-4 text-[var(--accent-primary)]" />
-          <span className="text-[var(--text-secondary)]">
-            Energetic spaces with a social atmosphere
-          </span>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-center gap-2 px-3 py-2 mb-3 text-sm rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-        <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
-        <span className="text-[var(--text-secondary)]">
-          Best matches for {selectedWorkStyle} work
-        </span>
-      </div>
-    );
-  };
-
-  const handleShowMore = () => {
-    const newDisplayCount = Math.min(displayCount + 4, totalMatchingPlaces);
-    setDisplayCount(newDisplayCount);
-    
-    // Wait for DOM update before scrolling
-    setTimeout(() => {
-      const lastVisibleCard = scrollTargetRef.current?.querySelector(
-        `.place-card:nth-child(${displayCount + 1})`
-      );
-      
-      if (lastVisibleCard) {
-        lastVisibleCard.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-      }
-    }, 100);
-  };
-
   const recommendedPlaces = getRecommendedPlaces();
   const totalMatchingPlaces = selectedWorkStyle ? 
     places.filter(p => calculateLocalScore(p, selectedWorkStyle) >= 3).length : places.length;
@@ -310,8 +314,14 @@ const QuickMatchView = ({ places, onViewDetails, radius }) => {
   const hasMoreToShow = recommendedPlaces.length === displayCount && 
     displayCount < totalMatchingPlaces;
 
+  const handleShowMore = () => {
+    const newDisplayCount = Math.min(displayCount + 4, totalMatchingPlaces);
+    setDisplayCount(newDisplayCount);
+  };
+
   return (
     <div className="space-y-4 mb-24 sm:mb-16">
+      {/* Work Style Filters */}
       <div className="overflow-x-auto pb-2 -mx-4 px-4 -mb-2">
         <div className="flex items-center gap-2">
           {workStyles.map(({ id, label, icon: Icon }) => (
@@ -333,7 +343,16 @@ const QuickMatchView = ({ places, onViewDetails, radius }) => {
         </div>
       </div>
 
-      {getInitialContextMessage()}
+      {/* Context Message */}
+      <div className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg 
+        bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+        <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
+        <span className="text-[var(--text-secondary)]">
+          {selectedWorkStyle 
+            ? `Best matches for ${selectedWorkStyle} work`
+            : 'Highest rated workspaces'}
+        </span>
+      </div>
 
       {selectedWorkStyle && totalMatchingPlaces > 0 && (
         <div className="text-sm text-[var(--text-secondary)]">
@@ -341,6 +360,7 @@ const QuickMatchView = ({ places, onViewDetails, radius }) => {
         </div>
       )}
 
+      {/* Place Cards */}
       <div className="space-y-3" ref={scrollTargetRef}>
         {recommendedPlaces.map((place, index) => (
           <div
@@ -356,11 +376,14 @@ const QuickMatchView = ({ places, onViewDetails, radius }) => {
               place={place}
               isHighlighted={index === 0}
               onViewDetails={onViewDetails}
+              workStyle={selectedWorkStyle}
+              insights={analyzedPlaces}
             />
           </div>
         ))}
       </div>
 
+      {/* Show More Button */}
       {hasMoreToShow && (
         <button
           onClick={handleShowMore}

@@ -3,6 +3,7 @@ import { MapPin, Map as MapIcon } from 'lucide-react';
 import { SearchPhases } from '../constants';
 import WorkfromHeader from '../WorkfromHeader';
 import QuickMatchView from './QuickMatchView';
+import { useWorkspaceAnalysis } from '../hooks/useWorkspaceAnalysis';
 import NearbyPlacesMap from '../NearbyPlacesMap';
 import SearchControls from '../SearchControls';
 import UnifiedLoadingState from '../UnifiedLoadingState';
@@ -26,6 +27,33 @@ const WorkspaceLayout = ({
   const [showMap, setShowMap] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  
+  // Get and destructure all needed values from the hook
+  const { 
+    isAnalyzing, 
+    analysis, 
+    analyzePlaces, 
+    clearAnalysis 
+  } = useWorkspaceAnalysis();
+
+  // Add effect to trigger analysis when places change
+  useEffect(() => {
+    if (places?.length > 0) {
+      analyzePlaces(places);
+    } else {
+      clearAnalysis();
+    }
+  }, [places, analyzePlaces, clearAnalysis]);
+
+  // Debug log
+  useEffect(() => {
+    console.log('Analysis state:', {
+      isAnalyzing,
+      hasAnalysis: !!analysis,
+      placeCount: places?.length,
+      analysisData: analysis
+    });
+  }, [isAnalyzing, analysis, places]);
 
   useEffect(() => {
     setShowMap(false);
@@ -172,6 +200,8 @@ const WorkspaceLayout = ({
                   places={places}
                   onViewDetails={handleViewDetails}
                   radius={radius}
+                  analyzedPlaces={analysis} // Pass the analysis data directly
+                  isAnalyzing={isAnalyzing}  // Also pass loading state
                 />
               )}
             </div>
