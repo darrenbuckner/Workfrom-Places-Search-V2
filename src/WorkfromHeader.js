@@ -93,6 +93,9 @@ const WorkfromHeader = ({
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // Show location bar only after initial search
+  const showLocationBar = searchPhase !== 'initial';
+  
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -113,7 +116,7 @@ const WorkfromHeader = ({
   return (
     <header className={`
       fixed top-0 left-0 right-0 z-40 transition-all duration-200
-      ${isExpanded ? 'h-[104px]' : 'h-16'}
+      ${showLocationBar && isExpanded ? 'h-[104px]' : 'h-16'}
       ${className}
     `}>
       {/* Backdrop */}
@@ -131,11 +134,11 @@ const WorkfromHeader = ({
             <Menu size={20} />
           </button>
           <div className="flex items-center gap-2">
-            <WorkfromLogo size={isExpanded ? 'default' : 'small'} />
+            <WorkfromLogo size={isExpanded && showLocationBar ? 'default' : 'small'} />
             <h1 className={`
               font-bold text-[var(--text-primary)] truncate
               transition-all duration-200
-              ${isExpanded ? 'text-lg' : 'text-base'}
+              ${isExpanded && showLocationBar ? 'text-lg' : 'text-base'}
             `}>
               {headerTitle}
             </h1>
@@ -181,24 +184,26 @@ const WorkfromHeader = ({
         </div>
       </div>
 
-      {/* Location Bar - Slides up/down */}
-      <div className={`
-        relative h-12 px-4 transition-all duration-200 transform
-        ${isExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}
-      `}>
-        <button
-          onClick={onLocationClick}
-          className="flex items-center gap-2 px-4 py-2 w-full sm:w-auto rounded-full
-            bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)]
-            border border-[var(--border-primary)] transition-colors"
-        >
-          <MapPin size={16} className="text-[var(--accent-primary)]" />
-          <span className="text-sm font-medium text-[var(--text-primary)] truncate">
-            {locationName || 'Select Location'}
-          </span>
-          <ChevronDown size={16} className="text-[var(--text-secondary)]" />
-        </button>
-      </div>
+      {/* Location Bar - Only shown after initial search */}
+      {showLocationBar && (
+        <div className={`
+          relative h-12 px-4 transition-all duration-200 transform
+          ${isExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}
+        `}>
+          <button
+            onClick={onLocationClick}
+            className="flex items-center gap-2 px-4 py-2 w-full sm:w-auto rounded-full
+              bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)]
+              border border-[var(--border-primary)] transition-colors"
+          >
+            <MapPin size={16} className="text-[var(--accent-primary)]" />
+            <span className="text-sm font-medium text-[var(--text-primary)] truncate">
+              {locationName || 'Select Location'}
+            </span>
+            <ChevronDown size={16} className="text-[var(--text-secondary)]" />
+          </button>
+        </div>
+      )}
 
       {/* Gradient Overlay */}
       <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
