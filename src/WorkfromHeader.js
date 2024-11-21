@@ -130,9 +130,6 @@ const WorkfromHeader = ({
       <div className="relative h-16 px-4 flex items-center justify-between">
         {/* Left Section - Logo and Title */}
         <div className="flex items-center gap-2">
-          <button className="p-2 -ml-2 rounded-full hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] lg:hidden">
-            <Menu size={20} />
-          </button>
           <div className="flex items-center gap-2">
             <WorkfromLogo size={isExpanded && showLocationBar ? 'default' : 'small'} />
             <h1 className={`
@@ -147,15 +144,6 @@ const WorkfromHeader = ({
 
         {/* Right Section - Actions */}
         <div className="flex items-center gap-1">
-          {searchPhase !== 'initial' && (
-            <button
-              className="p-2 rounded-full hover:bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              aria-label="Search"
-            >
-              <Search size={20} />
-            </button>
-          )}
-          
           {showThemeToggle && <ThemeToggle />}
           
           {showHowItWorks && (

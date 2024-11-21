@@ -10,9 +10,59 @@ import {
   WifiOff, 
   Volume2, 
   MapPin,
-  Image as ImageIcon
+  ImageIcon,
+  Star,
+  ChevronRight
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
+
+// New MetricBadge component to match list view styling
+const MetricBadge = ({ icon: Icon, label, variant }) => {
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'success':
+        return 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-400/10';
+      case 'warning':
+        return 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-400/10';
+      case 'error':
+        return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-400/10';
+      default:
+        return 'text-gray-600 bg-gray-50 dark:text-gray-400 dark:bg-gray-400/10';
+    }
+  };
+
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md ${getVariantStyles()}`}>
+      <Icon size={12} />
+      <span className="font-medium text-xs">{label}</span>
+    </div>
+  );
+};
+
+// StarRating component to match list view
+const StarRating = ({ score }) => {
+  const ratingValue = Math.round(score * 2) / 2; // Round to nearest 0.5
+  const fullStars = Math.floor(ratingValue);
+  const hasHalfStar = ratingValue % 1 !== 0;
+  
+  return (
+    <div className="flex items-center gap-0.5">
+      {[...Array(5)].map((_, i) => (
+        <Star
+          key={i}
+          size={12}
+          className={`${
+            i < fullStars
+              ? 'text-[var(--accent-primary)] fill-current'
+              : i === fullStars && hasHalfStar
+              ? 'text-[var(--accent-primary)]'
+              : 'text-[var(--text-tertiary)]'
+          }`}
+        />
+      ))}
+    </div>
+  );
+};
 
 // MapController to handle automatic map fitting
 const MapController = ({ userLocation, places }) => {
@@ -34,19 +84,6 @@ const MapController = ({ userLocation, places }) => {
 
   return null;
 };
-
-// Reusable badge component for metrics
-const MetricBadge = ({ icon: Icon, label, color, className = "" }) => (
-  <div className={`
-    inline-flex items-center gap-1.5 px-2 py-1 
-    rounded-md border border-[var(--border-primary)]
-    bg-[var(--bg-primary)]
-    ${className}
-  `}>
-    <Icon size={14} className={color} />
-    <span className={`text-xs font-medium ${color}`}>{label}</span>
-  </div>
-);
 
 const NearbyPlacesMap = ({ 
   places, 
@@ -184,10 +221,9 @@ const NearbyPlacesMap = ({
   const getWifiStatus = (place) => {
     if (place.no_wifi === "1") {
       return { 
-        icon: WifiOff, 
-        label: "No WiFi", 
-        color: "text-[var(--error)]",
-        iconColor: "text-[var(--error)]"
+        icon: WifiOff,
+        label: "No WiFi",
+        variant: 'error'
       };
     }
 
@@ -197,44 +233,34 @@ const NearbyPlacesMap = ({
         return {
           icon: Wifi,
           label: "Fast WiFi",
-          value: "Excellent",
-          color: "text-[var(--success)]",
-          iconColor: "text-[var(--success)]"
+          variant: 'success'
         };
       }
       if (speed >= 25) {
         return {
           icon: Wifi,
           label: "Very Good WiFi",
-          value: "Very Good",
-          color: "text-[var(--success)]",
-          iconColor: "text-[var(--success)]"
+          variant: 'success'
         };
       }
       if (speed >= 10) {
         return {
           icon: Wifi,
           label: "Good WiFi",
-          value: "Good",
-          color: "text-[var(--warning)]",
-          iconColor: "text-[var(--warning)]"
+          variant: 'warning'
         };
       }
       return {
         icon: Wifi,
         label: `${speed} Mbps`,
-        value: "Basic",
-        color: "text-[var(--warning)]",
-        iconColor: "text-[var(--warning)]"
+        variant: 'warning'
       };
     }
 
     return {
       icon: Wifi,
       label: "WiFi Available",
-      value: "Unknown",
-      color: "text-[var(--text-tertiary)]",
-      iconColor: "text-[var(--text-tertiary)]"
+      variant: 'default'
     };
   };
 
@@ -243,28 +269,24 @@ const NearbyPlacesMap = ({
     if (powerValue === 'none' || powerValue === '') {
       return { 
         label: "No Power",
-        color: "text-[var(--error)]",
-        iconColor: "text-[var(--error)]"
+        variant: 'error'
       };
     }
     if (powerValue.includes('range3') || powerValue.includes('good')) {
       return { 
         label: "Many Outlets",
-        color: "text-[var(--success)]",
-        iconColor: "text-[var(--success)]"
+        variant: 'success'
       };
     }
     if (powerValue.includes('range2')) {
       return { 
         label: "Some Outlets",
-        color: "text-[var(--warning)]",
-        iconColor: "text-[var(--warning)]"
+        variant: 'warning'
       };
     }
     return { 
       label: "Limited Power",
-      color: "text-[var(--warning)]",
-      iconColor: "text-[var(--warning)]"
+      variant: 'warning'
     };
   };
 
@@ -273,30 +295,159 @@ const NearbyPlacesMap = ({
     if (noise.includes('quiet')) {
       return { 
         label: "Quiet",
-        color: "text-[var(--success)]",
-        iconColor: "text-[var(--success)]"
+        variant: 'success'
       };
     }
     if (noise.includes('moderate')) {
       return { 
         label: "Moderate",
-        color: "text-[var(--warning)]",
-        iconColor: "text-[var(--warning)]"
+        variant: 'warning'
       };
     }
     if (noise.includes('noisy')) {
       return { 
         label: "Lively",
-        color: "text-[var(--warning)]",
-        iconColor: "text-[var(--warning)]"
+        variant: 'warning'
       };
     }
     return { 
       label: "Unknown",
-      color: "text-[var(--text-tertiary)]",
-      iconColor: "text-[var(--text-tertiary)]"
+      variant: 'default'
     };
   };
+
+  // Replace the PopupContent component in NearbyPlacesMap.js with this more compact version
+
+const PopupContent = ({ place, isHighlighted }) => {
+  // Helper to get concise WiFi status
+  const getWifiInfo = (place) => {
+    if (place.no_wifi === "1") return "No WiFi";
+    if (place.download) {
+      const speed = Math.round(place.download);
+      if (speed >= 50) return "Fast WiFi";
+      if (speed >= 25) return "Good WiFi";
+      if (speed >= 10) return `${speed} Mbps`;
+      return `${speed} Mbps`;
+    }
+    return "WiFi Available";
+  };
+
+  // Helper to get concise power status
+  const getPowerInfo = (place) => {
+    const power = String(place.power || '').toLowerCase();
+    if (power === 'none' || power === '') return "No outlets";
+    if (power.includes('range3') || power.includes('good')) return "Many outlets";
+    if (power.includes('range2')) return "Some outlets";
+    return "Limited power";
+  };
+
+  return (
+    <div className={`
+      relative rounded-lg border overflow-hidden
+      ${isHighlighted 
+        ? 'border-[var(--accent-primary)] bg-gradient-to-br from-[var(--accent-primary)]/5 to-[var(--accent-primary)]/10' 
+        : 'border-[var(--border-primary)] bg-[var(--bg-secondary)]'
+      }
+    `}>
+      <div className="p-3">
+        {/* Header Section */}
+        <div className="flex items-start gap-3">
+          {/* Thumbnail */}
+          <div 
+            onClick={() => onPhotoClick(place)}
+            className={`
+              w-14 h-14 rounded-md overflow-hidden flex-shrink-0 cursor-pointer
+              bg-[var(--bg-tertiary)] transition-transform hover:scale-105
+              border ${isHighlighted ? 'border-[var(--accent-primary)]/25' : 'border-[var(--border-primary)]'}
+            `}
+          >
+            {place.thumbnail_img ? (
+              <img
+                src={place.thumbnail_img}
+                alt={place.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src = `/api/placeholder/56/56?text=No+image`;
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                <ImageIcon size={16} className="text-[var(--text-tertiary)]" />
+              </div>
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h3 className={`text-sm font-semibold truncate
+                  ${isHighlighted ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}
+                `}>
+                  {place.title}
+                </h3>
+                {/* Rating and Distance */}
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-1">
+                    <StarRating score={place.workabilityScore / 2} />
+                    <span className="text-xs text-[var(--text-secondary)]">
+                      {place.workabilityScore.toFixed(1)}
+                    </span>
+                  </div>
+                  <span className="text-xs text-[var(--text-secondary)]">
+                    • {place.distance} mi
+                  </span>
+                </div>
+                {/* Compact Info Line */}
+                <div className="flex items-center gap-1.5 mt-1 text-xs text-[var(--text-secondary)]">
+                  <Wifi size={12} className="flex-shrink-0" />
+                  <span className="truncate">{getWifiInfo(place)}</span>
+                  <span className="mx-0.5">•</span>
+                  <Battery size={12} className="flex-shrink-0" />
+                  <span className="truncate">{getPowerInfo(place)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--border-primary)]">
+          <button
+            onClick={() => onPhotoClick(place)}
+            className="flex items-center justify-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-md
+              bg-[var(--accent-primary)] text-[var(--button-text)]
+              hover:bg-[var(--accent-secondary)] transition-colors flex-1"
+          >
+            View Details
+            <ChevronRight size={12} />
+          </button>
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+              `${place.street}, ${place.city}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs font-medium
+              bg-[var(--bg-tertiary)] text-[var(--text-primary)]
+              hover:text-[var(--accent-primary)]
+              px-2.5 py-1.5 rounded-md transition-colors"
+          >
+            <Navigation size={12} />
+            <span className="sm:inline">Directions</span>
+          </a>
+        </div>
+      </div>
+
+      {isHighlighted && (
+        <>
+          <div className="absolute -top-px left-0 right-0 h-1 bg-[var(--accent-primary)]" />
+          <div className="absolute -left-px top-0 bottom-0 w-1 bg-[var(--accent-primary)]" />
+        </>
+      )}
+    </div>
+  );
+};
 
   return (
     <div className="rounded-lg overflow-hidden border border-[var(--border-primary)] map-container">
@@ -355,9 +506,6 @@ const NearbyPlacesMap = ({
         {/* Place markers */}
         {places.map((place) => {
           const isHighlighted = highlightedPlace && place.ID === highlightedPlace.ID;
-          const wifiStatus = getWifiStatus(place, isDark);
-          const powerStatus = getPowerStatus(place, isDark);
-          const noiseLevel = getNoiseLevel(place, isDark);
           
           return (
             <Marker
@@ -367,114 +515,7 @@ const NearbyPlacesMap = ({
               zIndexOffset={isHighlighted ? 900 : 100}
             >
               <Popup>
-                <div className={`
-                  p-4 rounded-lg ${isHighlighted 
-                    ? 'border-[var(--accent-primary)]' 
-                    : 'border-[var(--border-primary)]'
-                  } bg-[var(--bg-primary)] border
-                `}>
-                  <div className="flex items-start gap-4 mb-4">
-                    <div 
-                      onClick={() => onPhotoClick(place)}
-                      className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer
-                        bg-[var(--bg-tertiary)] transition-transform hover:scale-105"
-                    >
-                      {place.thumbnail_img ? (
-                        <img
-                          src={place.thumbnail_img}
-                          alt={place.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.src = `/api/placeholder/80/80?text=No+image`;
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center">
-                          <ImageIcon size={20} className="text-[var(--text-tertiary)] mb-1" />
-                          <span className="text-xs text-[var(--text-tertiary)]">No image</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h2 
-                            onClick={() => onPhotoClick(place)}
-                            className="text-lg font-semibold text-[var(--text-primary)] 
-                              hover:text-[var(--action-primary)] cursor-pointer truncate"
-                          >
-                            {place.title}
-                          </h2>
-                          <p className="text-sm text-[var(--text-secondary)] mt-1">
-                            {place.distance} miles away
-                          </p>
-                        </div>
-                        
-                        <div 
-                          onClick={() => onPhotoClick(place)}
-                          className="flex-shrink-0 w-12 h-12 rounded-lg cursor-pointer
-                            flex items-center justify-center font-bold text-lg
-                            bg-[var(--accent-primary)] text-[var(--button-text)]
-                            transition-transform hover:scale-105"
-                        >
-                          {place.workabilityScore}
-                        </div>
-                      </div>
-
-                      <div className="mt-3 space-y-1.5">
-                        <div className="flex flex-wrap gap-1.5">
-                          <MetricBadge 
-                            icon={wifiStatus.icon}
-                            label={wifiStatus.label} 
-                            color={wifiStatus.color}
-                            iconColor={wifiStatus.iconColor}
-                          />
-                          <MetricBadge 
-                            icon={Battery} 
-                            label={powerStatus.label} 
-                            color={powerStatus.color}
-                            iconColor={powerStatus.iconColor}
-                          />
-                          <MetricBadge 
-                            icon={Volume2} 
-                            label={noiseLevel.label} 
-                            color={noiseLevel.color}
-                            iconColor={noiseLevel.iconColor}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 mt-4">
-                    <button
-                      onClick={() => onPhotoClick(place)}
-                      className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-md
-                        bg-[var(--accent-primary)] text-[var(--button-text)]
-                        hover:bg-[var(--accent-secondary)] transition-colors"
-                    >
-                      <span>View Details</span>
-                      <ArrowRight size={14} />
-                    </button>
-
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                        `${place.street}, ${place.city}`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-sm font-medium 
-                        px-3 py-1.5 rounded-md transition-colors
-                        bg-[var(--bg-tertiary)]
-                        text-[var(--text-primary)]
-                        hover:bg-[var(--bg-secondary)]
-                        hover:text-[var(--accent-primary)]"
-                    >
-                      <Navigation size={14} />
-                      <span>Directions</span>
-                    </a></div>
-                </div>
+                <PopupContent place={place} isHighlighted={isHighlighted} />
               </Popup>
             </Marker>
           );
@@ -673,6 +714,27 @@ const NearbyPlacesMap = ({
           background-color: var(--accent-primary);
           border-radius: 4px;
           border: 2px solid var(--bg-secondary);
+        }
+        .leaflet-popup-content-wrapper {
+          padding: 0 !important;
+          overflow: hidden !important;
+          border-radius: 0.5rem !important;
+        }
+        
+        .leaflet-popup-content {
+          margin: 0 !important;
+          width: 320px !important;
+        }
+        
+        .leaflet-popup-close-button {
+          right: 4px !important;
+          top: 4px !important;
+          color: var(--text-secondary) !important;
+          z-index: 1;
+        }
+
+        .leaflet-popup-tip {
+          border-top: 1px solid var(--border-primary) !important;
         }
       `}</style>
     </div>
