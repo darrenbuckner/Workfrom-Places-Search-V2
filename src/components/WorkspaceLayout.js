@@ -103,7 +103,10 @@ const WorkspaceLayout = ({
 	  return (
 	    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
 	      <div className="container mx-auto px-4 max-w-2xl">
-	        <WorkfromHeader className="mt-6 mb-4" />
+	        <WorkfromHeader 
+	          className="mt-6 mb-4" 
+	          onShowHowItWorks={onShowHowItWorks}
+	        />
 	        <UnifiedLoadingState
 	          viewMode="insights"
 	          searchPhase={searchPhase}
@@ -119,7 +122,10 @@ const WorkspaceLayout = ({
 	  return (
 	    <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
 	      <div className="container mx-auto px-4 max-w-2xl">
-	        <WorkfromHeader className="mt-6 mb-4" />
+	        <WorkfromHeader 
+	          className="mt-6 mb-4" 
+	          onShowHowItWorks={onShowHowItWorks}
+	        />
 	        <ErrorMessage
 	          error={error}
 	          onRetry={onSearch}
@@ -134,7 +140,10 @@ const WorkspaceLayout = ({
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
       <div className="container mx-auto px-4">
-        <WorkfromHeader className="mt-6 mb-4" />
+        <WorkfromHeader 
+	          className="mt-6 mb-4" 
+	          onShowHowItWorks={onShowHowItWorks}
+	        />
         
         <div className="max-w-2xl mx-auto mb-6">
           <LocationBar
