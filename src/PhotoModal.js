@@ -9,6 +9,7 @@ import { useTheme } from './ThemeProvider';
 import { getWifiStatus } from './wifiUtils';
 import WorkabilityScore from './WorkabilityScore';
 import StarRating from './components/StarRating';
+import WorkabilityMetrics from './components/WorkabilityMetrics';
 import ExpandableMetricBadge from './ExpandableMetricBadge';
 import LocationSection from './LocationSection';
 import { useScrollLock } from './useScrollLock';
@@ -500,15 +501,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       </div>
 
                       {/* Metrics Section - Updated Layout */}
-                      <div className="flex flex-wrap gap-2">
-                        {getWorkabilityMetrics(selectedPlace).map((metric, index) => (
-                          <ExpandableMetricBadge
-                            key={index}
-                            metric={metric}
-                            className="flex-shrink-0"
-                          />
-                        ))}
-                      </div>
+                      <WorkabilityMetrics place={selectedPlace} />
                     </div>
                   </div>
 
