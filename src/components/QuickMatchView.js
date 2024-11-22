@@ -2,84 +2,90 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Focus, Users, Phone, Coffee, Sparkles, ArrowRight,
   Navigation, MapPin, Wifi, Battery, Volume2, ImageIcon,
-  Video, Music, ChevronDown
+  Video, Music, ChevronDown, Quote
 } from 'lucide-react';
 import StarRating from './StarRating';
 
+// Add helper function for safely getting best work style
+const getBestWorkStyle = (scores) => {
+  if (!scores || typeof scores !== 'object') {
+    return null;
+  }
+  
+  const entries = Object.entries(scores || {});
+  if (entries.length === 0) return null;
+  
+  const sorted = entries.sort(([,a], [,b]) => b - a);
+  return sorted[0] ? sorted[0][0] : null;
+};
+
+// Add helper for score quality label
+const getScoreLabel = (score) => {
+  if (score >= 8) return "Excellent";
+  if (score >= 6) return "Good";
+  if (score >= 4) return "Fair";
+  return "Limited";
+};
+
 const DEBUG = true;
+
+const LoadingInsight = () => (
+  <div className="mt-2 flex items-start gap-2 p-3 rounded-lg
+    bg-[var(--bg-primary)] border border-[var(--border-primary)]">
+    <Quote 
+      size={16} 
+      className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5 animate-pulse" 
+    />
+    <div className="flex-1 space-y-2">
+      <div className="h-4 bg-[var(--bg-secondary)] rounded w-3/4 animate-shimmer"></div>
+      <div className="h-4 bg-[var(--bg-secondary)] rounded w-1/2 animate-shimmer"></div>
+    </div>
+  </div>
+);
 
 const PlaceCard = ({ 
   place, 
   isHighlighted, 
   onViewDetails, 
   workStyle, 
-  insights 
+  insights,
+  isAnalyzing 
 }) => {
-  const getPlaceInsight = () => {
-    if (!place || !insights?.places) return '';
+  // Get insights safely with null checks
+  const placeInsight = insights?.places?.find(p => 
+    String(p.id) === String(place.ID)
+  );
+  
+  // Only show loading or insight for highlighted (best match) place
+  const shouldShowInsight = isHighlighted;
+  const userInsight = placeInsight?.userInsight;
+  const showLoading = shouldShowInsight && isAnalyzing && !userInsight;
+  const hasInsight = shouldShowInsight && Boolean(userInsight);
 
-    const placeInsight = insights.places.find(p => String(p.id) === String(place.ID));
+  const renderInsightSection = () => {
+    if (!shouldShowInsight) return null;
     
-    // Debug logs for insight data
-    console.group(`Insight data for place ${place.ID} (${place.title})`);
-    console.log('Raw place insight:', placeInsight);
-    if (placeInsight) {
-      console.log('Available insight categories:', Object.keys(placeInsight.insights));
-      console.log('Scores:', placeInsight.scores);
-      if (workStyle) {
-        const styleMap = {
-          'focus': 'focus',
-          'group': 'group',
-          'video': 'calls',
-          'lively': 'casual',
-          'casual': 'casual'
-        };
-        const mappedStyle = styleMap[workStyle];
-        console.log('Selected work style:', workStyle);
-        console.log('Mapped style:', mappedStyle);
-        console.log('Style-specific insight:', placeInsight.insights[mappedStyle]?.description);
-      } else {
-        const bestStyle = Object.entries(placeInsight.scores)
-          .sort((a, b) => b[1] - a[1])[0];
-        console.log('Best scoring style:', bestStyle[0], 'with score:', bestStyle[1]);
-        console.log('Best style insight:', placeInsight.insights[bestStyle[0]]?.description);
-      }
+    if (showLoading) {
+      return <LoadingInsight />;
     }
-    console.groupEnd();
-
-    if (!placeInsight?.insights) return '';
-
-    const styleMap = {
-      'focus': 'focus',
-      'group': 'group',
-      'video': 'calls',
-      'lively': 'casual',
-      'casual': 'casual'
-    };
-
-    // If we have a selected work style, use that specific insight
-    if (workStyle && styleMap[workStyle]) {
-      const mappedStyle = styleMap[workStyle];
-      const styleInsight = placeInsight.insights[mappedStyle]?.description;
-      
-      // Debug style-specific insight
-      if (styleInsight) {
-        return styleInsight;
-      }
+    
+    if (hasInsight) {
+      return (
+        <div className="mt-2 flex items-start gap-2 p-3 rounded-lg
+          bg-[var(--bg-primary)] border border-[var(--border-primary)]">
+          <Quote 
+            size={16} 
+            className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" 
+          />
+          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+            {userInsight}
+          </p>
+        </div>
+      );
     }
 
-    // Otherwise find the highest scoring category
-    const scores = placeInsight.scores;
-    if (!scores) return '';
-
-    const bestStyle = Object.entries(scores)
-      .sort((a, b) => b[1] - a[1])[0][0];
-    
-    return placeInsight.insights[bestStyle]?.description || '';
+    return null;
   };
-
-  // Cache insight to avoid recalculation
-  const insight = getPlaceInsight();
 
   return (
     <button
@@ -95,11 +101,11 @@ const PlaceCard = ({
       <div className={`p-4 ${isHighlighted ? 'pb-5' : ''}`}>
         <div className="flex items-start gap-4">
           {/* Thumbnail */}
-          <div className={`
-            w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 
-            bg-[var(--bg-tertiary)] transition-transform hover:scale-105
-            border ${isHighlighted ? 'border-[var(--accent-primary)]/25' : 'border-[var(--border-primary)]'}
-          `}>
+          <div 
+            className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 
+              bg-[var(--bg-tertiary)] transition-transform hover:scale-105
+              border border-[var(--border-primary)]"
+          >
             {place.thumbnail_img ? (
               <img
                 src={place.thumbnail_img}
@@ -135,26 +141,16 @@ const PlaceCard = ({
                   `}>
                     {place.title}
                   </h3>
-                  <div className="flex items-center justify-between mt-1.5">
+                  <div className="flex items-center gap-4 mt-1.5">
                     <div className="flex items-center gap-1.5">
-                      <MapPin size={14} className={
-                        isHighlighted ? 'text-[var(--accent-primary)]/75' : 'text-[var(--text-secondary)]'
-                      } />
-                      <span className={
-                        isHighlighted ? 'text-sm text-[var(--accent-primary)]/75' : 'text-sm text-[var(--text-secondary)]'
-                      }>
+                      <MapPin size={14} className="text-[var(--text-secondary)]" />
+                      <span className="text-sm text-[var(--text-secondary)]">
                         {place.distance} miles away
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <StarRating score={place.workabilityScore} />
-                      <span className={`
-                        text-xs font-medium
-                        ${isHighlighted 
-                          ? 'text-[var(--accent-primary)]/75' 
-                          : 'text-[var(--text-secondary)]'
-                        }
-                      `}>
+                      <span className="text-xs font-medium text-[var(--text-secondary)]">
                         {place.workabilityScore.toFixed(1)}
                       </span>
                     </div>
@@ -162,17 +158,8 @@ const PlaceCard = ({
                 </div>
               </div>
 
-              {insight && (
-                <div className={`
-                  text-sm leading-relaxed
-                  ${isHighlighted 
-                    ? 'text-[var(--accent-primary)]/90' 
-                    : 'text-[var(--text-secondary)]'
-                  }
-                `}>
-                  {insight}
-                </div>
-              )}
+              {/* Insight Section - Only shown for highlighted place */}
+              {renderInsightSection()}
             </div>
           </div>
         </div>
@@ -373,12 +360,13 @@ const QuickMatchView = ({
             }}
           >
             <PlaceCard
-              place={place}
-              isHighlighted={index === 0}
-              onViewDetails={onViewDetails}
-              workStyle={selectedWorkStyle}
-              insights={analyzedPlaces}
-            />
+						  place={place}
+						  isHighlighted={index === 0}
+						  onViewDetails={onViewDetails}
+						  workStyle={selectedWorkStyle}
+						  insights={analyzedPlaces}
+						  index={index}
+						/>
           </div>
         ))}
       </div>
@@ -406,6 +394,34 @@ const QuickMatchView = ({
       )}
 
       <style jsx>{`
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+      <style jsx global>{`
+        @keyframes loadingPulse {
+          0% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.4;
+          }
+          100% {
+            opacity: 1;
+          }
+        }
+
+        .loading-pulse {
+          animation: loadingPulse 1.5s ease-in-out infinite;
+        }
+
         @keyframes fadeSlideIn {
           from {
             opacity: 0;

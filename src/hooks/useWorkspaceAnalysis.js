@@ -8,15 +8,16 @@ const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes
 // Helper to generate a cache key from places
 const generateCacheKey = (places) => {
   return places
-    .map(p => `${p.ID}-${p.workabilityScore}-${p.distance}`)
+    .map(p => `${p.ID}-${p.workabilityScore}-${p.distance}-${p.description?.substring(0, 100)}`)
     .sort()
     .join('|');
 };
 
-// Simplified payload to reduce request size
+// Helper to prepare payload with all necessary data
 const prepareAnalysisPayload = (places) => {
   return places.map(place => ({
     id: place.ID,
+    description: place.description,  // Include the description
     name: place.title,
     type: place.type || '',
     distance: parseFloat(place.distance) || 0,
@@ -78,6 +79,14 @@ export const useWorkspaceAnalysis = () => {
       return null;
     }
 
+    // Log incoming places data for debugging
+    console.log('Places to analyze:', places.map(p => ({
+      id: p.ID,
+      hasDescription: !!p.description,
+      descriptionLength: p.description?.length,
+      descriptionPreview: p.description?.substring(0, 100)
+    })));
+
     // Clear previous analysis state
     clearAnalysis();
     setIsAnalyzing(true);
@@ -86,7 +95,7 @@ export const useWorkspaceAnalysis = () => {
     const cacheKey = generateCacheKey(places);
     if (!skipCache) {
       const cached = analysisCache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      if (cached) {
         setAnalysis(cached.data);
         setIsAnalyzing(false);
         return cached.data;
@@ -104,6 +113,14 @@ export const useWorkspaceAnalysis = () => {
         const timeoutId = setTimeout(() => {
           abortControllerRef.current?.abort();
         }, 25000); // 25 second timeout
+
+        console.log('Sending places for analysis:', prepareAnalysisPayload(places)
+          .map(p => ({
+            id: p.id,
+            hasDescription: !!p.description,
+            descriptionLength: p.description?.length
+          }))
+        );
 
         const response = await fetch(
           `${API_CONFIG.baseUrl}/analyze-workspaces?appid=${API_CONFIG.appId}`,
@@ -136,6 +153,16 @@ export const useWorkspaceAnalysis = () => {
         if (!data.insights) {
           throw new AnalysisError('Invalid analysis response', 'INVALID_RESPONSE', false);
         }
+
+        // Log analysis results for debugging
+        console.log('Analysis results:', {
+          totalPlaces: data.insights.places.length,
+          placesWithInsights: data.insights.places.filter(p => p.userInsight).length,
+          sampleInsights: data.insights.places
+            .filter(p => p.userInsight)
+            .slice(0, 3)
+            .map(p => ({ id: p.id, insight: p.userInsight }))
+        });
 
         // Cache successful response
         analysisCache.set(cacheKey, {
@@ -174,37 +201,14 @@ export const useWorkspaceAnalysis = () => {
       const result = await attemptAnalysis();
       return result;
     } catch (err) {
+      console.error('Analysis failed:', err);
       setError(err);
-      // Return partial analysis if available
-      return generatePartialAnalysis(places);
+      return null;
     } finally {
       setIsAnalyzing(false);
       abortControllerRef.current = null;
     }
   }, [clearAnalysis]);
-
-  // Generate basic insights when full analysis fails
-  const generatePartialAnalysis = (places) => {
-    // Simple analysis based on basic metrics
-    return {
-      featured_spot: {
-        place_name: places[0]?.title,
-        vibe: "Popular Spot",
-        highlight: "Basic information available",
-        unique_features: [
-          "Details temporarily limited",
-          "Check back for full analysis"
-        ],
-        best_time_to_visit: "Varies",
-        best_for: ["Remote Work"]
-      },
-      metrics: {
-        wifi_availability: places.filter(p => p.no_wifi !== "1").length / places.length,
-        power_availability: places.filter(p => p.power && p.power !== 'none').length / places.length,
-        average_workability: places.reduce((sum, p) => sum + (p.workabilityScore || 0), 0) / places.length
-      }
-    };
-  };
 
   return {
     isAnalyzing,
