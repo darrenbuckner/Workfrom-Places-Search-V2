@@ -295,73 +295,35 @@ api.get('/places/:id', async (req, res) => {
 api.post('/analyze-workspaces', async (req, res) => {
   try {
     const { places } = req.body;
-    
-    if (!places || !Array.isArray(places)) {
+    if (!places?.length || !places[0]) {
       return res.status(400).json({
-        meta: { 
-          code: 400, 
-          error_type: 'invalid_request',
-          error_detail: 'Invalid or missing places data' 
-        }
+        meta: { code: 400, error_type: 'invalid_request' }
       });
     }
 
-    // Process places in chunks to respect rate limits
-    const chunkedPlaces = [];
-    const chunkSize = 3;
-    for (let i = 0; i < places.length; i += chunkSize) {
-      chunkedPlaces.push(places.slice(i, i + chunkSize));
-    }
+    const place = places[0];
+    const scores = calculateWorkStyleScores(place);
+    let userInsight = null;
 
-    let placeInsights = [];
-    
-    try {
-      for (const chunk of chunkedPlaces) {
-        const chunkInsights = await Promise.all(chunk.map(async place => {
-          const scores = calculateWorkStyleScores(place);
-          
-          let userInsight = null;
-          if (place.description) {
-            const parsed = await parseUserDescription(place.description);
-            if (parsed?.userInsight) {
-              userInsight = parsed.userInsight;
-            }
-          }
-
-          return {
-            id: place.id || place.ID,
-            scores,
-            userInsight
-          };
-        }));
-        
-        placeInsights = [...placeInsights, ...chunkInsights];
-        
-        // Add delay between chunks
-        if (chunkedPlaces.length > 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-    } catch (error) {
-      console.error('Error processing places:', error);
-      throw error;
+    if (place.description) {
+      const parsed = await parseUserDescription(place.description);
+      userInsight = parsed?.userInsight || null;
     }
 
     return res.json({
       meta: { code: 200 },
       insights: {
-        places: placeInsights
+        places: [{
+          id: place.id || place.ID,
+          scores,
+          userInsight
+        }]
       }
     });
-
   } catch (error) {
     console.error('Analysis error:', error);
     return res.status(500).json({
-      meta: {
-        code: 500,
-        error_type: 'analysis_failed',
-        error_detail: error.message || 'An error occurred during analysis'
-      }
+      meta: { code: 500, error_type: 'analysis_failed' }
     });
   }
 });

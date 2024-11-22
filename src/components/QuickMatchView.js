@@ -1,33 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Focus, Users, Phone, Coffee, Sparkles, ArrowRight,
-  Navigation, MapPin, Wifi, Battery, Volume2, ImageIcon,
-  Video, Music, ChevronDown, Quote
+  Focus, Users, Coffee, Sparkles, MapPin,
+  ImageIcon, Video, Music, ChevronDown, Quote
 } from 'lucide-react';
 import StarRating from './StarRating';
-
-// Add helper function for safely getting best work style
-const getBestWorkStyle = (scores) => {
-  if (!scores || typeof scores !== 'object') {
-    return null;
-  }
-  
-  const entries = Object.entries(scores || {});
-  if (entries.length === 0) return null;
-  
-  const sorted = entries.sort(([,a], [,b]) => b - a);
-  return sorted[0] ? sorted[0][0] : null;
-};
-
-// Add helper for score quality label
-const getScoreLabel = (score) => {
-  if (score >= 8) return "Excellent";
-  if (score >= 6) return "Good";
-  if (score >= 4) return "Fair";
-  return "Limited";
-};
-
-const DEBUG = true;
 
 const LoadingInsight = () => (
   <div className="mt-2 flex items-start gap-2 p-3 rounded-lg
@@ -43,20 +19,8 @@ const LoadingInsight = () => (
   </div>
 );
 
-const PlaceCard = ({ 
-  place, 
-  isHighlighted, 
-  onViewDetails, 
-  workStyle, 
-  insights,
-  isAnalyzing 
-}) => {
-  // Get insights safely with null checks
-  const placeInsight = insights?.places?.find(p => 
-    String(p.id) === String(place.ID)
-  );
-  
-  // Only show loading or insight for highlighted (best match) place
+const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing }) => {
+  const placeInsight = insights?.places?.find(p => String(p.id) === String(place.ID));
   const shouldShowInsight = isHighlighted;
   const userInsight = placeInsight?.userInsight;
   const showLoading = shouldShowInsight && isAnalyzing && !userInsight;
@@ -64,11 +28,7 @@ const PlaceCard = ({
 
   const renderInsightSection = () => {
     if (!shouldShowInsight) return null;
-    
-    if (showLoading) {
-      return <LoadingInsight />;
-    }
-    
+    if (showLoading) return <LoadingInsight />;
     if (hasInsight) {
       return (
         <div className="mt-2 flex items-start gap-2 p-3 rounded-lg
@@ -83,7 +43,6 @@ const PlaceCard = ({
         </div>
       );
     }
-
     return null;
   };
 
@@ -100,12 +59,9 @@ const PlaceCard = ({
     >
       <div className={`p-4 ${isHighlighted ? 'pb-5' : ''}`}>
         <div className="flex items-start gap-4">
-          {/* Thumbnail */}
-          <div 
-            className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 
-              bg-[var(--bg-tertiary)] transition-transform hover:scale-105
-              border border-[var(--border-primary)]"
-          >
+          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 
+            bg-[var(--bg-tertiary)] transition-transform hover:scale-105
+            border border-[var(--border-primary)]">
             {place.thumbnail_img ? (
               <img
                 src={place.thumbnail_img}
@@ -130,15 +86,13 @@ const PlaceCard = ({
                   {isHighlighted && (
                     <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full 
                       bg-[var(--accent-primary)] text-[var(--button-text)]
-                      text-xs font-medium w-fit mb-2"
-                    >
+                      text-xs font-medium w-fit mb-2">
                       <Sparkles className="w-3 h-3" />
                       <span>Best Match</span>
                     </div>
                   )}
                   <h3 className={`text-lg font-semibold truncate
-                    ${isHighlighted ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}
-                  `}>
+                    ${isHighlighted ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
                     {place.title}
                   </h3>
                   <div className="flex items-center gap-4 mt-1.5">
@@ -157,8 +111,6 @@ const PlaceCard = ({
                   </div>
                 </div>
               </div>
-
-              {/* Insight Section - Only shown for highlighted place */}
               {renderInsightSection()}
             </div>
           </div>
@@ -175,25 +127,10 @@ const PlaceCard = ({
   );
 };
 
-const QuickMatchView = ({ 
-  places, 
-  onViewDetails, 
-  radius, 
-  analyzedPlaces,
-  isAnalyzing 
-}) => {
+const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnalyzing, onAnalyze }) => {
   const [selectedWorkStyle, setSelectedWorkStyle] = useState(null);
   const [displayCount, setDisplayCount] = useState(4);
-  const scrollTargetRef = useRef(null);
-
-  useEffect(() => {
-    if (DEBUG) {
-      console.group('QuickMatchView Data');
-      console.log('Places count:', places?.length);
-      console.log('Analyzed data:', analyzedPlaces);
-      console.groupEnd();
-    }
-  }, [places, analyzedPlaces]);
+  const lastAnalyzedPlaceId = useRef(null);
 
   const workStyles = [
     { id: 'casual', label: 'Casual', icon: Coffee },
@@ -272,43 +209,48 @@ const QuickMatchView = ({
   const getRecommendedPlaces = () => {
     if (!places.length) return [];
 
-    if (!selectedWorkStyle) {
-      return [...places]
-        .sort((a, b) => b.workabilityScore - a.workabilityScore)
-        .slice(0, displayCount);
-    }
-
     const scoredPlaces = places.map(place => ({
       ...place,
       styleScore: calculateLocalScore(place, selectedWorkStyle)
     }));
 
-    return scoredPlaces
-      .sort((a, b) => {
-        const styleScoreDiff = b.styleScore - a.styleScore;
-        if (styleScoreDiff === 0) {
-          return b.workabilityScore - a.workabilityScore;
-        }
-        return styleScoreDiff;
-      })
-      .slice(0, displayCount);
+    scoredPlaces.sort((a, b) => {
+      const styleScoreDiff = b.styleScore - a.styleScore;
+      if (styleScoreDiff === 0) {
+        return b.workabilityScore - a.workabilityScore;
+      }
+      return styleScoreDiff;
+    });
+
+    // Filter places based on selected work style
+    const filteredPlaces = selectedWorkStyle
+      ? scoredPlaces.filter(p => p.styleScore >= 3)
+      : scoredPlaces;
+
+    // Return the top `displayCount` places
+    return filteredPlaces.slice(0, displayCount);
   };
 
   const recommendedPlaces = getRecommendedPlaces();
-  const totalMatchingPlaces = selectedWorkStyle ? 
-    places.filter(p => calculateLocalScore(p, selectedWorkStyle) >= 3).length : places.length;
+  const bestMatch = recommendedPlaces[0];
+  const totalMatchingPlaces = selectedWorkStyle
+    ? places.filter(p => calculateLocalScore(p, selectedWorkStyle) >= 3).length
+    : places.length;
+  const currentlyShowing = recommendedPlaces.length;
+  const hasMoreToShow = currentlyShowing === displayCount && displayCount < totalMatchingPlaces;
 
-  const hasMoreToShow = recommendedPlaces.length === displayCount && 
-    displayCount < totalMatchingPlaces;
-
-  const handleShowMore = () => {
-    const newDisplayCount = Math.min(displayCount + 4, totalMatchingPlaces);
-    setDisplayCount(newDisplayCount);
-  };
+  useEffect(() => {
+    if (bestMatch && 
+        !isAnalyzing && 
+        !analyzedPlaces?.places?.some(p => p.id === bestMatch.ID) &&
+        lastAnalyzedPlaceId.current !== bestMatch.ID) {
+      lastAnalyzedPlaceId.current = bestMatch.ID;
+      onAnalyze([bestMatch]);
+    }
+  }, [bestMatch?.ID, isAnalyzing, analyzedPlaces, onAnalyze, selectedWorkStyle]);
 
   return (
     <div className="space-y-4 mb-24 sm:mb-16">
-      {/* Work Style Filters */}
       <div className="overflow-x-auto pb-2 -mx-4 px-4 -mb-2">
         <div className="flex items-center gap-2">
           {workStyles.map(({ id, label, icon: Icon }) => (
@@ -330,7 +272,6 @@ const QuickMatchView = ({
         </div>
       </div>
 
-      {/* Context Message */}
       <div className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg 
         bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
         <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
@@ -342,13 +283,16 @@ const QuickMatchView = ({
       </div>
 
       {selectedWorkStyle && totalMatchingPlaces > 0 && (
-        <div className="text-sm text-[var(--text-secondary)]">
-          Showing {Math.min(displayCount, recommendedPlaces.length)} of {totalMatchingPlaces} places within {radius} miles
-        </div>
-      )}
+			  <div className="text-sm text-[var(--text-secondary)]">
+			    {currentlyShowing === totalMatchingPlaces ? (
+			      `Showing all ${currentlyShowing} places within ${radius} miles`
+			    ) : (
+			      `Showing ${currentlyShowing} of ${totalMatchingPlaces} places within ${radius} miles`
+			    )}
+			  </div>
+			)}
 
-      {/* Place Cards */}
-      <div className="space-y-3" ref={scrollTargetRef}>
+      <div className="space-y-3">
         {recommendedPlaces.map((place, index) => (
           <div
             key={place.ID}
@@ -360,21 +304,19 @@ const QuickMatchView = ({
             }}
           >
             <PlaceCard
-						  place={place}
-						  isHighlighted={index === 0}
-						  onViewDetails={onViewDetails}
-						  workStyle={selectedWorkStyle}
-						  insights={analyzedPlaces}
-						  index={index}
-						/>
+              place={place}
+              isHighlighted={index === 0}
+              onViewDetails={onViewDetails}
+              insights={analyzedPlaces}
+              isAnalyzing={isAnalyzing}
+            />
           </div>
         ))}
       </div>
 
-      {/* Show More Button */}
       {hasMoreToShow && (
         <button
-          onClick={handleShowMore}
+          onClick={() => setDisplayCount(prev => Math.min(prev + 4, totalMatchingPlaces))}
           className="w-full mt-4 p-3 rounded-lg border border-dashed
             border-[var(--border-primary)] bg-[var(--bg-secondary)]
             hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]

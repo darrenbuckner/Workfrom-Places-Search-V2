@@ -201,7 +201,8 @@ const WorkspaceLayout = ({
                   onViewDetails={handleViewDetails}
                   radius={radius}
                   analyzedPlaces={analysis}
-                  isAnalyzing={isAnalyzing}  // Also pass loading state
+                  isAnalyzing={isAnalyzing}
+                  onAnalyze={analyzePlaces}
                 />
               )}
             </div>
