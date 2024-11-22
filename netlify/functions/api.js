@@ -91,10 +91,10 @@ const parseUserDescription = async (description) => {
     const prompt = `
       Below is a user-submitted description of a workspace. Create a single, 
       concise sentence (max 20 words) that highlights the most unique or 
-      helpful insight for remote workers.
+      helpful insight for remote workers and freelancers.
 
       Focus only on specific, distinctive features rather than generic observations.
-      If the description doesn't contain any unique or helpful insights, respond with null.
+      If the description doesn't contain any unique or helpful insights, respond with an insight about amenities mentioned. If there are no amenities mentioned, respond with null.
 
       User Description: "${stripHtml(description).trim()}"
 
@@ -109,7 +109,7 @@ const parseUserDescription = async (description) => {
       messages: [
         {
           role: "system",
-          content: "You create concise, specific insights from workspace descriptions. Focus only on unique, helpful details that would matter to remote workers. Always respond in valid JSON format."
+          content: "You create concise, specific insights from workspace descriptions. Focus only on unique, helpful details that would matter to remote workers and freelancers. Always respond in valid JSON format."
         },
         {
           role: "user",
