@@ -27,6 +27,13 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
   const showLoading = shouldShowInsight && isAnalyzing && !userInsight;
   const hasInsight = shouldShowInsight && Boolean(userInsight);
 
+  const [currentUserInsight, setCurrentUserInsight] = useState(userInsight);
+
+  useEffect(() => {
+    // Update the currentUserInsight state when the userInsight prop changes
+    setCurrentUserInsight(userInsight);
+  }, [userInsight]);
+
   const renderInsightSection = () => {
     if (!shouldShowInsight) return null;
     if (showLoading) return <LoadingInsight />;
@@ -39,7 +46,7 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
             className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" 
           />
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-            {userInsight}
+            {currentUserInsight}
           </p>
         </div>
       );
@@ -249,6 +256,12 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
       onAnalyze([bestMatch]);
     }
   }, [bestMatch?.ID, isAnalyzing, analyzedPlaces, onAnalyze, selectedWorkStyle]);
+
+  useEffect(() => {
+    // Clear the lastAnalyzedPlaceId when the selectedWorkStyle changes
+    // to ensure the next best match is analyzed
+    lastAnalyzedPlaceId.current = null;
+  }, [selectedWorkStyle]);
 
   return (
     <div className="space-y-4 mb-24 sm:mb-16">
