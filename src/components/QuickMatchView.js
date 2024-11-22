@@ -13,6 +13,7 @@ const LoadingInsight = () => (
       className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5 animate-pulse" 
     />
     <div className="flex-1 space-y-2">
+    	<p className="text-sm text-[var(--text-secondary)] leading-relaxed">Loading Workspace Intelligence...</p>
       <div className="h-4 bg-[var(--bg-secondary)] rounded w-3/4 animate-shimmer"></div>
       <div className="h-4 bg-[var(--bg-secondary)] rounded w-1/2 animate-shimmer"></div>
     </div>
@@ -168,7 +169,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
         if (hasOutdoor) score += 1;
         if (noise.includes('moderate') || noise.includes('lively')) score += 2;
         if (type.includes('coworking')) score += 2;
-        else if (type.includes('cafe')) score += 1;
+        else if (type.includes('commercial')) score += 1;
         if (hasPower) score += 1;
         break;
 
@@ -187,7 +188,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
         if (hasFood) score += 2;
         if (hasCoffee) score += 1;
         if (hasOutdoor) score += 2;
-        if (type.includes('cafe')) score += 1;
+        if (type.includes('commercial')) score += 1;
         break;
 
       case 'casual':
@@ -196,7 +197,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
         if (hasOutdoor) score += 2;
         if (noise.includes('moderate')) score += 2;
         else if (noise.includes('lively')) score += 1;
-        if (type.includes('cafe')) score += 1;
+        if (type.includes('commercial')) score += 1;
         break;
 
       default:

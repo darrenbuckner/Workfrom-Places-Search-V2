@@ -170,7 +170,7 @@ const calculateWorkStyleScores = (place) => {
   if (hasOutdoor) scores.group += 2;
   if (noise.includes('moderate') || noise.includes('lively')) scores.group += 3;
   if (type.includes('coworking')) scores.group += 2;
-  else if (type.includes('cafe')) scores.group += 1;
+  else if (type.includes('commercial')) scores.group += 1;
   if (hasPower) scores.group += 1;
 
   // Calls Score
@@ -188,7 +188,7 @@ const calculateWorkStyleScores = (place) => {
   if (hasOutdoor) scores.casual += 3;
   if (noise.includes('moderate')) scores.casual += 2;
   else if (noise.includes('lively')) scores.casual += 1;
-  if (type.includes('cafe')) scores.casual += 2;
+  if (type.includes('commercial')) scores.casual += 2;
   else if (type.includes('coworking')) scores.casual += 1;
 
   // Normalize scores
