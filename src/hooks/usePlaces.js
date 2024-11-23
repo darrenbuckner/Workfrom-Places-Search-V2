@@ -16,11 +16,12 @@ const mapNoiseLevel = (noise) => {
 
 // Custom error class for API-specific errors
 class APIError extends Error {
-  constructor(code, type, detail) {
+  constructor(code, type, detail, canRetryWithLargerRadius = false) {
     super(detail);
     this.name = 'APIError';
     this.code = code;
     this.type = type;
+    this.canRetryWithLargerRadius = canRetryWithLargerRadius;
   }
 }
 
@@ -78,11 +79,11 @@ export const usePlaces = () => {
           case 404:
             if (data.meta.error_type === 'empty_dataset') {
               setOriginalPlaces([]);
-              // Special handling for no results
               throw new APIError(
                 404,
-                'empty_dataset',
-                `No workspaces found within ${radius} miles. Try increasing your search radius or searching in a different area.`
+                'NO_RESULTS',
+                `No workspaces found within ${radius} miles. Try increasing your search radius or searching in a different area.`,
+                true  // Add this flag to indicate this can be retried with larger radius
               );
             }
             throw new APIError(404, 'not_found', 'Resource not found');

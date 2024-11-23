@@ -6,16 +6,16 @@ import {
 import StarRating from './StarRating';
 
 const LoadingInsight = () => (
-  <div className="mt-2 flex items-start gap-2 p-3 rounded-lg
+  <div className="flex items-start gap-2 p-2 mt-2 rounded-md
     bg-[var(--bg-primary)] border border-[var(--border-primary)]">
     <Quote 
-      size={16} 
+      size={14} 
       className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5 animate-pulse" 
     />
-    <div className="flex-1 space-y-2">
-    	<p className="text-sm text-[var(--text-secondary)] leading-relaxed">Loading Workspace Intelligence...</p>
-      <div className="h-4 bg-[var(--bg-secondary)] rounded w-3/4 animate-shimmer"></div>
-      <div className="h-4 bg-[var(--bg-secondary)] rounded w-1/2 animate-shimmer"></div>
+    <div className="flex-1 space-y-1.5">
+      <p className="text-xs text-[var(--text-secondary)]">Loading Workspace Intelligence...</p>
+      <div className="h-3 bg-[var(--bg-secondary)] rounded w-3/4 animate-shimmer"></div>
+      <div className="h-3 bg-[var(--bg-secondary)] rounded w-1/2 animate-shimmer"></div>
     </div>
   </div>
 );
@@ -26,11 +26,9 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
   const userInsight = placeInsight?.userInsight;
   const showLoading = shouldShowInsight && isAnalyzing && !userInsight;
   const hasInsight = shouldShowInsight && Boolean(userInsight);
-
   const [currentUserInsight, setCurrentUserInsight] = useState(userInsight);
 
   useEffect(() => {
-    // Update the currentUserInsight state when the userInsight prop changes
     setCurrentUserInsight(userInsight);
   }, [userInsight]);
 
@@ -39,13 +37,13 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
     if (showLoading) return <LoadingInsight />;
     if (hasInsight) {
       return (
-        <div className="mt-2 flex items-start gap-2 p-3 rounded-lg
+        <div className="flex items-start gap-2 p-2 mt-2 rounded-md
           bg-[var(--bg-primary)] border border-[var(--border-primary)]">
           <Quote 
-            size={16} 
+            size={14} 
             className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" 
           />
-          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
             {currentUserInsight}
           </p>
         </div>
@@ -65,9 +63,9 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
         }
       `}
     >
-      <div className={`p-4 ${isHighlighted ? 'pb-5' : ''}`}>
-        <div className="flex items-start gap-4">
-          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 
+      <div className="p-3">
+        <div className="flex items-start gap-3">
+          <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 
             bg-[var(--bg-tertiary)] transition-transform hover:scale-105
             border border-[var(--border-primary)]">
             {place.thumbnail_img ? (
@@ -76,51 +74,47 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
                 alt={place.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.target.src = `/api/placeholder/80/80?text=No+image`;
+                  e.target.src = `/api/placeholder/64/64?text=No+image`;
                 }}
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center">
-                <ImageIcon size={20} className="text-[var(--text-tertiary)] mb-1" />
-                <span className="text-xs text-[var(--text-tertiary)]">No image</span>
+                <ImageIcon size={16} className="text-[var(--text-tertiary)]" />
+                <span className="text-[10px] text-[var(--text-tertiary)]">No image</span>
               </div>
             )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  {isHighlighted && (
-                    <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full 
-                      bg-[var(--accent-primary)] text-[var(--button-text)]
-                      text-xs font-medium w-fit mb-2">
-                      <Sparkles className="w-3 h-3" />
-                      <span>Best Match</span>
-                    </div>
-                  )}
-                  <h3 className={`text-lg font-semibold truncate
-                    ${isHighlighted ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
-                    {place.title}
-                  </h3>
-                  <div className="flex items-center gap-4 mt-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <MapPin size={14} className="text-[var(--text-secondary)]" />
-                      <span className="text-sm text-[var(--text-secondary)]">
-                        {place.distance} miles away
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StarRating score={place.workabilityScore} />
-                      <span className="text-xs font-medium text-[var(--text-secondary)]">
-                        {place.workabilityScore.toFixed(1)}
-                      </span>
-                    </div>
-                  </div>
+            <div className="flex flex-col gap-1">
+              {isHighlighted && (
+                <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full 
+                  bg-[var(--accent-primary)] text-[var(--button-text)]
+                  text-[10px] font-medium w-fit">
+                  <Sparkles className="w-3 h-3" />
+                  <span>Best Match</span>
+                </div>
+              )}
+              <h3 className={`text-base font-semibold truncate leading-tight
+                ${isHighlighted ? 'text-[var(--accent-primary)]' : 'text-[var(--text-primary)]'}`}>
+                {place.title}
+              </h3>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <MapPin size={12} className="text-[var(--text-secondary)]" />
+                  <span className="text-xs text-[var(--text-secondary)]">
+                    {place.distance} miles
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <StarRating score={place.workabilityScore} variant="small" />
+                  <span className="text-xs font-medium text-[var(--text-secondary)]">
+                    {place.workabilityScore.toFixed(1)}
+                  </span>
                 </div>
               </div>
-              {renderInsightSection()}
             </div>
+            {renderInsightSection()}
           </div>
         </div>
       </div>
@@ -136,9 +130,22 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
 };
 
 const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnalyzing, onAnalyze }) => {
+  const INITIAL_DISPLAY_COUNT = 4;
   const [selectedWorkStyle, setSelectedWorkStyle] = useState(null);
-  const [displayCount, setDisplayCount] = useState(4);
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
   const lastAnalyzedPlaceId = useRef(null);
+  const scrollContainerRef = useRef(null);
+  const newContentRef = useRef(null);
+  const lastDisplayedCount = useRef(INITIAL_DISPLAY_COUNT);
+
+  // Reset display count when work style changes
+  const handleWorkStyleChange = (workStyle) => {
+    setSelectedWorkStyle(workStyle === selectedWorkStyle ? null : workStyle);
+    setDisplayCount(INITIAL_DISPLAY_COUNT);
+    lastDisplayedCount.current = INITIAL_DISPLAY_COUNT;
+    // Scroll back to top of container
+    scrollContainerRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const workStyles = [
     { id: 'casual', label: 'Casual', icon: Coffee },
@@ -247,6 +254,64 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
   const currentlyShowing = recommendedPlaces.length;
   const hasMoreToShow = currentlyShowing === displayCount && displayCount < totalMatchingPlaces;
 
+  const scrollToNewContent = () => {
+    if (newContentRef.current) {
+      // Get the first new item
+      const firstNewItem = newContentRef.current.querySelector(
+        `.place-card:nth-child(${lastDisplayedCount.current + 1})`
+      );
+
+      if (firstNewItem) {
+        // Use requestAnimationFrame to ensure DOM has updated
+        requestAnimationFrame(() => {
+          firstNewItem.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest'
+          });
+        });
+      }
+    }
+  };
+
+  const handleShowMore = () => {
+    const prevCount = displayCount;
+    const nextCount = Math.min(displayCount + 4, totalMatchingPlaces);
+    setDisplayCount(nextCount);
+
+    // Wait for new content to render
+    requestAnimationFrame(() => {
+      // Find the first new item
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      const cards = container.querySelectorAll('.place-card');
+      const firstNewCard = cards[prevCount];
+      
+      if (firstNewCard) {
+        const containerTop = container.getBoundingClientRect().top;
+        const cardTop = firstNewCard.getBoundingClientRect().top;
+        const offset = cardTop - containerTop - 20; // 20px padding
+
+        window.scrollTo({
+          top: window.scrollY + offset,
+          behavior: 'smooth'
+        });
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (displayCount > lastDisplayedCount.current) {
+      // Wait for the new content to render and animate in
+      const scrollTimeout = setTimeout(() => {
+        scrollToNewContent();
+        lastDisplayedCount.current = displayCount;
+      }, 100); // Small delay to account for render and animation start
+
+      return () => clearTimeout(scrollTimeout);
+    }
+  }, [displayCount]);
+
   useEffect(() => {
     if (bestMatch && 
         !isAnalyzing && 
@@ -264,13 +329,13 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
   }, [selectedWorkStyle]);
 
   return (
-    <div className="space-y-4 mb-24 sm:mb-16">
+    <div className="space-y-4 mb-24 sm:mb-16" ref={scrollContainerRef}>
       <div className="overflow-x-auto pb-2 -mx-4 px-4 -mb-2">
         <div className="flex items-center gap-2">
           {workStyles.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setSelectedWorkStyle(selectedWorkStyle === id ? null : id)}
+              onClick={() => handleWorkStyleChange(id)}
               className={`
                 flex items-center gap-2 px-3 py-2 rounded-lg border transition-all
                 ${selectedWorkStyle === id
@@ -330,7 +395,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
 
       {hasMoreToShow && (
         <button
-          onClick={() => setDisplayCount(prev => Math.min(prev + 4, totalMatchingPlaces))}
+          onClick={handleShowMore}
           className="w-full mt-4 p-3 rounded-lg border border-dashed
             border-[var(--border-primary)] bg-[var(--bg-secondary)]
             hover:border-[var(--accent-primary)] hover:bg-[var(--bg-primary)]

@@ -66,9 +66,23 @@ const WorkfromPlacesContent = () => {
             variant: 'error'
           });
       }
+    } else if (error.type === 'NO_RESULTS') {
+      setSearchError({
+        code: 'NO_RESULTS',
+        title: 'No Places Found',
+        message: error.message,
+        variant: 'info',
+        canRetryWithLargerRadius: true
+      });
     } else {
       setSearchError(error);
     }
+  };
+
+  const handleRetryWithLargerRadius = () => {
+    const newRadius = Math.min(radius * 2, 25); // Double radius up to max 25 miles
+    setRadius(newRadius);
+    performSearch(); // Retry search with new radius
   };
 
   const performSearch = async () => {
@@ -111,7 +125,7 @@ const WorkfromPlacesContent = () => {
         onPhotoClick={handlePhotoClick}
         radius={radius}
         setRadius={setRadius}
-        onShowHowItWorks={() => setShowHowItWorks(true)}
+        onRetryWithLargerRadius={handleRetryWithLargerRadius}
       />
       
       {showPhotoModal && (

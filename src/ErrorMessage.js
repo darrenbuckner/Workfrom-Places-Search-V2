@@ -131,7 +131,8 @@ const ErrorMessage = ({
   onDismiss,
   size = 'default', // 'default' | 'compact'
   className = '',
-  showIcon = true
+  showIcon = true,
+  retryLabel = 'Try Again'
 }) => {
   const config = getErrorConfig(error);
   const Icon = config.icon;
@@ -154,17 +155,19 @@ const ErrorMessage = ({
         </div>
         <div className="flex items-center gap-2">
           {onRetry && (
-            <button
-              onClick={onRetry}
-              className={`
-                flex items-center gap-1.5 px-3 py-1.5 rounded-md
-                text-sm font-medium transition-colors
-                ${styles.button}
-              `}
-            >
-              <RefreshCcw size={14} />
-              Retry
-            </button>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={onRetry}
+                className={`
+                  flex items-center gap-1.5 px-4 py-2 rounded-md
+                  text-sm font-medium transition-colors
+                  ${styles.button}
+                `}
+              >
+                <RefreshCcw size={14} />
+                {retryLabel}  {/* Update this line */}
+              </button>
+            </div>
           )}
           {onDismiss && (
             <button

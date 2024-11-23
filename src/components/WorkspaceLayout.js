@@ -22,7 +22,8 @@ const WorkspaceLayout = ({
   onLocationChange,
   onPhotoClick,
   radius,
-  setRadius
+  setRadius,
+  onRetryWithLargerRadius
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -135,11 +136,11 @@ const WorkspaceLayout = ({
                 onShowHowItWorks={() => setShowHowItWorks(true)}
                 className="mb-4"
               />
-              <ErrorMessage
-                error={error}
-                onRetry={onSearch}
-                className="mt-6"
-              />
+              <ErrorMessage 
+				        error={error}
+				        onRetry={error?.canRetryWithLargerRadius ? onRetryWithLargerRadius : onSearch}
+				        retryLabel={error?.canRetryWithLargerRadius ? `Try ${Math.min(radius * 2, 25)} mile radius` : 'Try Again'}
+				      />
             </div>
           </div>
           <Footer />
