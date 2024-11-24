@@ -414,7 +414,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
         </button>
       )}
 
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes fadeSlideIn {
           from {
             opacity: 0;
@@ -425,8 +425,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
             transform: translateY(0);
           }
         }
-      `}</style>
-      <style jsx global>{`
+
         @keyframes loadingPulse {
           0% {
             opacity: 1;
@@ -442,18 +441,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
         .loading-pulse {
           animation: loadingPulse 1.5s ease-in-out infinite;
         }
-
-        @keyframes fadeSlideIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
+      `}} />
     </div>
   );
 };

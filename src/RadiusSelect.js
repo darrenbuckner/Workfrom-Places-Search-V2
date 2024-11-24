@@ -5,18 +5,19 @@ const RadiusSelect = ({
   radius, 
   onRadiusChange, 
   disabled = false,
-  variant = 'primary',  // 'primary' | 'secondary'
+  variant = 'primary',
   className = '' 
 }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [menuStyle, setMenuStyle] = useState({});
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
   
   const radiusPresets = [
-    { value: 0.5, label: '0.5 miles', description: 'Walking' },
-    { value: 2, label: '2 miles', description: 'Biking' },
-    { value: 5, label: '5 miles', description: 'Short Drive' },
-    { value: 10, label: '10 miles', description: 'Driving' }
+    { value: 0.5, label: '0.5mi', description: 'Walking' },
+    { value: 2, label: '2mi', description: 'Biking' },
+    { value: 5, label: '5mi', description: 'Short Drive' },
+    { value: 10, label: '10mi', description: 'Driving' }
   ];
 
   useEffect(() => {
@@ -29,6 +30,29 @@ const RadiusSelect = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (showMenu && buttonRef.current) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      const dropdownWidth = 400;
+      
+      // Calculate right-aligned position
+      const right = Math.max(16, windowWidth - buttonRect.right);
+      
+      setMenuStyle({
+        position: 'fixed',
+        top: buttonRect.bottom + 8,
+        right: right,
+        width: Math.min(dropdownWidth, windowWidth - 32),
+      });
+    }
+  }, [showMenu]);
+
+  const handleRadiusSelect = (value) => {
+    onRadiusChange(value);
+    setShowMenu(false);
+  };
 
   const baseButtonStyles = variant === 'primary'
     ? 'bg-[var(--action-primary)] hover:bg-[var(--action-primary-hover)] text-[var(--button-text)]'
@@ -62,38 +86,34 @@ const RadiusSelect = ({
             onClick={() => setShowMenu(false)}
           />
           <div 
-            className="absolute z-50 right-0 mt-2 w-48 p-1 rounded-lg shadow-lg
+            style={menuStyle}
+            className="z-50 p-4 rounded-lg shadow-xl
               border border-[var(--border-primary)]
-              bg-[var(--bg-primary)]/95 backdrop-blur-sm"
+              bg-[var(--bg-primary)]"
           >
-            {radiusPresets.map(({ value, label, description }) => (
-              <button
-                key={value}
-                onClick={() => {
-                  onRadiusChange(value);
-                  setShowMenu(false);
-                }}
-                className={`
-                  w-full px-3 py-2 rounded-md text-left
-                  transition-all duration-200
-                  ${value === radius
-                    ? 'bg-[var(--action-primary)] text-[var(--button-text)]'
-                    : 'hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
-                  }
-                `}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{label}</span>
-                  <span className={`text-xs ${
-                    value === radius 
-                      ? 'text-[var(--button-text)]/80' 
-                      : 'text-[var(--text-secondary)]'
+            <div className="grid grid-cols-2 gap-3">
+              {radiusPresets.map(({ value, label, description }) => (
+                <button
+                  key={value}
+                  onClick={() => handleRadiusSelect(value)}
+                  className={`
+                    p-3 rounded-md transition-colors text-left
+                    border border-[var(--border-primary)]
+                    ${value === radius
+                      ? 'bg-[var(--action-primary)] text-[var(--button-text)] border-transparent'
+                      : 'bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)]'
+                    }
+                  `}
+                >
+                  <div className="font-medium">{label}</div>
+                  <div className={`text-xs mt-0.5 ${
+                    value === radius ? 'text-[var(--button-text)]/80' : 'text-[var(--text-secondary)]'
                   }`}>
                     {description}
-                  </span>
-                </div>
-              </button>
-            ))}
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </>
       )}

@@ -51,34 +51,38 @@ const HowItWorksModal = ({ setShowModal }) => {
             
             <div className="space-y-4">
               <section>
+                <h3 className="font-medium mb-2 text-[var(--text-primary)]">Community-Powered</h3>
+                <p className="text-[var(--text-secondary)]">
+                  Our workspace data is sourced and maintained by remote workers like you. Each location is 
+                  verified and rated by community members who work there, providing real insights about WiFi, 
+                  power availability, noise levels, and more.
+                </p>
+              </section>
+
+              <section>
                 <h3 className="font-medium mb-2 text-[var(--text-primary)]">Finding Places</h3>
                 <p className="text-[var(--text-secondary)]">
-                  We use your location to find the best workspaces near you. Adjust the search radius 
-                  to see more or fewer options in your area.
+                  Share your location to discover the best workspaces nearby. Filter by distance and workspace 
+                  type to find exactly what you need, whether it's a quiet cafe, dedicated coworking space, or 
+                  public workspace.
                 </p>
               </section>
 
               <section>
                 <h3 className="font-medium mb-2 text-[var(--text-primary)]">Workability Score</h3>
                 <p className="text-[var(--text-secondary)]">
-                  Each place gets a Workability Score based on factors like WiFi quality, power 
-                  availability, noise levels, and amenities. Higher scores mean better work environments.
+                  Each space receives a Workability Score based on key remote work factors including WiFi 
+                  quality, power availability, noise levels, and amenities. Higher scores indicate better 
+                  working environments, validated by community feedback.
                 </p>
               </section>
 
               <section>
-                <h3 className="font-medium mb-2 text-[var(--text-primary)]">AI Recommendations</h3>
+                <h3 className="font-medium mb-2 text-[var(--text-primary)]">Smart Recommendations</h3>
                 <p className="text-[var(--text-secondary)]">
-                  Our AI analyzes workspace data to suggest the best match for your needs, considering 
-                  factors like amenities, atmosphere, and community feedback.
-                </p>
-              </section>
-
-              <section>
-                <h3 className="font-medium mb-2 text-[var(--text-primary)]">Filtering & Sorting</h3>
-                <p className="text-[var(--text-secondary)]">
-                  Use filters to narrow down places by type, noise level, and power availability. 
-                  Sort by workability score to find the most suitable spaces first.
+                  Select your preferred work style - Focus, Group, Video Calls, Casual, or Lively - and our 
+                  system will analyze community data to suggest the most suitable spaces. Each recommendation 
+                  includes detailed metrics and real user insights.
                 </p>
               </section>
             </div>
