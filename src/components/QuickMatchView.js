@@ -148,19 +148,24 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
     { id: 'video', label: 'Video Calls', icon: Video }
   ];
 
-  // Modified to ensure a style is always selected
+  // Modified to handle mobile scroll behavior
   const handleWorkStyleChange = (workStyle) => {
     if (workStyle !== selectedWorkStyle) {
       setSelectedWorkStyle(workStyle);
       setDisplayCount(INITIAL_DISPLAY_COUNT);
       lastDisplayedCount.current = INITIAL_DISPLAY_COUNT;
       
-      // Scroll the results container to top with a slight delay to allow for state update
-      requestAnimationFrame(() => {
-        if (scrollContainerRef.current) {
-          scrollContainerRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
+      // Smooth scroll with iOS Safari compatibility
+      if (scrollContainerRef.current) {
+        const yOffset = -120; // Adjust based on your header height
+        const element = scrollContainerRef.current;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        
+        window.scrollTo({
+          top: y,
+          behavior: 'smooth'
+        });
+      }
     }
   };
 
@@ -344,52 +349,62 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
   }, [selectedWorkStyle]);
 
   return (
-    <div className="space-y-4 mb-24 sm:mb-16" ref={scrollContainerRef}>
-      <div className="sticky top-0 z-20 bg-[var(--bg-primary)] pb-4 border-b border-[var(--border-primary)]">
-        <div className="overflow-x-auto pb-2 -mx-4 px-4 -mb-2">
-          <div className="flex items-center gap-2">
-            {workStyles.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => handleWorkStyleChange(id)}
-                className={`
-                  flex items-center gap-2 px-3 py-2 rounded-lg border transition-all
-                  ${selectedWorkStyle === id
-                    ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]' 
-                    : 'border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)]'
-                  }
-                `}
-              >
-                <Icon size={16} />
-                <span className="text-sm font-medium whitespace-nowrap">{label}</span>
-              </button>
-            ))}
+    <div className="space-y-4 mb-24 sm:mb-16">
+      {/* Fixed position header for mobile */}
+      <div className="sticky top-0 -mx-4 px-4 pt-4 pb-4 z-20 
+        before:content-[''] before:fixed before:inset-0 before:top-0 before:h-[var(--header-offset,120px)] 
+        before:bg-[var(--bg-primary)]/95 before:backdrop-blur-xl before:-z-10
+        border-b border-[var(--border-primary)]">
+        <div className="space-y-4">
+          {/* Filters */}
+          <div className="overflow-x-auto -mx-4 px-4">
+            <div className="flex items-center gap-2 min-w-min">
+              {workStyles.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => handleWorkStyleChange(id)}
+                  className={`
+                    flex items-center gap-2 px-3 py-2 rounded-lg border transition-all
+                    whitespace-nowrap flex-shrink-0
+                    ${selectedWorkStyle === id
+                      ? 'border-[var(--accent-primary)] bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]' 
+                      : 'border-[var(--border-primary)] bg-[var(--bg-primary)] text-[var(--text-primary)]'
+                    }
+                  `}
+                >
+                  <Icon size={16} />
+                  <span className="text-sm font-medium">{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2 px-3 py-2 mt-2 text-sm rounded-lg 
-          bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
-          <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
-          <span className="text-[var(--text-secondary)]">
-            {selectedWorkStyle === 'top_rated' 
-              ? 'Highest rated workspaces nearby'
-              : `Best matches for ${selectedWorkStyle} work`}
-          </span>
-        </div>
-
-        {totalMatchingPlaces > 0 && (
-          <div className="text-sm text-[var(--text-secondary)] mt-2">
-            {currentlyShowing === totalMatchingPlaces ? (
-              `Showing all ${currentlyShowing} places within ${radius} miles`
-            ) : (
-              `Showing ${currentlyShowing} of ${totalMatchingPlaces} places within ${radius} miles`
-            )}
+          {/* Context bar */}
+          <div className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg 
+            bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
+            <Sparkles className="w-4 h-4 text-[var(--accent-primary)] flex-shrink-0" />
+            <span className="text-[var(--text-secondary)]">
+              {selectedWorkStyle === 'top_rated' 
+                ? 'Highest rated workspaces nearby'
+                : `Best matches for ${selectedWorkStyle} work`}
+            </span>
           </div>
-        )}
+
+          {/* Results count */}
+          {totalMatchingPlaces > 0 && (
+            <div className="text-sm text-[var(--text-secondary)]">
+              {currentlyShowing === totalMatchingPlaces ? (
+                `Showing all ${currentlyShowing} places within ${radius} miles`
+              ) : (
+                `Showing ${currentlyShowing} of ${totalMatchingPlaces} places within ${radius} miles`
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Scrollable results container */}
-      <div ref={scrollContainerRef} className="space-y-3">
+      {/* Results container */}
+      <div ref={scrollContainerRef} className="relative space-y-3 pt-2">
         {recommendedPlaces.map((place, index) => (
           <div
             key={place.ID}
@@ -461,9 +476,11 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
         .loading-pulse {
           animation: loadingPulse 1.5s ease-in-out infinite;
         }
-        .sticky {
-          backdrop-filter: blur(8px);
-          background-color: var(--bg-primary)/95;
+        @supports (-webkit-touch-callout: none) {
+          /* iOS specific styles */
+          .sticky {
+            position: -webkit-sticky;
+          }
         }
       `}} />
     </div>
