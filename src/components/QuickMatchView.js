@@ -476,6 +476,10 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
         .loading-pulse {
           animation: loadingPulse 1.5s ease-in-out infinite;
         }
+        .sticky {
+          backdrop-filter: blur(8px);
+          background-color: var(--bg-primary)/95;
+        }
         @supports (-webkit-touch-callout: none) {
           /* iOS specific styles */
           .sticky {
