@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Focus, Users, Coffee, Sparkles, MapPin,
-  ImageIcon, Video, Music, ChevronDown, Quote
+  ImageIcon, Video, Music, ChevronDown, Quote, Star
 } from 'lucide-react';
 import StarRating from './StarRating';
 
@@ -131,23 +131,16 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
 
 const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnalyzing, onAnalyze }) => {
   const INITIAL_DISPLAY_COUNT = 4;
-  const [selectedWorkStyle, setSelectedWorkStyle] = useState(null);
+  const [selectedWorkStyle, setSelectedWorkStyle] = useState('top_rated');
   const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
   const lastAnalyzedPlaceId = useRef(null);
   const scrollContainerRef = useRef(null);
   const newContentRef = useRef(null);
   const lastDisplayedCount = useRef(INITIAL_DISPLAY_COUNT);
 
-  // Reset display count when work style changes
-  const handleWorkStyleChange = (workStyle) => {
-    setSelectedWorkStyle(workStyle === selectedWorkStyle ? null : workStyle);
-    setDisplayCount(INITIAL_DISPLAY_COUNT);
-    lastDisplayedCount.current = INITIAL_DISPLAY_COUNT;
-    // Scroll back to top of container
-    scrollContainerRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+  // Updated work styles to include Top Rated as the first option
   const workStyles = [
+    { id: 'top_rated', label: 'Top Rated', icon: Star },
     { id: 'casual', label: 'Casual', icon: Coffee },
     { id: 'lively', label: 'Lively', icon: Music },
     { id: 'focus', label: 'Focus', icon: Focus },
@@ -155,7 +148,21 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
     { id: 'video', label: 'Video Calls', icon: Video }
   ];
 
+  // Modified to ensure a style is always selected
+  const handleWorkStyleChange = (workStyle) => {
+    if (workStyle !== selectedWorkStyle) {
+      setSelectedWorkStyle(workStyle);
+      setDisplayCount(INITIAL_DISPLAY_COUNT);
+      lastDisplayedCount.current = INITIAL_DISPLAY_COUNT;
+      scrollContainerRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const calculateLocalScore = (place, workStyle) => {
+    if (workStyle === 'top_rated') {
+      return place.workabilityScore;
+    }
+
     let score = 0;
     const noise = String(place.noise_level || place.noise || '').toLowerCase();
     const wifiSpeed = place.download ? parseInt(place.download) : 0;
@@ -230,6 +237,9 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
     }));
 
     scoredPlaces.sort((a, b) => {
+      if (selectedWorkStyle === 'top_rated') {
+        return b.workabilityScore - a.workabilityScore;
+      }
       const styleScoreDiff = b.styleScore - a.styleScore;
       if (styleScoreDiff === 0) {
         return b.workabilityScore - a.workabilityScore;
@@ -238,19 +248,18 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
     });
 
     // Filter places based on selected work style
-    const filteredPlaces = selectedWorkStyle
-      ? scoredPlaces.filter(p => p.styleScore >= 3)
-      : scoredPlaces;
+    const filteredPlaces = selectedWorkStyle === 'top_rated'
+      ? scoredPlaces
+      : scoredPlaces.filter(p => p.styleScore >= 3);
 
-    // Return the top `displayCount` places
     return filteredPlaces.slice(0, displayCount);
   };
 
   const recommendedPlaces = getRecommendedPlaces();
   const bestMatch = recommendedPlaces[0];
-  const totalMatchingPlaces = selectedWorkStyle
-    ? places.filter(p => calculateLocalScore(p, selectedWorkStyle) >= 3).length
-    : places.length;
+  const totalMatchingPlaces = selectedWorkStyle === 'top_rated'
+    ? places.length
+    : places.filter(p => calculateLocalScore(p, selectedWorkStyle) >= 3).length;
   const currentlyShowing = recommendedPlaces.length;
   const hasMoreToShow = currentlyShowing === displayCount && displayCount < totalMatchingPlaces;
 
@@ -355,9 +364,9 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
         bg-[var(--bg-secondary)] border border-[var(--border-primary)]">
         <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
         <span className="text-[var(--text-secondary)]">
-          {selectedWorkStyle 
-            ? `Best matches for ${selectedWorkStyle} work`
-            : 'Highest rated workspaces'}
+          {selectedWorkStyle === 'top_rated' 
+            ? 'Highest rated workspaces nearby'
+            : `Best matches for ${selectedWorkStyle} work`}
         </span>
       </div>
 
