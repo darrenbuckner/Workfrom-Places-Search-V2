@@ -151,17 +151,19 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
 
   // Modified to handle mobile scroll behavior
   const handleWorkStyleChange = (workStyle) => {
-    if (workStyle !== selectedWorkStyle) {
-      setSelectedWorkStyle(workStyle);
-      setDisplayCount(INITIAL_DISPLAY_COUNT);
-      lastDisplayedCount.current = INITIAL_DISPLAY_COUNT;
-      
-      // Scroll to show the filter section
-      if (filterSectionRef.current) {
-        filterSectionRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
+	  if (workStyle !== selectedWorkStyle) {
+	    setSelectedWorkStyle(workStyle);
+	    setDisplayCount(INITIAL_DISPLAY_COUNT);
+	    lastDisplayedCount.current = INITIAL_DISPLAY_COUNT;
+	    
+	    // Simpler, more reliable mobile scroll behavior
+	    const yOffset = -80; // Adjust this value based on your header height
+	    window.scrollTo({
+	      top: filterSectionRef.current?.getBoundingClientRect().top + window.pageYOffset + yOffset,
+	      behavior: 'smooth'
+	    });
+	  }
+	};
 
   const calculateLocalScore = (place, workStyle) => {
     if (workStyle === 'top_rated') {
