@@ -8,6 +8,7 @@ import {
 import { useTheme } from './ThemeProvider';
 import { getWifiStatus } from './wifiUtils';
 import WorkabilityScore from './WorkabilityScore';
+import WifiCredentials from './components/WifiCredentials';
 import StarRating from './components/StarRating';
 import WorkabilityMetrics from './components/WorkabilityMetrics';
 import ExpandableMetricBadge from './ExpandableMetricBadge';
@@ -366,6 +367,10 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                       <WorkabilityMetrics place={selectedPlace} />
                     </div>
                   </div>
+
+                  {selectedPlace.password && (
+                    <WifiCredentials password={selectedPlace.password} />
+                  )}
 
                   {sanitizedDescription && (
                     <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
