@@ -1,54 +1,73 @@
 import React from 'react';
+import { MapPin, Brain, Loader } from 'lucide-react';
 
 const SearchResultsSkeleton = () => {
   return (
-    <div className="space-y-6 animate-pulse">
-      {[...Array(3)].map((_, index) => (
-        <div 
-          key={index}
-          className="border rounded-lg shadow-sm border-[var(--border-primary)] bg-[var(--bg-primary)]"
-        >
-          <div className="p-4">
-            <div className="flex flex-col space-y-4">
-              {/* Header with Title and Score */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  {/* AI Badge skeleton */}
-                  <div className="w-20 h-5 rounded-full bg-[var(--bg-secondary)] mb-2" />
-                  
-                  {/* Title skeleton */}
-                  <div className="h-7 bg-[var(--bg-secondary)] rounded-md w-3/4 mb-1" />
-                  
-                  {/* Distance skeleton */}
-                  <div className="h-4 bg-[var(--bg-secondary)] rounded w-1/4" />
-                </div>
-                
-                {/* Score Badge skeleton */}
-                <div className="flex-shrink-0 w-12 h-12 rounded-md bg-[var(--bg-secondary)]" />
-              </div>
+    <div className="space-y-4">
+      {/* Location status loading state */}
+      <div className="flex items-start gap-3 p-4 rounded-lg border border-blue-500 bg-blue-500/10">
+        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+          <Loader className="w-4 h-4 text-white animate-spin" />
+        </div>
+        <div className="flex-1">
+          <div className="font-medium text-[var(--action-primary)]">
+            Getting your location
+          </div>
+          <div className="text-sm text-[var(--text-secondary)] mt-0.5">
+            Please allow location access if prompted
+          </div>
+        </div>
+      </div>
 
-              {/* Image section skeleton */}
-              <div className="flex space-x-4">
-                <div className="w-24 h-24 rounded bg-[var(--bg-secondary)] flex-shrink-0" />
-              </div>
-
-              {/* Actions section skeleton */}
-              <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
-                {/* User info skeleton */}
-                <div className="flex items-center gap-2 flex-shrink">
-                  <div className="w-4 h-4 rounded-full bg-[var(--bg-secondary)]" />
-                  <div className="w-24 h-4 rounded bg-[var(--bg-secondary)]" />
-                </div>
-                
-                {/* Directions button skeleton */}
-                <div className="flex gap-2 flex-shrink-0">
-                  <div className="w-28 h-6 rounded bg-[var(--bg-secondary)]" />
-                </div>
+      {/* Loading Content */}
+      <div className="bg-[var(--bg-primary)] border border-[var(--accent-primary)] rounded-lg shadow-md overflow-hidden relative animate-pulse">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--bg-secondary)]">
+          <div className="absolute top-0 left-0 h-full w-3/4 bg-[var(--accent-primary)] 
+            transition-all duration-300 ease-out" />
+        </div>
+        <div className="p-4">
+          <div className="flex items-center gap-2">
+            <div className="px-1.5 py-0.5 rounded-full bg-[var(--accent-primary)]/10 flex items-center gap-1">
+              <Brain className="w-3 h-3 text-[var(--accent-primary)]" />
+              <div className="text-xs font-medium text-[var(--accent-primary)]">
+                AI Pick
               </div>
             </div>
           </div>
+          <div className="flex items-center gap-3 mt-3">
+            <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 flex items-center justify-center">
+              <Loader className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />
+            </div>
+            <p className="text-sm font-medium text-[var(--text-primary)]">
+              Finding your perfect workspace...
+            </p>
+          </div>
+          <div className="mt-4 h-1 rounded-full overflow-hidden bg-[var(--bg-secondary)]">
+            <div className="h-full w-3/4 bg-[var(--accent-primary)]/20 rounded-full shimmer" />
+          </div>
         </div>
-      ))}
+      </div>
+
+      {/* Shimmer animation style */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        .shimmer {
+          background: linear-gradient(
+            90deg,
+            var(--accent-primary)/0.1 0%,
+            var(--accent-primary)/0.2 50%,
+            var(--accent-primary)/0.1 100%
+          );
+          animation: shimmer 2s infinite;
+        }
+      `}</style>
     </div>
   );
 };

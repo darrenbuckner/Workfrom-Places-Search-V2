@@ -437,8 +437,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
           </button>
         )}
       </div>
-
-      <style jsx>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes fadeSlideIn {
           from {
             opacity: 0;
@@ -449,7 +448,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
             transform: translateY(0);
           }
         }
-      `}</style>
+      `}} />
     </div>
   );
 };

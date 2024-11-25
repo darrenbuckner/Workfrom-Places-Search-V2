@@ -522,7 +522,7 @@ const PopupContent = ({ place, isHighlighted }) => {
         })}
       </MapContainer>
 
-      <style jsx global>{`
+      <style jsx="true" global="true">{`
         .leaflet-container {
           background: var(--bg-primary);
           font-family: inherit;
