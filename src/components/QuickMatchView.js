@@ -4,6 +4,7 @@ import {
   ImageIcon, Video, Music, ChevronDown, Quote, Star
 } from 'lucide-react';
 import StarRating from './StarRating';
+import ImageFallback from './ImageFallback';
 
 const LoadingInsight = () => (
   <div className="flex items-start gap-2 p-2 mt-2 rounded-md
@@ -78,9 +79,8 @@ const PlaceCard = ({ place, isHighlighted, onViewDetails, insights, isAnalyzing 
                 }}
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                <ImageIcon size={16} className="text-[var(--text-tertiary)]" />
-                <span className="text-[10px] text-[var(--text-tertiary)]">No image</span>
+              <div className="w-full h-full flex items-center justify-center">
+                <ImageFallback size="default" className="w-full h-full" />
               </div>
             )}
           </div>

@@ -15,6 +15,7 @@ import {
 import DistanceDisplay from './DistanceDisplay';
 import { useTheme } from './ThemeProvider';
 import { getWifiStatus } from './wifiUtils';
+import ImageFallback from './ImageFallback';
 
 const MetricBadge = ({ icon: Icon, label, color, className = "" }) => {
   const { isDark } = useTheme();
@@ -189,14 +190,11 @@ const PlaceCard = ({ place, onPhotoClick, isRecommended }) => {
                 alt={place.title}
                 className="w-full h-full object-cover"
                 onError={(e) => {
-                  e.target.src = `/api/placeholder/96/96?text=No+image`;
+                  e.target.src = `/api/placeholder/64/64?text=No+image`;
                 }}
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                <ImageIcon size={20} className="text-[var(--text-tertiary)] mb-1" />
-                <span className="text-xs text-[var(--text-tertiary)]">No image</span>
-              </div>
+              <ImageFallback size="default" />
             )}
           </div>
 

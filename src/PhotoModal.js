@@ -404,7 +404,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                   )}
 
                   {getMissingInfo(selectedPlace).length > 0 && (
-                    <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+                    <div className="hidden rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                       <div className="p-4">
                         <div className="flex items-start gap-2.5">
                           <AlertCircle 

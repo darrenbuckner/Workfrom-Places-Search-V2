@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, MapPin, List, Map, Loader, Star, Sparkles } from 'lucide-react';
+import { Loader, Sparkles } from 'lucide-react';
 
 const LoadingStateCard = ({ children }) => (
   <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 animate-pulse">
@@ -87,25 +87,26 @@ const PlaceCardSkeleton = ({ isHighlighted }) => (
 );
 
 const UnifiedLoadingState = ({ viewMode, searchPhase, locationName }) => {
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingText, setLoadingText] = useState({
+    phase: 'searching',
+    message: 'Finding workspaces nearby...'
+  });
   
   useEffect(() => {
-    if (searchPhase === 'locating') {
-      const messages = [
-        'Getting your location...',
-        'Determining your coordinates...',
-        'Accessing location services...'
-      ];
-      let currentIndex = 0;
-      
-      const interval = setInterval(() => {
-        setLoadingMessage(messages[currentIndex]);
-        currentIndex = (currentIndex + 1) % messages.length;
-      }, 2000);
+    const messages = [
+      { phase: 'searching', message: 'Finding workspaces nearby...' },
+      { phase: 'analyzing', message: 'Analyzing workspace details...' },
+      { phase: 'preparing', message: 'Preparing recommendations...' }
+    ];
+    
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      setLoadingText(messages[currentIndex]);
+      currentIndex = (currentIndex + 1) % messages.length;
+    }, 3000);
 
-      return () => clearInterval(interval);
-    }
-  }, [searchPhase]);
+    return () => clearInterval(interval);
+  }, []);
 
   if (searchPhase === 'initial') return null;
 
@@ -116,22 +117,17 @@ const UnifiedLoadingState = ({ viewMode, searchPhase, locationName }) => {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--accent-primary)]/10 
             flex items-center justify-center">
-            {searchPhase === 'locating' ? (
-              <MapPin className="w-5 h-5 text-[var(--accent-primary)]" />
-            ) : (
-              <Brain className="w-5 h-5 text-[var(--accent-primary)]" />
-            )}
+            <Loader className="w-5 h-5 text-[var(--accent-primary)] animate-spin" />
           </div>
           <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <Loader className="w-4 h-4 text-[var(--accent-primary)] animate-spin" />
+            <div className="flex flex-col">
               <h3 className="font-medium text-[var(--text-primary)]">
-                {loadingMessage || 'Preparing workspace insights...'}
+                {loadingText.message}
               </h3>
+              <p className="text-sm text-[var(--text-secondary)] mt-1">
+                {locationName ? `Searching in ${locationName}` : 'Searching your area'}
+              </p>
             </div>
-            <p className="text-sm text-[var(--text-secondary)] mt-1">
-              {locationName ? `Searching in ${locationName}` : 'Searching your area'}
-            </p>
           </div>
         </div>
       </LoadingStateCard>
