@@ -49,6 +49,7 @@ const ControlsHeader = ({
 }) => {
   const views = [
     { id: 'insights', label: 'Insights', icon: Brain },
+    { id: 'guide', label: 'Guide', icon: Sparkles },
     { id: 'list', label: 'List', icon: List },
     { id: 'map', label: 'Map', icon: Map }
   ];
@@ -61,7 +62,16 @@ const ControlsHeader = ({
         </div>
       );
     }
+    
+    if (viewMode === 'guide') {
+      return (
+        <div className="text-sm font-medium text-[var(--text-primary)]">
+          Workspaces by atmosphere
+        </div>
+      );
+    }
 
+    // Existing return for list/map views
     return (
       <div className="text-sm whitespace-nowrap">
         <span className="font-medium text-[var(--text-primary)]">

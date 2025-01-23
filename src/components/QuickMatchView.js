@@ -14,7 +14,7 @@ const LoadingInsight = () => (
       className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5 animate-pulse" 
     />
     <div className="flex-1 space-y-1.5">
-      <p className="text-xs text-[var(--text-secondary)]">Loading Workspace Intelligence...</p>
+      <p className="text-xs text-[var(--text-secondary)]">Loading community insights...</p>
       <div className="h-3 bg-[var(--bg-secondary)] rounded w-3/4 animate-shimmer"></div>
       <div className="h-3 bg-[var(--bg-secondary)] rounded w-1/2 animate-shimmer"></div>
     </div>

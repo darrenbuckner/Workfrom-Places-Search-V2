@@ -1,10 +1,8 @@
 import React, { useState, useEffect, memo } from 'react';
-import { AuthModal } from './components/AuthModal';
 import { 
-  Plus, InfoIcon, ChevronDown, MapPin, LogOut
+  Plus, InfoIcon, ChevronDown, MapPin
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeProvider';
-import { useAuth } from './hooks/useAuth';
 
 // Logo component memoized since it rarely changes
 const WorkfromLogo = memo(({ size = 'default' }) => {
@@ -28,47 +26,13 @@ const WorkfromLogo = memo(({ size = 'default' }) => {
   );
 });
 
-// Separate component for user menu
-const UserMenu = memo(({ user, onLogout, onClose }) => {
-  if (!user) return null;
-
-  return (
-    <>
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="absolute right-0 top-full mt-1 w-48 py-1 rounded-lg shadow-lg
-        border border-[var(--border-primary)] bg-[var(--bg-primary)]/95 backdrop-blur-sm z-50">
-        <div className="px-4 py-2 border-b border-[var(--border-primary)]">
-          <p className="text-sm font-medium text-[var(--text-primary)] truncate">{user.email}</p>
-          <p className="text-xs text-[var(--text-secondary)] mt-0.5">{user.membershipType || 'Free Account'}</p>
-        </div>
-        <div className="py-1">
-          <button onClick={onLogout} className="w-full px-4 py-2 text-sm text-left text-[var(--text-primary)]
-            hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-2">
-            <LogOut size={16} />
-            Sign Out
-          </button>
-        </div>
-      </div>
-    </>
-  );
-});
-
 // Header Actions component
 const HeaderActions = memo(({ 
   showThemeToggle, 
   showHowItWorks,
   showAddPlace,
   onShowHowItWorks,
-  user,
-  isLoading,
-  onAddPlace,
-  onShowAuthModal,
-  onLogout,
 }) => {
-  const [showUserMenu, setShowUserMenu] = useState(false);
-
-  const getUserInitial = () => user?.email?.charAt(0).toUpperCase() || '?';
-
   return (
     <div className="flex items-center gap-1">
       {showThemeToggle && <ThemeToggle />}
@@ -82,47 +46,17 @@ const HeaderActions = memo(({
       )}
       
       {showAddPlace && (
-        <button onClick={onAddPlace} className="p-2 rounded-full hover:bg-[var(--bg-secondary)] 
-          text-[var(--text-primary)] sm:px-3 sm:py-1.5">
+        <a 
+          href="https://workfrom.co/add" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="p-2 rounded-full hover:bg-[var(--bg-secondary)] 
+            text-[var(--text-primary)] sm:px-3 sm:py-1.5"
+        >
           <Plus size={20} className="sm:hidden" />
           <span className="hidden sm:block text-sm font-medium">Add Place</span>
-        </button>
+        </a>
       )}
-
-      <div className="relative">
-        {isLoading ? (
-          <div className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] animate-pulse" />
-        ) : user ? (
-          <button
-            onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 p-1.5 rounded-full
-              hover:bg-[var(--bg-secondary)] transition-colors"
-          >
-            <div className="w-6 h-6 rounded-full bg-[var(--accent-primary)] 
-              flex items-center justify-center text-[var(--button-text)]">
-              {getUserInitial()}
-            </div>
-            <ChevronDown size={16} className="text-[var(--text-secondary)]" />
-          </button>
-        ) : (
-          <button
-            onClick={onShowAuthModal}
-            className="px-3 py-1.5 rounded-md bg-[var(--accent-primary)]
-              text-[var(--button-text)] text-sm font-medium
-              hover:bg-[var(--accent-primary-hover)] transition-colors"
-          >
-            Sign In
-          </button>
-        )}
-
-        {showUserMenu && user && (
-          <UserMenu 
-            user={user} 
-            onLogout={onLogout} 
-            onClose={() => setShowUserMenu(false)} 
-          />
-        )}
-      </div>
     </div>
   );
 });
@@ -131,22 +65,17 @@ const HeaderActions = memo(({
 const WorkfromHeader = ({ 
   onShowHowItWorks,
   className = '',
-  addPlaceUrl = 'https://workfrom.co/add',
   showThemeToggle = true,
   showAddPlace = true,
   showHowItWorks = true,
   headerTitle = 'Workfrom Places',
   locationName = '',
   onLocationClick,
-  searchPhase = 'initial',
-  handleShowAuthModal,
-  handleCloseAuthModal
+  searchPhase = 'initial'
 }) => {
-  const { user, logout, isLoading } = useAuth();
   const [isExpanded, setIsExpanded] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   
   const showLocationBar = searchPhase !== 'initial';
 
@@ -161,25 +90,6 @@ const WorkfromHeader = ({
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
-
-  const handleAddPlace = (e) => {
-    e.preventDefault();
-    if (!user) {
-      handleShowAuthModal();
-      return;
-    }
-    alert("Thank you for your interest. The ability to add new places will be available soon!");
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      window.location.href = '/login';
-    } catch (error) {
-      console.error('Logout failed:', error);
-      alert('Failed to sign out. Please try again.');
-    }
-  };
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200
@@ -202,11 +112,6 @@ const WorkfromHeader = ({
           showHowItWorks={showHowItWorks}
           showAddPlace={showAddPlace}
           onShowHowItWorks={onShowHowItWorks}
-          user={user}
-          isLoading={isLoading}
-          onAddPlace={handleAddPlace}
-          onShowAuthModal={handleShowAuthModal}
-          onLogout={handleLogout}
         />
       </div>
 
@@ -226,13 +131,6 @@ const WorkfromHeader = ({
       )}
 
       <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-[var(--bg-primary)] to-transparent" />
-
-      {showAuthModal && (
-        <AuthModal 
-          isOpen={showAuthModal}
-          onClose={handleCloseAuthModal}
-        />
-      )}
     </header>
   );
 };

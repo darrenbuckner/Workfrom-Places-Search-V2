@@ -6,10 +6,8 @@ import { SearchPhases } from '../constants';
 import PhotoModal from '../PhotoModal';
 import HowItWorksModal from '../HowItWorksModal';
 import WorkspaceLayout from './WorkspaceLayout';
-import { useAuth } from '../hooks/useAuth';
 
 const WorkfromPlacesContent = () => {
-  const { isLoading } = useAuth();
   const [radius, setRadius] = useState(.5);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
@@ -40,10 +38,6 @@ const WorkfromPlacesContent = () => {
     handlePhotoClick,
     closePhotoModal
   } = usePhotoModal();
-
-  if (isLoading) {
-    return null; // Let ProtectedRoute handle loading state
-  }
 
   const handleSearchError = (error) => {
     if (error.name === 'GeolocationPositionError') {

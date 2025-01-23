@@ -4,9 +4,15 @@
   functions = "netlify/functions"
 
 [functions]
-  external_node_modules = ["express"]
+  external_node_modules = ["@google-cloud/aiplatform"]
   node_bundler = "esbuild"
   included_files = ["netlify/functions/**/*.js"]
+
+[functions.api]
+  timeout = 60
+
+[functions."*"]
+  timeout = 60
 
 [[redirects]]
   force = true

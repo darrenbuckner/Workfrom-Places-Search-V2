@@ -6,39 +6,183 @@ const app = express();
 const api = express();
 require('dotenv').config();
 
+// Enhanced cache implementation
+class SimpleCache {
+  constructor(maxSize = 100, cleanupInterval = 3600000) {
+    this.cache = new Map();
+    this.maxSize = maxSize;
+    
+    // Periodic cleanup of expired items
+    setInterval(() => this.cleanup(), cleanupInterval);
+  }
+
+  cleanup() {
+    const now = Date.now();
+    for (const [key, item] of this.cache.entries()) {
+      if (now > item.expiry) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  set(key, value, ttl) {
+    try {
+      if (this.cache.size >= this.maxSize) {
+        const oldestKey = this.cache.keys().next().value;
+        this.cache.delete(oldestKey);
+      }
+      
+      this.cache.set(key, {
+        value,
+        expiry: Date.now() + (ttl * 1000)
+      });
+    } catch (error) {
+      console.error('Cache set error:', error);
+    }
+  }
+
+  get(key) {
+    try {
+      const item = this.cache.get(key);
+      if (!item) return null;
+      
+      if (Date.now() > item.expiry) {
+        this.cache.delete(key);
+        return null;
+      }
+      
+      return item.value;
+    } catch (error) {
+      console.error('Cache get error:', error);
+      return null;
+    }
+  }
+
+  clear() {
+    this.cache.clear();
+  }
+}
+
+// Improved rate limiter
+class SimpleRateLimiter {
+  constructor(windowMs = 900000, max = 100) {
+    this.windowMs = windowMs;
+    this.max = max;
+    this.requests = new Map();
+    
+    setInterval(() => this.cleanup(), windowMs);
+  }
+
+  cleanup() {
+    const now = Date.now();
+    const windowStart = now - this.windowMs;
+    
+    for (const [key, timestamp] of this.requests.entries()) {
+      if (timestamp < windowStart) {
+        this.requests.delete(key);
+      }
+    }
+  }
+
+  try(key) {
+    const now = Date.now();
+    const windowStart = now - this.windowMs;
+    
+    const requestCount = [...this.requests.values()]
+      .filter(timestamp => timestamp > windowStart)
+      .length;
+
+    if (requestCount >= this.max) {
+      return false;
+    }
+
+    this.requests.set(`${key}_${now}`, now);
+    return true;
+  }
+}
+
+// Configuration
 const { OPENAI_API_KEY } = process.env;
 const openai = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null;
+const cache = new SimpleCache(100);
+const rateLimiter = new SimpleRateLimiter();
 
-// CORS configuration
-api.use(cors({
-  origin: true,
-  credentials: true,
+// Constants
+const CACHE_DURATIONS = {
+  GUIDE: 24 * 60 * 60,
+  PLACE: 6 * 60 * 60
+};
+
+const OPENAI_TIMEOUT = 45000; // 30 seconds
+
+// Unified CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:8888',
+      /\.netlify\.app$/
+    ];
+
+    if (!origin || allowedOrigins.some(allowed => 
+      typeof allowed === 'string' ? origin === allowed : allowed.test(origin)
+    )) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: [
     'Content-Type',
     'Accept',
-    'Accept-Language',
     'Authorization',
-    'X-Requested-With'
+    'X-Requested-With',
+    'Accept-Language', // Added this header
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
   ],
-  optionsSuccessStatus: 204,
-  preflightContinue: false
-}));
+  credentials: true,
+  maxAge: 86400
+};
 
-api.options('*', cors());
-api.use(express.json());
+// Apply CORS middleware
+app.use(cors(corsOptions));
+api.use(cors(corsOptions));
 
-// Cache configuration
-const AI_CACHE_DURATION = 1000 * 60 * 60 * 24; // 24 hours for AI-generated content
-const CACHE_DURATION = 1000 * 60 * 60; // 1 hour for general content
-const aiInsightsCache = new Map();
-const cache = new Map();
+// Common middleware
+app.use(express.json({ limit: '1mb' }));
+api.use(express.json({ limit: '1mb' }));
 
-// Helper function to strip HTML
+// Enhanced error handling
+class APIError extends Error {
+  constructor(code, type, detail, retryable = false) {
+    super(detail);
+    this.name = 'APIError';
+    this.code = code;
+    this.type = type;
+    this.detail = detail;
+    this.retryable = retryable;
+  }
+
+  toResponse() {
+    return {
+      meta: {
+        code: this.code,
+        error_type: this.type,
+        error_detail: this.detail,
+        retryable: this.retryable
+      }
+    };
+  }
+}
+
+// Helper functions
 const stripHtml = (html) => {
   if (!html) return '';
   try {
-    // Use a safer way to strip HTML without using DOM methods
     return html.replace(/<[^>]*>?/gm, '').trim();
   } catch (error) {
     console.error('Error stripping HTML:', error);
@@ -46,97 +190,52 @@ const stripHtml = (html) => {
   }
 };
 
-// Helper to determine if a description is meaningful
-const isDescriptionMeaningful = (description) => {
+const isValidDescription = (description) => {
   if (!description) return false;
+  const cleaned = stripHtml(description);
+  return cleaned.length >= 50 && !cleaned.match(/^(generic|placeholder|test)\s+description$/i);
+};
+
+const generateCacheKey = (type, ...params) => {
   try {
-    const cleaned = stripHtml(description).trim();
-    if (cleaned.length < 50) return false;
-    
-    const genericPhrases = [
-      'a place to work',
-      'work from here',
-      'get work done',
-      'wifi available',
-      'power outlets',
-      'great place',
-      'nice spot'
-    ];
-    
-    const containsGenericPhraseOnly = genericPhrases.some(phrase => 
-      cleaned.toLowerCase().includes(phrase) && 
-      cleaned.length < phrase.length + 30
-    );
-    
-    return !containsGenericPhraseOnly;
+    const key = params.map(param => {
+      if (param === null || param === undefined) return '';
+      return typeof param === 'object' ? 
+        JSON.stringify(param) : String(param);
+    }).join(':');
+    return `${type}:${key}`;
   } catch (error) {
-    console.error('Error checking description:', error);
-    return false;
+    console.error('Cache key generation error:', error);
+    return `${type}:error`;
   }
 };
 
-const checkOpenAIConfig = () => {
-  if (!OPENAI_API_KEY) {
-    console.error('OpenAI API key is not configured');
-    return false;
-  }
-  return true;
+const withTimeout = async (promise, timeout) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Request timeout')), timeout)
+    )
+  ]);
 };
 
-const parseUserDescription = async (description) => {
-  if (!description || !OPENAI_API_KEY) return null;
+const withCache = async (key, duration, generator) => {
   try {
-    if (!isDescriptionMeaningful(description)) return null;
-
-    const prompt = `
-      Below is a user-submitted description of a workspace. Create a single, 
-      concise sentence (max 20 words) that highlights the most unique or 
-      helpful insight for remote workers and freelancers.
-
-      Focus only on specific, distinctive features rather than generic observations.
-      If the description doesn't contain any unique or helpful insights, respond with an insight about amenities mentioned. If there are no amenities mentioned, respond with null.
-
-      User Description: "${stripHtml(description).trim()}"
-
-      Respond ONLY with a JSON object in this exact format:
-      {
-        "userInsight": "<single insightful sentence or null>"
-      }
-    `;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [
-        {
-          role: "system",
-          content: "You create concise, specific insights from workspace descriptions. Focus only on unique, helpful details that would matter to remote workers and freelancers. Always respond in valid JSON format."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 150
-      // Remove response_format parameter
-    });
-
-    try {
-      const responseText = completion.choices[0].message.content;
-      const parsedResponse = JSON.parse(responseText);
-      return parsedResponse?.userInsight ? { userInsight: parsedResponse.userInsight } : null;
-    } catch (parseError) {
-      console.error('Error parsing OpenAI response:', parseError);
-      return null;
+    const cached = cache.get(key);
+    if (cached) {
+      return cached;
     }
 
+    const fresh = await generator();
+    cache.set(key, fresh, duration);
+    return fresh;
   } catch (error) {
-    console.error('Error parsing description:', error);
-    return null;
+    console.warn('Cache operation failed:', error);
+    return generator();
   }
 };
 
-// Helper function to calculate work style scores
+// Workspace analysis functions
 const calculateWorkStyleScores = (place) => {
   const scores = {
     focus: 0,
@@ -145,7 +244,6 @@ const calculateWorkStyleScores = (place) => {
     casual: 0
   };
 
-  // Parse key metrics
   const noise = String(place.noise_level || place.noise || '').toLowerCase();
   const wifiSpeed = place.download ? parseInt(place.download) : 0;
   const powerValue = String(place.power || '').toLowerCase();
@@ -199,106 +297,192 @@ const calculateWorkStyleScores = (place) => {
   return scores;
 };
 
+const parseUserDescription = async (description) => {
+  if (!description || !openai) return null;
+  try {
+    if (!isValidDescription(description)) return null;
+
+    const prompt = `
+      Below is a user-submitted description of a workspace. Create a single, 
+      concise sentence (max 20 words) that highlights the most unique or 
+      helpful insight for remote workers and freelancers.
+
+      Focus only on specific, distinctive features rather than generic observations.
+      If the description doesn't contain any unique or helpful insights, respond with an insight about amenities mentioned. If there are no amenities mentioned, respond with null.
+
+      User Description: "${stripHtml(description).trim()}"
+
+      Respond ONLY with a JSON object in this exact format:
+      {
+        "userInsight": "<single insightful sentence or null>"
+      }
+    `;
+
+    const completion = await withTimeout(
+      openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: "You create concise, specific insights from workspace descriptions. Focus only on unique, helpful details that would matter to remote workers and freelancers. Always respond in valid JSON format."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 150
+      }),
+      OPENAI_TIMEOUT
+    );
+
+    try {
+      const responseText = completion.choices[0].message.content;
+      const parsedResponse = JSON.parse(responseText);
+      return parsedResponse?.userInsight ? { userInsight: parsedResponse.userInsight } : null;
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      return null;
+    }
+
+  } catch (error) {
+    console.error('Error parsing description:', error);
+    return null;
+  }
+};
+
+const validateGuideResponse = (text) => {
+  try {
+    const parsed = JSON.parse(text);
+    if (!parsed.title || !parsed.overview || !Array.isArray(parsed.recommendations)) {
+      console.error('Invalid guide structure:', parsed);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Guide parsing error:', error, '\nResponse:', text);
+    return false;
+  }
+};
+
+const createGuidePrompt = (places, location) => {
+  const simplifiedPlaces = places.map(place => ({
+    id: place.id || place.ID,
+    name: place.title,
+    type: place.type || 'Unknown',
+    features: {
+      wifi: place.download ? `${Math.round(place.download)}Mbps` : 'Unknown',
+      noise: (place.noise_level || place.noise || 'Unknown').toLowerCase(),
+      power: place.power && place.power !== 'none',
+      coffee: place.coffee === "1",
+      food: place.food === "1",
+      outdoor: place.outdoor_seating === "1" || place.outside === "1"
+    },
+    score: place.workabilityScore,
+    distance: parseFloat(place.distance),
+    description: isValidDescription(place.description) ? 
+      stripHtml(place.description).substring(0, 200) : null
+  }));
+
+  return {
+    system: `You are a workspace curator creating concise, practical guides. 
+    You MUST respond with valid JSON only in this exact format:
+    {
+      "title": "Area name: Key characteristic",
+      "overview": "2-3 sentence area overview",
+      "recommendations": [
+        {
+          "id": "place_id",
+          "name": "Place Name", 
+          "description": "Why good for remote work",
+          "tips": ["Tip 1", "Tip 2"],
+          "peakHours": "When busy/quiet",
+          "transit": "How to get there"
+        }
+      ]
+    }
+    Do not include any additional text or explanation.`,
+    
+    user: `Create a curated guide for remote workers at location: ${location.latitude}, ${location.longitude}
+
+    Workspace details:
+    ${JSON.stringify(simplifiedPlaces, null, 2)}
+
+    Focus insights on:
+    1. WiFi reliability and speeds
+    2. Power availability  
+    3. Noise levels and focus spaces
+    4. Peak hours to avoid crowds
+    5. Most unique workspace features`
+  };
+};
+
+// Middleware
+const rateLimitMiddleware = (req, res, next) => {
+  const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  
+  if (!rateLimiter.try(clientIp)) {
+    return res.status(429).json(new APIError(
+      429,
+      'rate_limit_exceeded',
+      'Too many requests, please try again later',
+      true
+    ).toResponse());
+  }
+  
+  next();
+};
+
+const errorHandler = (err, req, res, next) => {
+  console.error('API Error:', err);
+
+  // Handle OpenAI specific errors
+  if (err.status === 400 && err.error?.type === 'invalid_request_error') {
+    return res.status(500).json(new APIError(
+      500,
+      'openai_error',
+      'Guide generation service error',
+      true
+    ).toResponse());
+  }
+
+  if (err instanceof APIError) {
+    return res.status(err.code).json(err.toResponse());
+  }
+
+  if (err.message === 'CORS not allowed') {
+    return res.status(403).json(new APIError(
+      403,
+      'cors_error',
+      'Origin not allowed',
+      false
+    ).toResponse());
+  }
+
+  if (err.message === 'Request timeout') {
+    return res.status(408).json(new APIError(
+      408,
+      'timeout_error',
+      'Request timed out',
+      true
+    ).toResponse());
+  }
+
+  res.status(500).json(new APIError(
+    500,
+    'server_error',
+    'An unexpected error occurred',
+    true
+  ).toResponse());
+};
+
 // API Endpoints
-api.get('/places/ll/:coords', async (req, res) => {
-  try {
-    const { coords } = req.params;
-    const { radius = 2, rpp = 100, appid } = req.query;
-
-    if (!appid) {
-      return res.status(400).json({
-        meta: { 
-          code: 400, 
-          error_type: 'missing_parameter',
-          error_detail: 'Missing required appid parameter' 
-        }
-      });
-    }
-
-    const WORKFROM_API_URL = `https://workfrom.co/api/places/ll/${coords}`;
-    
-    const response = await fetch(
-      `${WORKFROM_API_URL}?radius=${radius}&appid=${appid}&rpp=${rpp}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.meta?.error || 'Failed to fetch places');
-    }
-
-    return res.json(data);
-  } catch (error) {
-    console.error('Places API error:', error);
-    return res.status(500).json({
-      meta: {
-        code: 500,
-        error_type: 'server_error',
-        error_detail: error.message
-      }
-    });
-  }
-});
-
-api.get('/places/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { appid } = req.query;
-
-    if (!appid) {
-      return res.status(400).json({
-        meta: { 
-          code: 400, 
-          error_type: 'missing_parameter',
-          error_detail: 'Missing required appid parameter' 
-        }
-      });
-    }
-
-    const WORKFROM_API_URL = `https://workfrom.co/api/places/${id}`;
-    
-    const response = await fetch(
-      `${WORKFROM_API_URL}?appid=${appid}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.meta?.error || 'Failed to fetch place details');
-    }
-
-    return res.json(data);
-  } catch (error) {
-    console.error('Place details API error:', error);
-    return res.status(500).json({
-      meta: {
-        code: 500,
-        error_type: 'server_error',
-        error_detail: error.message
-      }
-    });
-  }
-});
-
-api.post('/analyze-workspaces', async (req, res) => {
+api.post('/analyze-workspaces', async (req, res, next) => {
   try {
     const { places } = req.body;
     if (!places?.length || !places[0]) {
-      return res.status(400).json({
-        meta: { code: 400, error_type: 'invalid_request' }
-      });
+      throw new APIError(400, 'invalid_request', 'Invalid or missing places data');
     }
 
     const place = places[0];
@@ -310,7 +494,7 @@ api.post('/analyze-workspaces', async (req, res) => {
       userInsight = parsed?.userInsight || null;
     }
 
-    return res.json({
+    res.json({
       meta: { code: 200 },
       insights: {
         places: [{
@@ -321,66 +505,227 @@ api.post('/analyze-workspaces', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Analysis error:', error);
-    return res.status(500).json({
-      meta: { code: 500, error_type: 'analysis_failed' }
-    });
+    next(error);
   }
 });
 
-// Health check endpoint
+api.post('/generate-guide', async (req, res, next) => {
+  try {
+    const { places, location, appid } = req.body;
+
+    if (!places?.length || !location?.latitude || !location?.longitude || !appid) {
+      throw new APIError(400, 'invalid_input', 'Missing required data');
+    }
+
+    if (!openai) {
+      throw new APIError(500, 'configuration_error', 'Guide service unavailable');
+    }
+
+    const cacheKey = generateCacheKey(
+      'guide',
+      location.latitude.toFixed(3),
+      location.longitude.toFixed(3),
+      places.map(p => p.ID).sort().join(',')
+    );
+
+    const guide = await withCache(cacheKey, CACHE_DURATIONS.GUIDE, async () => {
+      const prompt = createGuidePrompt(places, location);
+
+      // 5. Add retries for OpenAI calls
+      let attempts = 0;
+      const maxAttempts = 2;
+      
+      while (attempts < maxAttempts) {
+        try {
+          const completion = await withTimeout(
+            openai.chat.completions.create({
+              model: "gpt-4",
+              messages: [
+                { role: "system", content: prompt.system },
+                { role: "user", content: prompt.user }
+              ],
+              temperature: 0.3, // Lower temperature for more consistent formatting
+              max_tokens: 1000,
+              presence_penalty: 0,
+              frequency_penalty: 0
+            }),
+            OPENAI_TIMEOUT
+          );
+
+          const responseText = completion.choices[0].message.content;
+          
+          // 6. Validate response before returning
+          if (!validateGuideResponse(responseText)) {
+            throw new Error('Invalid guide format received');
+          }
+
+          const rawGuide = JSON.parse(responseText);
+          return {
+            ...rawGuide,
+            recommendations: rawGuide.recommendations.map(rec => {
+              const originalPlace = places.find(p => 
+                p.ID === rec.id || p.title === rec.name
+              );
+              
+              if (originalPlace) {
+                return {
+                  ...rec,
+                  images: {
+                    thumbnail: originalPlace.thumbnail_img || null,
+                    full: originalPlace.full_img || null
+                  },
+                  location: {
+                    latitude: originalPlace.latitude,
+                    longitude: originalPlace.longitude,
+                    street: originalPlace.street,
+                    city: originalPlace.city
+                  },
+                  workabilityScore: originalPlace.workabilityScore,
+                  distance: originalPlace.distance
+                };
+              }
+              return rec;
+            })
+          };
+        } catch (error) {
+          attempts++;
+          if (attempts === maxAttempts) {
+            throw error;
+          }
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+    });
+
+    res.json({
+      meta: { code: 200 },
+      guide
+    });
+
+  } catch (error) {
+    next(error);
+  }
+});
+
+api.get('/places/ll/:coords', async (req, res, next) => {
+  try {
+    const { coords } = req.params;
+    const { radius = 2, rpp = 100, appid } = req.query;
+
+    if (!appid) {
+      throw new APIError(
+        400, 
+        'missing_parameter',
+        'Missing required appid parameter'
+      );
+    }
+
+    const WORKFROM_API_URL = `https://workfrom.co/api/places/ll/${coords}`;
+    
+    const response = await withTimeout(
+      fetch(
+        `${WORKFROM_API_URL}?radius=${radius}&appid=${appid}&rpp=${rpp}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      ),
+      OPENAI_TIMEOUT
+    );
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new APIError(
+        response.status,
+        'api_error',
+        data.meta?.error || 'Failed to fetch places',
+        response.status >= 500
+      );
+    }
+
+    res.json(data);
+  } catch (error) {
+    next(error);
+  }
+});
+
+api.get('/places/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { appid } = req.query;
+
+    if (!appid) {
+      throw new APIError(
+        400,
+        'missing_parameter',
+        'Missing required appid parameter'
+      );
+    }
+
+    const WORKFROM_API_URL = `https://workfrom.co/api/places/${id}`;
+    
+    const response = await withTimeout(
+      fetch(
+        `${WORKFROM_API_URL}?appid=${appid}`,
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
+      ),
+      OPENAI_TIMEOUT
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new APIError(
+        response.status,
+        'api_error',
+        data.meta?.error || 'Failed to fetch place details',
+        response.status >= 500
+      );
+    }
+
+    res.json(data);
+  } catch (error) {
+    next(error);
+  }
+});
+
 api.get('/health', (req, res) => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      openai: !!openai,
+      cache: true
+    }
+  };
+
   res.json({
     meta: { 
       code: 200,
-      status: 'healthy',
       version: '1.0.0'
-    }
+    },
+    health
   });
 });
 
-// Error handling middleware
-api.use((err, req, res, next) => {
-  console.error('API Error:', err);
-  
-  if (err.type === 'entity.parse.failed') {
-    return res.status(400).json({
-      meta: {
-        code: 400,
-        error_type: 'invalid_json',
-        error_detail: 'Invalid JSON in request body'
-      }
-    });
-  }
+// Apply middleware
+api.use(rateLimitMiddleware);
 
-  if (err.type === 'entity.too.large') {
-    return res.status(413).json({
-      meta: {
-        code: 413,
-        error_type: 'payload_too_large',
-        error_detail: 'Request payload is too large'
-      }
-    });
-  }
-
-  if (err.name === 'OpenAIError') {
-    return res.status(500).json({
-      meta: {
-        code: 500,
-        error_type: 'openai_error',
-        error_detail: 'Error generating insights. Please try again later.'
-      }
-    });
-  }
-
-  res.status(500).json({
-    meta: {
-      code: 500,
-      error_type: 'server_error',
-      error_detail: err.message || 'An unexpected error occurred'
-    }
-  });
-});
-
+// Mount API routes
 app.use('/.netlify/functions/api', api);
+
+// Error handling middleware should be last
+app.use(errorHandler);
+api.use(errorHandler);
+
+// Export handler
 module.exports.handler = serverless(app);

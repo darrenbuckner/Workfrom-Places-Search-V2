@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
-import { MapIcon } from 'lucide-react';
+import { MapPin, Zap, Sparkles } from 'lucide-react';
 import { SearchPhases } from '../constants';
 import WorkfromHeader from '../WorkfromHeader';
 import QuickMatchView from './QuickMatchView';
 import { useWorkspaceAnalysis } from '../hooks/useWorkspaceAnalysis';
 import NearbyPlacesMap from '../NearbyPlacesMap';
+import WorkspaceGuide from './WorkspaceGuide';
 import SearchControls from '../SearchControls';
 import UnifiedLoadingState from '../UnifiedLoadingState';
 import ErrorMessage from '../ErrorMessage';
 import WelcomeBanner from '../WelcomeBanner';
 import HowItWorksModal from '../HowItWorksModal';
 import Footer from './Footer';
-import { useAuth } from '../hooks/useAuth';
-import { AuthModal } from './AuthModal';
 
-// Layout wrapper component for consistent styling
 const LayoutWrapper = memo(({ children }) => (
   <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
     <div className="pt-16">
@@ -26,29 +24,57 @@ const LayoutWrapper = memo(({ children }) => (
   </div>
 ));
 
-// Map toggle button component
-const MapToggleButton = memo(({ showMap, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`
-      flex items-center gap-2 px-4 py-2 rounded-lg
-      border transition-colors
-      ${showMap 
-        ? 'bg-[var(--accent-primary)] text-[var(--button-text)] border-[var(--accent-primary)]'
-        : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] border-[var(--border-primary)]'
-      }
-    `}
-  >
-    <MapIcon size={16} />
-    <span className="text-sm font-medium">
-      {showMap ? 'Hide Map' : 'Show Map'}
-    </span>
-  </button>
+const ViewToggle = memo(({ mode, onChange }) => (
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => onChange('map')}
+      className={`
+        inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md
+        transition-colors
+        ${mode === 'map'
+          ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
+          : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:text-[var(--text-primary)]'
+        }
+      `}
+    >
+      <MapPin size={16} />
+      <span className="hidden sm:inline">Places</span>
+    </button>
+
+    <button
+      onClick={() => onChange('insights')}
+      className={`
+        inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md
+        transition-colors
+        ${mode === 'insights'
+          ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
+          : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:text-[var(--text-primary)]'
+        }
+      `}
+    >
+      <Zap size={16} />
+      <span className="hidden sm:inline">Quick Match</span>
+    </button>
+
+    <button
+      onClick={() => onChange('guide')}
+      className={`
+        inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md
+        transition-colors
+        ${mode === 'guide'
+          ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
+          : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:text-[var(--text-primary)]'
+        }
+      `}
+    >
+      <Sparkles size={16} />
+      <span className="hidden sm:inline">Guide</span>
+    </button>
+  </div>
 ));
 
-// Content area component
-const ContentArea = memo(({ 
-  showMap, 
+const ContentArea = ({ 
+  viewMode,
   places, 
   location, 
   handleViewDetails, 
@@ -57,32 +83,58 @@ const ContentArea = memo(({
   analysis,
   isAnalyzing,
   analyzePlaces 
-}) => (
-  <div className="max-w-2xl mx-auto">
-    {showMap ? (
-      <div className="rounded-lg overflow-hidden border border-[var(--border-primary)]">
-        <NearbyPlacesMap
-          places={places}
-          userLocation={location}
-          onPhotoClick={handleViewDetails}
-          highlightedPlace={selectedPlace}
-          searchRadius={radius}
-        />
-      </div>
-    ) : (
-      <QuickMatchView
-        places={places}
-        onViewDetails={handleViewDetails}
-        radius={radius}
-        analyzedPlaces={analysis}
-        isAnalyzing={isAnalyzing}
-        onAnalyze={analyzePlaces}
-      />
-    )}
-  </div>
-));
+}) => {
+  // Add validation check
+  const hasRequiredData = places?.length > 0 && location?.latitude && location?.longitude;
 
-// Initial state component
+  switch(viewMode) {
+    case 'map':
+      return (
+        <div className="rounded-lg overflow-hidden border border-[var(--border-primary)]">
+          <NearbyPlacesMap
+            places={places}
+            userLocation={location}
+            onPhotoClick={handleViewDetails}
+            highlightedPlace={selectedPlace}
+            searchRadius={radius}
+          />
+        </div>
+      );
+    case 'guide':
+      // Show loading or empty state if no data
+      if (!hasRequiredData) {
+        return (
+          <div className="p-4 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-5 h-5 text-[var(--accent-primary)]" />
+              <p className="text-[var(--text-secondary)]">
+                Search for workspaces to see personalized recommendations
+              </p>
+            </div>
+          </div>
+        );
+      }
+      return (
+        <WorkspaceGuide 
+          places={places}
+          location={location}
+          onViewDetails={handleViewDetails}
+        />
+      );
+    default:
+      return (
+        <QuickMatchView
+          places={places}
+          onViewDetails={handleViewDetails}
+          radius={radius}
+          analyzedPlaces={analysis}
+          isAnalyzing={isAnalyzing}
+          onAnalyze={analyzePlaces}
+        />
+      );
+  }
+};
+
 const InitialState = memo(({
   radius, 
   setRadius, 
@@ -112,7 +164,6 @@ const InitialState = memo(({
   </LayoutWrapper>
 ));
 
-// Loading state component
 const LoadingState = memo(({ 
   locationName, 
   searchPhase,
@@ -139,7 +190,6 @@ const LoadingState = memo(({
   </LayoutWrapper>
 ));
 
-// Error state component
 const ErrorState = memo(({ 
   locationName, 
   searchPhase,
@@ -182,11 +232,9 @@ const WorkspaceLayout = ({
   setRadius,
   onRetryWithLargerRadius
 }) => {
-  const { user } = useAuth();
-  const [showMap, setShowMap] = useState(false);
+  const [viewMode, setViewMode] = useState('map');
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const { 
     isAnalyzing, 
@@ -195,10 +243,10 @@ const WorkspaceLayout = ({
     clearAnalysis 
   } = useWorkspaceAnalysis();
 
-  // Reset map view when location changes
-  useEffect(() => {
-    setShowMap(false);
-  }, [location]);
+  // Reset view mode when location changes
+  // useEffect(() => {
+  //   setViewMode('insights');
+  // }, [location]);
 
   const handleViewDetails = useCallback((place) => {
     onPhotoClick(place);
@@ -208,43 +256,6 @@ const WorkspaceLayout = ({
     setShowHowItWorks(true);
   }, []);
 
-  const handleShowAuthModal = useCallback(() => {
-    setShowAuthModal(true);
-  }, []);
-
-  const handleAuthModal = (show) => {
-    setShowAuthModal(show);
-  };
-
-  const handleCloseAuthModal = useCallback(() => {
-    setShowAuthModal(false);
-  }, []);
-
-  // If no user, show only the logged out state
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
-        <div className="pt-16">
-          <WorkfromHeader 
-            className="mb-4" 
-            searchPhase="initial"
-            onShowHowItWorks={() => setShowHowItWorks(true)}
-            handleShowAuthModal={() => handleAuthModal(true)}
-            handleCloseAuthModal={() => handleAuthModal(false)}
-          />
-        </div>
-        <Footer />
-        {showHowItWorks && <HowItWorksModal setShowModal={setShowHowItWorks} />}
-        <AuthModal 
-          isOpen={showAuthModal}
-          onClose={() => handleAuthModal(false)}
-          initialMode="signup"
-        />
-      </div>
-    );
-  }
-
-  // Handle different states
   if (searchPhase === SearchPhases.INITIAL) {
     return (
       <>
@@ -253,11 +264,7 @@ const WorkspaceLayout = ({
             className="mb-4" 
             searchPhase={searchPhase}
             onShowHowItWorks={() => setShowHowItWorks(true)}
-            showAuthModal={showAuthModal}
-            handleShowAuthModal={handleShowAuthModal}
-            handleCloseAuthModal={handleCloseAuthModal}
           />
-          {/* Add spacing div to account for header height */}
           <div className="h-16" />
           <div className="flex-1 container mx-auto px-4 max-w-2xl">
             <WelcomeBanner />
@@ -277,7 +284,6 @@ const WorkspaceLayout = ({
     );
   }
 
-  // Loading states
   if (searchPhase === SearchPhases.LOCATING || searchPhase === SearchPhases.LOADING) {
     return (
       <>
@@ -287,12 +293,8 @@ const WorkspaceLayout = ({
             onLocationClick={onLocationChange}
             searchPhase={searchPhase}
             onShowHowItWorks={() => setShowHowItWorks(true)}
-            showAuthModal={showAuthModal}
-            handleShowAuthModal={handleShowAuthModal}
-            handleCloseAuthModal={handleCloseAuthModal}
             className="mb-4"
           />
-          {/* Add spacing div to account for header height */}
           <div className="h-[104px]" />
           <div className="flex-1 container mx-auto px-4 max-w-2xl">
             <UnifiedLoadingState
@@ -318,16 +320,14 @@ const WorkspaceLayout = ({
           onSearch={onSearch}
           onRetryWithLargerRadius={onRetryWithLargerRadius}
           handleShowHowItWorks={handleShowHowItWorks}
-          handleShowAuthModal={handleShowAuthModal}
-          handleCloseAuthModal={handleCloseAuthModal}
+          handleShowAuthModal={() => setShowHowItWorks(true)}
+          handleCloseAuthModal={() => setShowHowItWorks(false)}
           onLocationChange={onLocationChange}
         />
-        {showHowItWorks && <HowItWorksModal setShowModal={setShowHowItWorks} />}
       </>
     );
   }
 
-  // Main content state
   return (
     <>
       <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
@@ -338,21 +338,18 @@ const WorkspaceLayout = ({
               onLocationClick={onLocationChange}
               searchPhase={searchPhase}
               onShowHowItWorks={() => setShowHowItWorks(true)}
-              isAuthModalOpen={showAuthModal}  // renamed prop
-              onShowAuthModal={handleShowAuthModal}
-              onCloseAuthModal={handleCloseAuthModal}
               className="mb-4"
             />
 
             <div className="max-w-2xl mx-auto mb-4 flex justify-end">
-              <MapToggleButton 
-                showMap={showMap} 
-                onClick={() => setShowMap(!showMap)} 
+              <ViewToggle 
+                mode={viewMode}
+                onChange={setViewMode}
               />
             </div>
 
             <ContentArea 
-              showMap={showMap}
+              viewMode={viewMode}
               places={places}
               location={location}
               handleViewDetails={handleViewDetails}
