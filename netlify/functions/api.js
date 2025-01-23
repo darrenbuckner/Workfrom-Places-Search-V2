@@ -115,31 +115,16 @@ const CACHE_DURATIONS = {
 
 const OPENAI_TIMEOUT = 45000; // 30 seconds
 
-// Unified CORS configuration
+// Update CORS configuration to be more permissive
 const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:8888',
-      /\.netlify\.app$/
-    ];
-
-    if (!origin || allowedOrigins.some(allowed => 
-      typeof allowed === 'string' ? origin === allowed : allowed.test(origin)
-    )) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS not allowed'));
-    }
-  },
+  origin: '*', // Allow all origins
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: [
     'Content-Type',
     'Accept',
     'Authorization',
     'X-Requested-With',
-    'Accept-Language', // Added this header
+    'Accept-Language',
     'Origin',
     'Access-Control-Request-Method',
     'Access-Control-Request-Headers'
@@ -511,9 +496,9 @@ api.post('/analyze-workspaces', async (req, res, next) => {
 
 api.post('/generate-guide', async (req, res, next) => {
   try {
-    const { places, location, appid } = req.body;
+    const { places, location } = req.body; // Remove appid requirement
 
-    if (!places?.length || !location?.latitude || !location?.longitude || !appid) {
+    if (!places?.length || !location?.latitude || !location?.longitude) {
       throw new APIError(400, 'invalid_input', 'Missing required data');
     }
 
@@ -611,7 +596,7 @@ api.post('/generate-guide', async (req, res, next) => {
 api.get('/places/ll/:coords', async (req, res, next) => {
   try {
     const { coords } = req.params;
-    const { radius = 2, rpp = 100, appid } = req.query;
+    const { radius = 2, rpp = 100, appid } = req.query;  // Keep appid for Workfrom API
 
     if (!appid) {
       throw new APIError(
@@ -625,7 +610,7 @@ api.get('/places/ll/:coords', async (req, res, next) => {
     
     const response = await withTimeout(
       fetch(
-        `${WORKFROM_API_URL}?radius=${radius}&appid=${appid}&rpp=${rpp}`,
+        `${WORKFROM_API_URL}?radius=${radius}&appid=${appid}&rpp=${rpp}`,  // Keep appid in URL
         {
           headers: {
             'Accept': 'application/json',
@@ -656,7 +641,7 @@ api.get('/places/ll/:coords', async (req, res, next) => {
 api.get('/places/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { appid } = req.query;
+    const { appid } = req.query;  // Keep appid for Workfrom API
 
     if (!appid) {
       throw new APIError(
@@ -670,7 +655,7 @@ api.get('/places/:id', async (req, res, next) => {
     
     const response = await withTimeout(
       fetch(
-        `${WORKFROM_API_URL}?appid=${appid}`,
+        `${WORKFROM_API_URL}?appid=${appid}`,  // Keep appid in URL
         {
           headers: {
             'Accept': 'application/json',
