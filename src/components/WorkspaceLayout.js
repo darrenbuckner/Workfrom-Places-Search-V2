@@ -38,7 +38,7 @@ const ViewToggle = memo(({ mode, onChange }) => (
       `}
     >
       <MapPin size={16} />
-      <span className="hidden sm:inline">Places</span>
+      <span className="hidden sm:inline">Map</span>
     </button>
 
     <button

@@ -68,7 +68,7 @@ const WorkfromHeader = ({
   showThemeToggle = true,
   showAddPlace = true,
   showHowItWorks = true,
-  headerTitle = 'Workfrom Places',
+  headerTitle = 'Nearby',
   locationName = '',
   onLocationClick,
   searchPhase = 'initial'
