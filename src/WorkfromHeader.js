@@ -15,11 +15,11 @@ const WorkfromLogo = memo(({ size = 'default' }) => {
       className={`${dimensions} text-[var(--text-primary)]`}
       aria-label="Nearby places logo"
     >
-      {/* Background circle with gradient */}
+      {/* Background circle with very subtle gradient */}
       <defs>
         <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" className="text-[var(--accent-primary)]" stopOpacity="0.2" />
-          <stop offset="100%" className="text-[var(--accent-primary)]" stopOpacity="0.1" />
+          <stop offset="0%" className="text-[var(--accent-primary)]" stopOpacity="0.08" />
+          <stop offset="100%" className="text-[var(--accent-primary)]" stopOpacity="0.03" />
         </linearGradient>
       </defs>
       <circle cx="50" cy="50" r="48" fill="url(#grad1)" />
@@ -30,24 +30,25 @@ const WorkfromLogo = memo(({ size = 'default' }) => {
         className="text-[var(--accent-primary)]" 
         fill="none" 
         stroke="currentColor" 
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeDasharray="4,2"
+        opacity="0.8"
       />
 
       {/* Central location marker */}
       <g className="text-[var(--accent-primary)]" fill="currentColor">
-        <circle cx="50" cy="50" r="8" fillOpacity="0.2" />
+        <circle cx="50" cy="50" r="8" fillOpacity="0.15" />
         <circle cx="50" cy="50" r="4" />
       </g>
 
       {/* Orbital rings representing nearby places */}
-      <g className="text-[var(--text-primary)]" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <g className="text-[var(--text-primary)]" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.6">
         <ellipse cx="50" cy="50" rx="20" ry="30" transform="rotate(-30 50 50)" strokeDasharray="2,3" />
         <ellipse cx="50" cy="50" rx="25" ry="35" transform="rotate(30 50 50)" strokeDasharray="3,4" />
       </g>
 
       {/* Small dots representing places */}
-      <g className="text-[var(--text-primary)]" fill="currentColor">
+      <g className="text-[var(--text-primary)]" fill="currentColor" opacity="0.8">
         <circle cx="65" cy="35" r="2" />
         <circle cx="30" cy="60" r="2" />
         <circle cx="70" cy="65" r="2" />
