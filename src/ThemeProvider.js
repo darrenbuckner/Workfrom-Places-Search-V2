@@ -13,30 +13,32 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [isDark, setIsDark] = useState(false);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    localStorage.setItem('darkMode', !isDark);
-  };
-
-  useEffect(() => {
+  // Initialize state from localStorage or system preference
+  const [isDark, setIsDark] = useState(() => {
     const savedTheme = localStorage.getItem('darkMode');
     if (savedTheme !== null) {
-      setIsDark(JSON.parse(savedTheme));
-    } else {
-      // Check user's system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDark(prefersDark);
+      return JSON.parse(savedTheme);
     }
-  }, []);
+    // Check user's system preference
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  const toggleTheme = () => {
+    setIsDark(prev => {
+      const newValue = !prev;
+      localStorage.setItem('darkMode', JSON.stringify(newValue));
+      return newValue;
+    });
+  };
 
   useEffect(() => {
     const theme = isDark ? darkTheme : lightTheme;
     Object.entries(theme).forEach(([key, value]) => {
       document.documentElement.style.setProperty(`--${key}`, value);
     });
-    document.documentElement.classList.toggle('dark', isDark);
+    
+    // Update data-theme attribute instead of class
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   return (

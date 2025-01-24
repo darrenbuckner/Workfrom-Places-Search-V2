@@ -1,5 +1,6 @@
 import React, { useRef, useCallback, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, ZoomControl } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
@@ -85,6 +86,80 @@ const MapController = ({ userLocation, places }) => {
   return null;
 };
 
+const mapStyle = {
+  default: {
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    config: {
+      maxZoom: 19,
+      subdomains: 'abcd',
+      className: 'map-tiles-light'
+    }
+  }
+};
+
+// Update the map styles
+const mapStyles = `
+  .leaflet-container {
+    background: var(--bg-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .map-tiles-light {
+    filter: saturate(1.1) contrast(1.05) brightness(1.05);
+  }
+
+  /* Fix popup content margin */
+  .leaflet-popup-content {
+    margin: 0 !important;
+  }
+
+  /* Control and popup styles */
+  .leaflet-control-zoom {
+    border: none !important;
+    background: var(--bg-primary) !important;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05) !important;
+  }
+
+  .leaflet-control-zoom a {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-primary) !important;
+  }
+
+  .leaflet-control-zoom a:hover {
+    background: var(--bg-secondary) !important;
+  }
+
+  .leaflet-popup-content-wrapper {
+    background-color: var(--bg-primary) !important;
+    border: 1px solid var(--border-primary) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+  }
+
+  .leaflet-popup-tip {
+    background-color: var(--bg-primary) !important;
+    border: 1px solid var(--border-primary) !important;
+    border-top: none !important;
+    box-shadow: none !important;
+  }
+
+  .leaflet-popup-close-button {
+    color: var(--text-primary) !important;
+  }
+
+  /* Ensure popup tip aligns with content wrapper border */
+  .leaflet-popup-tip-container {
+    overflow: visible !important;
+  }
+`;
+
+// Add the styles to the document
+const styleSheet = document.createElement("style");
+styleSheet.innerText = mapStyles;
+document.head.appendChild(styleSheet);
+
 const NearbyPlacesMap = ({ 
   places, 
   userLocation,
@@ -95,6 +170,7 @@ const NearbyPlacesMap = ({
   const { isDark } = useTheme();
   const defaultPosition = [userLocation.latitude, userLocation.longitude];
   const mapRef = useRef(null);
+  const currentMapStyle = mapStyle.default;  // Always use default (light) style
 
   const themeColors = {
     accent: {
@@ -124,48 +200,32 @@ const NearbyPlacesMap = ({
 
   const createCustomIcon = useCallback((isHighlighted = false) => {
     const size = isHighlighted ? 40 : 32;
-    const color = isHighlighted ? themeColors.accent.primary : themeColors.accent.muted;
+    const color = isHighlighted 
+      ? themeColors.accent.primary 
+      : `${themeColors.accent.primary}`;
     
     return L.divIcon({
       html: `
         <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
           width: ${size}px;
           height: ${size}px;
-          position: relative;
-          transform: translate(-50%, -50%);
-        ">
-          <div style="
-            width: 100%;
-            height: 100%;
-            background-color: ${color};
-            border-radius: 50%;
-            opacity: 0.9;
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border: 2px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'};
-            transition: all 0.2s ease;
-          ">
-            <div style="
-              width: ${size * 0.6}px;
-              height: ${size * 0.6}px;
-              background-color: ${themeColors.bg.primary};
-              border-radius: 50%;
-              opacity: 0.9;
-            "></div>
-          </div>
-        </div>
+          background-color: ${color};
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          border: 3px solid ${themeColors.bg.primary};
+          transition: transform 0.2s ease;
+        "></div>
       `,
-      className: `custom-marker${isHighlighted ? ' highlighted' : ''}`,
+      className: 'custom-marker',
       iconSize: [size, size],
       iconAnchor: [size/2, size/2],
-      popupAnchor: [0, -(size/2 + 2)] // Offset popup slightly above the marker
+      popupAnchor: [0, -(size/2 + 2)]
     });
-  }, [isDark, themeColors]);
+  }, [themeColors]);
 
   const createUserIcon = useCallback(() => {
     const size = 48;
@@ -417,7 +477,7 @@ const PopupContent = ({ place, isHighlighted }) => {
             onClick={() => onPhotoClick(place)}
             className="flex items-center justify-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-md
               bg-[var(--accent-primary)] text-[var(--button-text)]
-              hover:bg-[var(--accent-secondary)] transition-colors flex-1"
+              hover:bg-[var(--action-primary-hover)] transition-colors flex-1"
           >
             View Details
             <ChevronRight size={12} />
@@ -449,61 +509,96 @@ const PopupContent = ({ place, isHighlighted }) => {
   );
 };
 
-  return (
-    <div className="rounded-lg overflow-hidden border border-[var(--border-primary)] map-container">
-      <MapContainer 
-        ref={mapRef}
-        center={defaultPosition} 
-        zoom={13} 
-        style={{ height: '500px', width: '100%' }}
-        className={isDark ? 'map-dark' : ''}
+return (
+  <div className="rounded-lg overflow-hidden border border-[var(--border-primary)] map-container">
+    <MapContainer 
+      ref={mapRef}
+      center={defaultPosition} 
+      zoom={13} 
+      style={{ height: '500px', width: '100%' }}
+      className="" // Remove theme class from initial render
+      zoomControl={false}
+    >
+      <MapController userLocation={userLocation} places={places} />
+      
+      <TileLayer
+        url={currentMapStyle.url}
+        attribution={currentMapStyle.attribution}
+        {...currentMapStyle.config}
+      />
+
+      <ZoomControl position="bottomright" />
+
+      {/* Search radius circle */}
+      <Circle
+        center={defaultPosition}
+        radius={searchRadius * 1609.34}
+        pathOptions={{
+          color: themeColors.accent.primary,
+          fillColor: themeColors.accent.primary,
+          fillOpacity: 0.1,
+          weight: 1,
+          className: 'search-radius-circle'
+        }}
+      />
+
+      {/* User location marker */}
+      <Marker 
+        position={defaultPosition} 
+        icon={createUserIcon()}
+        zIndexOffset={1000}
       >
-        <MapController userLocation={userLocation} places={places} />
-        
-        <TileLayer
-          url={isDark 
-            ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-            : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-          }
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        />
-
-        {/* Search radius circle */}
-        <Circle
-          center={defaultPosition}
-          radius={searchRadius * 1609.34}
-          pathOptions={{
-            color: themeColors.accent.primary,
-            fillColor: themeColors.accent.primary,
-            fillOpacity: 0.1,
-            weight: 1,
-            className: 'search-radius-circle'  // Add this custom class
-          }}
-        />
-
-        {/* User location marker */}
-        <Marker 
-          position={defaultPosition} 
-          icon={createUserIcon()}
-          zIndexOffset={1000}
-        >
-          <Popup>
-            <div className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 
-                  flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-[var(--accent-primary)]" />
-                </div>
-                <div>
-                  <p className="font-medium text-[var(--text-primary)]">Your location</p>
-                  <p className="text-sm text-[var(--text-secondary)]">Current position</p>
-                </div>
+        <Popup>
+          <div className="p-4 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-primary)]">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 
+                flex items-center justify-center">
+                <MapPin className="w-4 h-4 text-[var(--accent-primary)]" />
+              </div>
+              <div>
+                <p className="font-medium text-[var(--text-primary)]">Your location</p>
+                <p className="text-sm text-[var(--text-secondary)]">Current position</p>
               </div>
             </div>
-          </Popup>
-        </Marker>
+          </div>
+        </Popup>
+      </Marker>
 
-        {/* Place markers */}
+      {/* Place markers wrapped in MarkerClusterGroup */}
+      <MarkerClusterGroup
+        chunkedLoading
+        maxClusterRadius={50}
+        showCoverageOnHover={false}
+        iconCreateFunction={(cluster) => {
+          return L.divIcon({
+            html: `
+              <div style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 40px;
+                height: 40px;
+                background-color: var(--accent-primary);
+                border-radius: 50%;
+                border: 3px solid var(--bg-primary);
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--button-text);
+                font-weight: 600;
+                font-size: 14px;
+              ">
+                ${cluster.getChildCount()}
+              </div>
+            `,
+            className: 'custom-cluster-marker',
+            iconSize: L.point(40, 40),
+            iconAnchor: [20, 20]
+          });
+        }}
+      >
         {places.map((place) => {
           const isHighlighted = highlightedPlace && place.ID === highlightedPlace.ID;
           
@@ -520,225 +615,10 @@ const PopupContent = ({ place, isHighlighted }) => {
             </Marker>
           );
         })}
-      </MapContainer>
-
-      <style jsx="true" global="true">{`
-        .leaflet-container {
-          background: var(--bg-primary);
-          font-family: inherit;
-        }
-        
-        .leaflet-popup-content-wrapper,
-        .leaflet-popup-tip {
-          background: var(--bg-primary);
-          color: var(--text-primary);
-          border: 1px solid var(--border-primary);
-          border-radius: 0.5rem;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .leaflet-container a.leaflet-popup-close-button {
-          color: var(--text-secondary);
-          padding: 8px;
-          width: 28px;
-          height: 28px;
-          font-weight: normal;
-          transition: all 0.2s ease;
-        }
-        
-        .leaflet-container a.leaflet-popup-close-button:hover {
-          color: var(--text-primary);
-          background: var(--bg-secondary);
-          border-radius: 50%;
-        }
-
-        .map-dark .leaflet-control-zoom a {
-          background: var(--bg-secondary);
-          color: var(--text-primary);
-          border-color: var(--border-primary);
-        }
-
-        .map-dark .leaflet-control-zoom a:hover {
-          background: var(--bg-primary);
-        }
-
-        .leaflet-bar {
-          border-color: var(--border-primary);
-        }
-
-        .leaflet-popup {
-          margin-bottom: 0;
-        }
-
-        .leaflet-popup-content {
-          margin: 0;
-          min-width: 300px;
-        }
-
-        .leaflet-popup-content p {
-          margin: 0;
-        }
-
-        .custom-marker {
-          background: none;
-          border: none;
-          transition: transform 0.2s ease;
-        }
-
-        .custom-marker:hover {
-          transform: scale(1.1);
-        }
-
-        .custom-marker.highlighted {
-          z-index: 1000 !important;
-        }
-
-        .leaflet-control-zoom {
-          border: none !important;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-        }
-
-        .leaflet-control-zoom a {
-          background: var(--bg-primary) !important;
-          color: var(--text-primary) !important;
-          border: 1px solid var(--border-primary) !important;
-          width: 32px !important;
-          height: 32px !important;
-          line-height: 30px !important;
-          font-size: 16px !important;
-          transition: all 0.2s ease !important;
-        }
-
-        .leaflet-control-zoom a:hover {
-          background: var(--bg-secondary) !important;
-          color: var(--accent-primary) !important;
-        }
-
-        /* Search radius circle animation */
-        .leaflet-interactive.search-radius-circle {
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0% {
-            stroke-opacity: 0.8;
-            stroke-width: 1;
-          }
-          50% {
-            stroke-opacity: 0.4;
-            stroke-width: 2;
-          }
-          100% {
-            stroke-opacity: 0.8;
-            stroke-width: 1;
-          }
-        }
-
-        /* User location marker pulse animation */
-        .user-location-marker {
-          background: none;
-          border: none;
-        }
-
-        @keyframes locationPulse {
-          0% {
-            transform: translate(-50%, -50%) scale(0.5);
-            opacity: 0.4;
-          }
-          100% {
-            transform: translate(-50%, -50%) scale(1.5);
-            opacity: 0;
-          }
-        }
-
-        .leaflet-popup-content a {
-          color: inherit !important;
-          text-decoration: none !important;
-        }
-        
-        /* Dark theme specific styles */
-        .map-dark .leaflet-popup-content-wrapper,
-        .map-dark .leaflet-popup-tip {
-          background: var(--bg-primary);
-          border-color: var(--border-primary);
-        }
-
-        .map-dark .leaflet-container a.leaflet-popup-close-button {
-          color: var(--text-secondary);
-        }
-
-        .map-dark .leaflet-container a.leaflet-popup-close-button:hover {
-          color: var(--text-primary);
-          background: var(--bg-secondary);
-        }
-
-        /* Attribution link styles */
-        .leaflet-control-attribution {
-          background: var(--bg-primary) !important;
-          color: var(--text-secondary) !important;
-          font-size: 10px !important;
-          padding: 2px 8px !important;
-        }
-
-        .leaflet-control-attribution a {
-          color: var(--accent-primary) !important;
-        }
-
-        /* Focus styles for accessibility */
-        .leaflet-container a:focus,
-        .leaflet-container button:focus {
-          outline: 2px solid var(--accent-primary) !important;
-          outline-offset: 2px !important;
-        }
-
-        /* Popup transitions */
-        .leaflet-fade-anim .leaflet-popup {
-          transition: opacity 0.2s linear !important;
-        }
-
-        /* Custom scrollbar for popup content */
-        .leaflet-popup-content-wrapper {
-          scrollbar-width: thin;
-          scrollbar-color: var(--accent-primary) var(--bg-secondary);
-        }
-
-        .leaflet-popup-content-wrapper::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .leaflet-popup-content-wrapper::-webkit-scrollbar-track {
-          background: var(--bg-secondary);
-        }
-
-        .leaflet-popup-content-wrapper::-webkit-scrollbar-thumb {
-          background-color: var(--accent-primary);
-          border-radius: 4px;
-          border: 2px solid var(--bg-secondary);
-        }
-        .leaflet-popup-content-wrapper {
-          padding: 0 !important;
-          overflow: hidden !important;
-          border-radius: 0.5rem !important;
-        }
-        
-        .leaflet-popup-content {
-          margin: 0 !important;
-          width: 320px !important;
-        }
-        
-        .leaflet-popup-close-button {
-          right: 4px !important;
-          top: 4px !important;
-          color: var(--text-secondary) !important;
-          z-index: 1;
-        }
-
-        .leaflet-popup-tip {
-          border-top: 1px solid var(--border-primary) !important;
-        }
-      `}</style>
-    </div>
-  );
+      </MarkerClusterGroup>
+    </MapContainer>
+  </div>
+);
 };
 
 export default NearbyPlacesMap;
