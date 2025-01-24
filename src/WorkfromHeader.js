@@ -13,15 +13,46 @@ const WorkfromLogo = memo(({ size = 'default' }) => {
       xmlns="http://www.w3.org/2000/svg" 
       viewBox="0 0 100 100" 
       className={`${dimensions} text-[var(--text-primary)]`}
-      aria-label="Workfrom logo"
+      aria-label="Nearby places logo"
     >
-      <circle cx="50" cy="50" r="48" className="text-[var(--bg-tertiary)]" fill="currentColor" />
-      <circle cx="50" cy="50" r="46" fill="none" className="text-[var(--border-primary)]" stroke="currentColor" strokeWidth="2" />
-      <path d="M50 20 C35 20, 25 32, 25 45 C25 58, 35 65, 50 80 C65 65, 75 58, 75 45 C75 32, 65 20, 50 20" className="text-[var(--text-primary)]" fill="currentColor" opacity="0.9" />
-      <rect x="38" y="38" width="24" height="16" rx="2" className="text-[var(--bg-secondary)]" fill="currentColor" />
-      <path d="M35 54 L65 54 L68 58 L32 58 Z" className="text-[var(--bg-secondary)]" fill="currentColor" />
-      <circle cx="50" cy="45" r="3" className="text-[var(--text-primary)]" fill="currentColor" opacity="0.9" />
-      <path d="M47 45 Q50 48, 53 45" className="text-[var(--text-primary)]" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      {/* Background circle with gradient */}
+      <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" className="text-[var(--accent-primary)]" stopOpacity="0.2" />
+          <stop offset="100%" className="text-[var(--accent-primary)]" stopOpacity="0.1" />
+        </linearGradient>
+      </defs>
+      <circle cx="50" cy="50" r="48" fill="url(#grad1)" />
+      
+      {/* Outer ring with subtle glow */}
+      <circle 
+        cx="50" cy="50" r="46" 
+        className="text-[var(--accent-primary)]" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2"
+        strokeDasharray="4,2"
+      />
+
+      {/* Central location marker */}
+      <g className="text-[var(--accent-primary)]" fill="currentColor">
+        <circle cx="50" cy="50" r="8" fillOpacity="0.2" />
+        <circle cx="50" cy="50" r="4" />
+      </g>
+
+      {/* Orbital rings representing nearby places */}
+      <g className="text-[var(--text-primary)]" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <ellipse cx="50" cy="50" rx="20" ry="30" transform="rotate(-30 50 50)" strokeDasharray="2,3" />
+        <ellipse cx="50" cy="50" rx="25" ry="35" transform="rotate(30 50 50)" strokeDasharray="3,4" />
+      </g>
+
+      {/* Small dots representing places */}
+      <g className="text-[var(--text-primary)]" fill="currentColor">
+        <circle cx="65" cy="35" r="2" />
+        <circle cx="30" cy="60" r="2" />
+        <circle cx="70" cy="65" r="2" />
+        <circle cx="35" cy="30" r="2" />
+      </g>
     </svg>
   );
 });
