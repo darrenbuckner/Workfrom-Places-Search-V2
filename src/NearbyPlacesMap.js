@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, ZoomControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
@@ -13,9 +13,12 @@ import {
   MapPin,
   ImageIcon,
   Star,
-  ChevronRight
+  ChevronRight,
+  BookOpen,
+  X
 } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
+import WorkspaceGuide from './components/WorkspaceGuide';
 
 // New MetricBadge component to match list view styling
 const MetricBadge = ({ icon: Icon, label, variant }) => {
@@ -509,6 +512,8 @@ const PopupContent = ({ place, isHighlighted }) => {
   );
 };
 
+const [showGuide, setShowGuide] = useState(false);
+
 return (
   <div className="rounded-lg overflow-hidden border border-[var(--border-primary)] map-container">
     <MapContainer 
@@ -617,6 +622,33 @@ return (
         })}
       </MarkerClusterGroup>
     </MapContainer>
+
+    <button
+      onClick={() => setShowGuide(true)}
+      className="flex items-center gap-1 px-3 py-1.5 rounded-md
+        bg-[var(--bg-secondary)] text-[var(--text-primary)]
+        hover:bg-[var(--bg-tertiary)] transition-colors"
+    >
+      <BookOpen size={16} />
+      <span>Generate Guide</span>
+    </button>
+
+    {showGuide && (
+      <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+        <div className="bg-[var(--bg-primary)] rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="sticky top-0 flex justify-between items-center p-4 border-b border-[var(--border-primary)] bg-[var(--bg-primary)]">
+            <h2 className="text-lg font-semibold">Workspace Guide</h2>
+            <button
+              onClick={() => setShowGuide(false)}
+              className="p-1 hover:bg-[var(--bg-secondary)] rounded-md"
+            >
+              <X size={20} />
+            </button>
+          </div>
+          <WorkspaceGuide places={places} onClose={() => setShowGuide(false)} />
+        </div>
+      </div>
+    )}
   </div>
 );
 };

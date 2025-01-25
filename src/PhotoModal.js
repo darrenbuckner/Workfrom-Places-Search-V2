@@ -14,6 +14,7 @@ import WorkabilityMetrics from './components/WorkabilityMetrics';
 import ExpandableMetricBadge from './ExpandableMetricBadge';
 import LocationSection from './LocationSection';
 import { useScrollLock } from './useScrollLock';
+import { useFavorites } from './hooks/useFavorites';
 
 const stripHtml = (html) => {
   if (!html) return '';
@@ -193,6 +194,8 @@ const getWifiStats = (place) => {
 
 const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal }) => {
   const { isDark } = useTheme();
+  const { favorites, addFavorite, removeFavorite } = useFavorites();
+  const isFavorite = favorites.some(f => f.id === selectedPlace.id);
   const contentRef = useRef(null);
   const progress = useScrollPosition(contentRef);
   
@@ -231,6 +234,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     return `${otherItems}, and ${lastItem}`;
   };
 
+  const workabilityScore = selectedPlace?.workabilityScore || 0;
   const getScoreQuality = (score) => {
     if (score >= 8) return { label: 'Excellent', stars: 3 };
     if (score >= 6) return { label: 'Good', stars: 2 };
@@ -251,174 +255,152 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
   const sanitizedDescription = stripHtml(selectedPlace?.description);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col md:overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[var(--modal-backdrop)] backdrop-blur-xl" />
       
-      {/* Mobile Header */}
-      <div className="flex-shrink-0 md:hidden sticky top-0 z-20 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
-        <div className="flex items-center justify-between p-3">
-          <button 
-            onClick={() => setShowPhotoModal(false)}
-            className="flex items-center text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors"
-          >
-            <ChevronLeft size={20} className="mr-1" />
-            <span className="text-sm font-medium">Back</span>
-          </button>
-          <h2 className="text-base font-semibold text-center flex-1 mx-4 truncate text-[var(--text-primary)]">
-            {selectedPlace?.title}
-          </h2>
-          <div className="w-8" />
-        </div>
-      </div>
-
-      <div className="relative flex-grow flex md:items-center md:justify-center overflow-hidden">
-        <div className="w-full h-full md:w-[90vw] md:max-w-6xl md:h-[85vh] md:flex 
-          md:rounded-lg overflow-hidden relative
-          bg-[var(--bg-primary)] border border-[var(--border-primary)]
-          shadow-[var(--shadow-lg)]">
+      <div className="relative w-full max-w-4xl max-h-[90vh] bg-[var(--bg-primary)] rounded-lg overflow-hidden
+        border border-[var(--border-primary)] shadow-[var(--shadow-lg)]">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between gap-4 p-4 border-b border-[var(--border-primary)]">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)] truncate">
+              {selectedPlace.title || selectedPlace.name}
+            </h2>
+          </div>
           
-          {/* Close Button */}
-          <button 
-            onClick={() => setShowPhotoModal(false)}
-            className="hidden md:flex absolute right-4 top-4 z-20 items-center justify-center 
-              w-8 h-8 rounded-full
-              bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] 
-              text-[var(--text-primary)] transition-colors"
-          >
-            <X size={20} />
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => isFavorite ? removeFavorite(selectedPlace.id) : addFavorite(selectedPlace)}
+              className={`
+                inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium
+                transition-colors
+                ${isFavorite
+                  ? 'bg-[var(--bg-warning)] text-[var(--text-warning)]'
+                  : 'bg-[var(--bg-secondary)] text-[var(--text-primary)] hover:text-[var(--text-primary)]'
+                }
+              `}
+            >
+              <Star size={16} className={isFavorite ? 'fill-current' : ''} />
+              <span>{isFavorite ? 'Favorited' : 'Favorite'}</span>
+            </button>
 
-          <div ref={contentRef} className="h-full overflow-y-auto md:flex flex-grow">
-            <div className="relative md:flex md:w-full">
-              {/* Image Section */}
-              <div className="relative md:w-3/5 flex-shrink-0 bg-[var(--bg-primary)] transform-gpu overflow-hidden"
-                style={{ height: window.innerWidth >= 768 ? '100%' : '35vh' }}>
-                <div className={`h-full ${window.innerWidth >= 768 ? 'absolute inset-0' : ''}`}>
-                  {isPhotoLoading ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-primary)]">
-                      <Loader size={32} className="text-[var(--accent-primary)] animate-spin" />
-                    </div>
-                  ) : fullImg ? (
-                    <>
-                      <div className="absolute inset-0 transform-gpu transition-transform duration-200"
-                        style={{
-                          transform: window.innerWidth < 768 
-                            ? `scale(${1 + Math.min(progress * 0.05, 0.05)})` 
-                            : 'none'
-                        }}>
-                        <img
-                          src={fullImg}
-                          alt={selectedPlace?.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.src = `/api/placeholder/800/600?text=Image not available`;
-                          }}
-                        />
-                      </div>
-                      <div className="absolute inset-x-0 -bottom-1 h-32 pointer-events-none md:hidden
-                        bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)]/80 to-transparent"
-                        style={{ 
-                          opacity: 0.3 + Math.min(progress * 0.7, 0.7),
-                          transition: 'opacity 0.2s ease-out'
-                        }}
-                      />
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]">
-                      <div className="text-center">
-                        <ImageIcon size={32} className="mx-auto mb-2 text-[var(--text-tertiary)]" />
-                        <p className="text-sm text-[var(--text-secondary)]">No image available</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+            <button
+              onClick={() => setShowPhotoModal(false)}
+              className="p-2 rounded-full hover:bg-[var(--bg-secondary)] transition-colors"
+            >
+              <X size={20} className="text-[var(--text-secondary)]" />
+            </button>
+          </div>
+        </div>
 
-              {/* Content Section */}
-              <div className="relative flex-1 md:w-2/5 border-l border-[var(--border-primary)]">
-                <div className="p-4 space-y-4">
-                  <div className="hidden md:block">
-                    <h2 className="text-xl font-semibold text-[var(--text-primary)]">
-                      {selectedPlace?.title}
-                    </h2>
+        <div ref={contentRef} className="overflow-y-auto md:flex" style={{ height: 'calc(90vh - 73px)' }}>
+          <div className="relative md:flex md:w-full">
+            {/* Image Section */}
+            <div className="relative md:w-3/5 flex-shrink-0 bg-[var(--bg-primary)]">
+              <div className="relative h-[300px] md:h-full">
+                {isPhotoLoading ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-primary)]">
+                    <Loader size={32} className="text-[var(--accent-primary)] animate-spin" />
                   </div>
+                ) : fullImg ? (
+                  <img
+                    src={fullImg}
+                    alt={selectedPlace?.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src = `/api/placeholder/800/600?text=Image not available`;
+                    }}
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-secondary)]">
+                    <div className="text-center">
+                      <ImageIcon size={32} className="mx-auto mb-2 text-[var(--text-tertiary)]" />
+                      <p className="text-sm text-[var(--text-secondary)]">No image available</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
-                  <LocationSection place={selectedPlace} />
+            {/* Content Section */}
+            <div className="relative flex-1 md:w-2/5 border-l border-[var(--border-primary)] overflow-y-auto">
+              <div className="p-4 space-y-4">
+                <LocationSection place={selectedPlace} />
 
+                <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-baseline gap-3">
+                        <StarRating score={workabilityScore} variant="large" />
+                        <span className="text-sm text-[var(--text-secondary)]">
+                          {workabilityScore.toFixed(1)}/10
+                        </span>
+                      </div>
+                      <div className="px-2.5 py-1 rounded-full text-xs font-medium
+                        bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
+                        {getScoreQuality(workabilityScore).label}
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm font-medium text-[var(--text-primary)] mb-4">
+                      {getScoreQuality(workabilityScore).label} for Remote Work
+                    </div>
+
+                    <WorkabilityMetrics place={selectedPlace} />
+                  </div>
+                </div>
+
+                {selectedPlace.password && (
+                  <WifiCredentials password={selectedPlace.password} />
+                )}
+
+                {sanitizedDescription && (
                   <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                     <div className="p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-baseline gap-3">
-                          <StarRating score={selectedPlace.workabilityScore} variant="large" />
-                          <span className="text-sm text-[var(--text-secondary)]">
-                            {selectedPlace.workabilityScore.toFixed(1)}/10
-                          </span>
+                      <div className="flex items-start gap-2.5 mb-3">
+                        <div className="flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 
+                            flex items-center justify-center">
+                            <Users className="w-4 h-4 text-[var(--accent-primary)]" />
+                          </div>
                         </div>
-                        <div className="px-2.5 py-1 rounded-full text-xs font-medium
-                          bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]">
-                          {getScoreQuality(selectedPlace.workabilityScore).label}
+                        <div>
+                          <h3 className="text-sm font-medium text-[var(--text-primary)]">
+                            Community Perspective
+                          </h3>
+                          {selectedPlace?.os && (
+                            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                              Shared by Workfrom member {selectedPlace.os}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      
-                      <div className="text-sm font-medium text-[var(--text-primary)] mb-4">
-                        {getScoreQuality(selectedPlace.workabilityScore).label} for Remote Work
+                      <div className="relative">
+                        <Quote className="absolute -left-1 -top-1 w-4 h-4 text-[var(--accent-primary)] opacity-20" />
+                        <p className="text-sm text-[var(--text-primary)] leading-relaxed pl-3">
+                          {sanitizedDescription}
+                        </p>
                       </div>
-
-                      <WorkabilityMetrics place={selectedPlace} />
                     </div>
                   </div>
+                )}
 
-                  {selectedPlace.password && (
-                    <WifiCredentials password={selectedPlace.password} />
-                  )}
-
-                  {sanitizedDescription && (
-                    <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-                      <div className="p-4">
-                        <div className="flex items-start gap-2.5 mb-3">
-                          <div className="flex-shrink-0">
-                            <div className="w-8 h-8 rounded-full bg-[var(--accent-primary)]/10 
-                              flex items-center justify-center">
-                              <Users className="w-4 h-4 text-[var(--accent-primary)]" />
-                            </div>
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-medium text-[var(--text-primary)]">
-                              Community Perspective
-                            </h3>
-                            {selectedPlace?.os && (
-                              <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                                Shared by Workfrom member {selectedPlace.os}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="relative">
-                          <Quote className="absolute -left-1 -top-1 w-4 h-4 text-[var(--accent-primary)] opacity-20" />
-                          <p className="text-sm text-[var(--text-primary)] leading-relaxed pl-3">
-                            {sanitizedDescription}
-                          </p>
-                        </div>
+                {getMissingInfo(selectedPlace).length > 0 && (
+                  <div className="hidden rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+                    <div className="p-4">
+                      <div className="flex items-start gap-2.5">
+                        <AlertCircle 
+                          size={16} 
+                          className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" 
+                        />
+                        <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                          Help other members by adding {formatMissingInfo(getMissingInfo(selectedPlace))}
+                        </p>
                       </div>
                     </div>
-                  )}
-
-                  {getMissingInfo(selectedPlace).length > 0 && (
-                    <div className="hidden rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
-                      <div className="p-4">
-                        <div className="flex items-start gap-2.5">
-                          <AlertCircle 
-                            size={16} 
-                            className="flex-shrink-0 text-[var(--accent-primary)] mt-0.5" 
-                          />
-                          <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                            Help other members by adding {formatMissingInfo(getMissingInfo(selectedPlace))}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

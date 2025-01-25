@@ -47,9 +47,15 @@ export const usePlaces = () => {
     try {
       // Store search parameters for potential retry
       searchStateRef.current.lastSearchParams = { searchLocation, radius };
+      
+      // Ensure radius is a number
+      const radiusValue = Number(radius);
+      if (isNaN(radiusValue) || radiusValue <= 0) {
+        throw new Error('Invalid radius value');
+      }
 
       const response = await fetch(
-        `${API_CONFIG.baseUrl}/places/ll/${searchLocation.latitude},${searchLocation.longitude}?radius=${radius}&appid=${API_CONFIG.appId}&rpp=50`,
+        `${API_CONFIG.baseUrl}/places/ll/${searchLocation.latitude},${searchLocation.longitude}?radius=${radiusValue}&appid=${API_CONFIG.appId}&rpp=50`,
         {
           headers: {
             'Accept': 'application/json',
@@ -58,8 +64,13 @@ export const usePlaces = () => {
         }
       );
 
-      const data = await response.json();
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch places');
+      }
 
+      const data = await response.json();
+      
       // Handle API response
       if (data.meta) {
         switch (data.meta.code) {
@@ -77,19 +88,13 @@ export const usePlaces = () => {
             throw new APIError(400, 'invalid_response', 'Invalid response format from server');
 
           case 404:
-            if (data.meta.error_type === 'empty_dataset') {
-              setOriginalPlaces([]);
-              throw new APIError(
-                404,
-                'NO_RESULTS',
-                `No workspaces found within ${radius} miles. Try increasing your search radius or searching in a different area.`,
-                true  // Add this flag to indicate this can be retried with larger radius
-              );
-            }
-            throw new APIError(404, 'not_found', 'Resource not found');
-
-          case 429:
-            throw new APIError(429, 'rate_limit', 'Too many requests. Please try again in a few minutes.');
+            setOriginalPlaces([]);
+            throw new APIError(
+              404,
+              'NO_RESULTS',
+              `No workspaces found within ${(radiusValue/1609.34).toFixed(1)} miles. Try increasing your search radius or searching in a different area.`,
+              true
+            );
 
           default:
             throw new APIError(
@@ -98,22 +103,13 @@ export const usePlaces = () => {
               data.meta.error_detail || 'Something unexpected occurred. Please try again.'
             );
         }
-      } else {
-        throw new Error('Invalid API response structure');
       }
+
+      throw new Error('Invalid API response structure');
     } catch (err) {
       console.error('Search error:', err);
-
-      // Handle different types of errors
-      if (err instanceof APIError) {
-        setError(err.message);
-      } else if (err.name === 'TypeError' || err.name === 'NetworkError') {
-        setError('Unable to connect to the server. Please check your internet connection and try again.');
-      } else {
-        setError('An unexpected error occurred while searching. Please try again.');
-      }
-
       setOriginalPlaces([]);
+      setError(err.message);
       throw err;
     }
   }, []);

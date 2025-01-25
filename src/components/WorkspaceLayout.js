@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
-import { MapPin, Zap, Sparkles } from 'lucide-react';
+import { MapPin, Zap, Sparkles, Star } from 'lucide-react';
 import { SearchPhases } from '../constants';
 import WorkfromHeader from '../WorkfromHeader';
 import QuickMatchView from './QuickMatchView';
@@ -12,6 +12,8 @@ import ErrorMessage from '../ErrorMessage';
 import WelcomeBanner from '../WelcomeBanner';
 import HowItWorksModal from '../HowItWorksModal';
 import Footer from './Footer';
+import { FavoritesList } from './FavoritesList';
+import PhotoModal from '../PhotoModal';
 
 const LayoutWrapper = memo(({ children }) => (
   <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
@@ -53,14 +55,14 @@ const ViewToggle = memo(({ mode, onChange }) => (
       `}
     >
       <Zap size={16} />
-      <span className="hidden sm:inline">Quick Match</span>
+      <span className="hidden sm:inline">Vibe</span>
     </button>
 
     <button
       onClick={() => onChange('guide')}
       className={`
         inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md
-        transition-colors
+        transition-colors hidden
         ${mode === 'guide'
           ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
           : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:text-[var(--text-primary)]'
@@ -199,7 +201,9 @@ const ErrorState = memo(({
   handleShowHowItWorks,
   handleShowAuthModal,
   handleCloseAuthModal,
-  onLocationChange 
+  onLocationChange,
+  radius,
+  setRadius
 }) => (
   <LayoutWrapper>
     <WorkfromHeader 
@@ -213,8 +217,11 @@ const ErrorState = memo(({
     />
     <ErrorMessage 
       error={error}
-      onRetry={error?.canRetryWithLargerRadius ? onRetryWithLargerRadius : onSearch}
-      retryLabel={error?.canRetryWithLargerRadius ? `Try larger radius` : 'Try Again'}
+      onRetry={onSearch}
+      radius={radius}
+      setRadius={setRadius}
+      locationName={locationName}
+      onRadiusChange={setRadius}
     />
   </LayoutWrapper>
 ));
@@ -255,6 +262,38 @@ const WorkspaceLayout = ({
   const handleShowHowItWorks = useCallback(() => {
     setShowHowItWorks(true);
   }, []);
+
+  const renderContent = () => {
+    switch (viewMode) {
+      case 'map':
+        return <NearbyPlacesMap
+          places={places}
+          userLocation={location}
+          onPhotoClick={handleViewDetails}
+          highlightedPlace={selectedPlace}
+          searchRadius={radius}
+        />;
+      case 'guide':
+        return <WorkspaceGuide 
+          places={places}
+          location={location}
+          onViewDetails={handleViewDetails}
+        />;
+      case 'favorites':
+        return <FavoritesList />;
+      default:
+        return (
+          <QuickMatchView
+            places={places}
+            onViewDetails={handleViewDetails}
+            radius={radius}
+            analyzedPlaces={analysis}
+            isAnalyzing={isAnalyzing}
+            onAnalyze={analyzePlaces}
+          />
+        );
+    }
+  };
 
   if (searchPhase === SearchPhases.INITIAL) {
     return (
@@ -313,17 +352,33 @@ const WorkspaceLayout = ({
   if (error) {
     return (
       <>
-        <ErrorState 
-          locationName={locationName}
-          searchPhase={searchPhase}
-          error={error}
-          onSearch={onSearch}
-          onRetryWithLargerRadius={onRetryWithLargerRadius}
-          handleShowHowItWorks={handleShowHowItWorks}
-          handleShowAuthModal={() => setShowHowItWorks(true)}
-          handleCloseAuthModal={() => setShowHowItWorks(false)}
-          onLocationChange={onLocationChange}
-        />
+        <div className="min-h-screen bg-[var(--bg-primary)] flex flex-col">
+          <WorkfromHeader 
+            locationName={locationName}
+            onLocationClick={onLocationChange}
+            searchPhase={searchPhase}
+            onShowHowItWorks={() => setShowHowItWorks(true)}
+            className="mb-4"
+          />
+          <div className="h-[104px]" />
+          <div className="flex-1 container mx-auto px-4 max-w-2xl">
+            <ErrorState 
+              locationName={locationName}
+              searchPhase={searchPhase}
+              error={error}
+              onSearch={onSearch}
+              onRetryWithLargerRadius={onRetryWithLargerRadius}
+              handleShowHowItWorks={handleShowHowItWorks}
+              handleShowAuthModal={() => setShowHowItWorks(true)}
+              handleCloseAuthModal={() => setShowHowItWorks(false)}
+              onLocationChange={onLocationChange}
+              radius={radius}
+              setRadius={setRadius}
+            />
+          </div>
+          <Footer />
+        </div>
+        {showHowItWorks && <HowItWorksModal setShowModal={setShowHowItWorks} />}
       </>
     );
   }

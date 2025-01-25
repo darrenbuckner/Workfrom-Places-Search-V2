@@ -9,16 +9,22 @@
   included_files = ["netlify/functions/**/*.js"]
 
 [functions.api]
-  timeout = 60
+  timeout = 120
 
 [functions."*"]
-  timeout = 60
+  timeout = 120
 
 [[redirects]]
   force = true
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
+  [redirects.headers]
+    Access-Control-Allow-Origin = "http://localhost:3001"
+    Access-Control-Allow-Methods = "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With"
+    Access-Control-Allow-Credentials = "true"
+    Access-Control-Max-Age = "86400"
 
 [[redirects]]
   from = "/*"
@@ -27,9 +33,9 @@
 
 [dev]
   framework = "#auto"
-  port = 8888
-  targetPort = 3001
-  publish = "build"
+  port = 8888        # Port for Netlify Dev
+  targetPort = 3001  # Port for your React app
+  publish = "public"
   functions = "netlify/functions"
   command = "npm start"
 

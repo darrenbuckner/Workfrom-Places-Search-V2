@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertCircle, RefreshCcw, WifiOff, X, AlertTriangle, Map, AlertOctagon, MapPin } from 'lucide-react';
+import SearchControls from './SearchControls';
 
 const CUSTOM_ERRORS = {
   // Connectivity errors
@@ -125,113 +126,72 @@ const getVariantStyles = (variant) => {
   }
 };
 
+const metersToMiles = (meters) => {
+  return (meters * 0.000621371).toFixed(1);
+};
+
 const ErrorMessage = ({ 
   error,
   onRetry,
-  onDismiss,
-  size = 'default', // 'default' | 'compact'
-  className = '',
-  showIcon = true,
-  retryLabel = 'Try Again'
+  onRetryWithLargerRadius,
+  radius,
+  setRadius,
+  locationName
 }) => {
   const config = getErrorConfig(error);
   const Icon = config.icon;
   const styles = getVariantStyles(config.variant);
+  const isNoResults = error?.message?.includes('No workspaces found') || error?.isNoResults;
 
-  if (size === 'compact') {
+  if (isNoResults) {
     return (
-      <div className={`
-        flex items-center gap-3 p-3 rounded-lg transition-all
-        ${styles.container}
-        ${className}
-      `}>
-        {showIcon && (
-          <Icon className={`w-5 h-5 flex-shrink-0 ${styles.icon}`} />
-        )}
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium ${styles.title}`}>
-            {config.message}
-          </p>
+      <div className="space-y-6">
+        <div className="flex items-start gap-3 p-4 rounded-lg border border-[var(--border-warning)] bg-[var(--bg-warning)]">
+          <AlertTriangle className="w-5 h-5 text-[var(--text-warning)] flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-medium text-[var(--text-warning)]">
+              No workspaces found
+            </h3>
+            <p className="mt-1 text-sm text-[var(--text-warning)]/90">
+              {error.message || `We couldn't find any workspaces within ${metersToMiles(radius)} miles of ${locationName || 'your location'}. Try increasing your search radius or searching in a different area.`}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {onRetry && (
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={onRetry}
-                className={`
-                  flex items-center gap-1.5 px-4 py-2 rounded-md
-                  text-sm font-medium transition-colors
-                  ${styles.button}
-                `}
-              >
-                <RefreshCcw size={14} />
-                {retryLabel}  {/* Update this line */}
-              </button>
-            </div>
-          )}
-          {onDismiss && (
-            <button
-              onClick={onDismiss}
-              className="p-1 rounded-full hover:bg-[var(--bg-tertiary)] transition-colors"
-            >
-              <X size={14} className="text-[var(--text-secondary)]" />
-            </button>
-          )}
+
+        <div className="p-4 rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+          <h4 className="font-medium text-[var(--text-primary)] mb-3">
+            Adjust search radius
+          </h4>
+          <SearchControls
+            radius={radius}
+            setRadius={setRadius}
+            onSearch={onRetry}
+            onRadiusChange={setRadius}
+            hideLocationInput
+            compact
+          />
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`
-      rounded-lg border overflow-hidden transition-all
-      ${styles.container}
-      ${className}
-    `}>
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          {showIcon && (
-            <div className="flex-shrink-0">
-              <div className={`
-                w-8 h-8 rounded-full
-                flex items-center justify-center
-                ${styles.icon}
-              `}>
-                <Icon className="w-4 h-4" />
-              </div>
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <h3 className={`font-medium ${styles.title}`}>
-              {config.title}
-            </h3>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">
-              {config.message}
-            </p>
-          </div>
-          {onDismiss && (
-            <button
-              onClick={onDismiss}
-              className="p-1 rounded-full hover:bg-[var(--bg-tertiary)] transition-colors"
-            >
-              <X size={14} className="text-[var(--text-secondary)]" />
-            </button>
-          )}
-        </div>
+    <div className="flex items-start gap-3 p-4 rounded-lg border border-[var(--border-warning)] bg-[var(--bg-warning)]">
+      <AlertTriangle className="w-5 h-5 text-[var(--text-warning)] flex-shrink-0 mt-0.5" />
+      <div>
+        <h3 className="font-medium text-[var(--text-warning)]">
+          {error?.title || 'Error'}
+        </h3>
+        <p className="mt-1 text-sm text-[var(--text-warning)]/90">
+          {error?.message || 'An unexpected error occurred'}
+        </p>
         {onRetry && (
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={onRetry}
-              className={`
-                flex items-center gap-1.5 px-4 py-2 rounded-md
-                text-sm font-medium transition-colors
-                ${styles.button}
-              `}
-            >
-              <RefreshCcw size={14} />
-              Try Again
-            </button>
-          </div>
+          <button
+            onClick={onRetry}
+            className="mt-3 text-sm font-medium text-[var(--text-warning)] hover:text-[var(--text-warning)]/80"
+          >
+            Try again
+          </button>
         )}
       </div>
     </div>

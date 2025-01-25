@@ -1,8 +1,9 @@
 import React, { useState, useEffect, memo } from 'react';
 import { 
-  Plus, InfoIcon, ChevronDown, MapPin
+  Plus, InfoIcon, ChevronDown, MapPin, Star
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeProvider';
+import FavoritesModal from './components/FavoritesModal';
 
 // Logo component memoized since it rarely changes
 const WorkfromLogo = memo(({ size = 'default' }) => {
@@ -65,9 +66,20 @@ const HeaderActions = memo(({
   showAddPlace,
   onShowHowItWorks,
 }) => {
+  const [showFavorites, setShowFavorites] = useState(false);
+
   return (
     <div className="flex items-center gap-1">
       {showThemeToggle && <ThemeToggle />}
+      
+      <button
+        onClick={() => setShowFavorites(true)}
+        className="p-2 rounded-full hover:bg-[var(--bg-secondary)] 
+          transition-colors text-[var(--text-tertiary)] hover:text-[var(--text-primary)]"
+        title="Favorites"
+      >
+        <Star size={20} />
+      </button>
       
       {showHowItWorks && (
         <button onClick={onShowHowItWorks} className="p-2 rounded-full hover:bg-[var(--bg-secondary)] 
@@ -88,6 +100,10 @@ const HeaderActions = memo(({
           <Plus size={20} className="sm:hidden" />
           <span className="hidden sm:block text-sm font-medium">Add Place</span>
         </a>
+      )}
+
+      {showFavorites && (
+        <FavoritesModal onClose={() => setShowFavorites(false)} />
       )}
     </div>
   );

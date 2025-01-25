@@ -27,12 +27,30 @@ module.exports = {
         'loading-shimmer': {
           '0%': { backgroundPosition: '200% 0' },
           '100%': { backgroundPosition: '-200% 0' }
+        },
+        'ping-slow': {
+          '0%': { transform: 'scale(0.5)' },
+          '50%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(0.5)' }
+        },
+        'ping-slower': {
+          '0%': { transform: 'scale(0.5)' },
+          '50%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(0.5)' }
+        },
+        'ping-slowest': {
+          '0%': { transform: 'scale(0.5)' },
+          '50%': { transform: 'scale(1)' },
+          '100%': { transform: 'scale(0.5)' }
         }
       },
       animation: {
         wave: 'wave 1.5s ease-in-out',
         fadeIn: 'fadeIn 0.5s ease-out forwards',
-        'loading-shimmer': 'loading-shimmer 3s ease-in-out infinite'
+        'loading-shimmer': 'loading-shimmer 3s ease-in-out infinite',
+        'ping-slow': 'ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite',
+        'ping-slower': 'ping-slower 2.5s cubic-bezier(0, 0, 0.2, 1) infinite',
+        'ping-slowest': 'ping-slowest 3s cubic-bezier(0, 0, 0.2, 1) infinite'
       }
     }
   },
