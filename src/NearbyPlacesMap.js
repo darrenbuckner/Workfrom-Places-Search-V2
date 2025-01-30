@@ -156,6 +156,21 @@ const mapStyles = `
   .leaflet-popup-tip-container {
     overflow: visible !important;
   }
+
+  @keyframes locationPulse {
+    0% {
+      transform: translate(-50%, -50%) scale(0.5);
+      opacity: 0.4;
+    }
+    70% {
+      transform: translate(-50%, -50%) scale(2);
+      opacity: 0;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(2);
+      opacity: 0;
+    }
+  }
 `;
 
 // Add the styles to the document
@@ -231,7 +246,7 @@ const NearbyPlacesMap = ({
   }, [themeColors]);
 
   const createUserIcon = useCallback(() => {
-    const size = 48;
+    const size = 64;
     return L.divIcon({
       html: `
         <div style="
@@ -264,11 +279,23 @@ const NearbyPlacesMap = ({
               top: 50%;
               left: 50%;
               transform: translate(-50%, -50%);
-              width: 16px;
-              height: 16px;
+              width: 75%;
+              height: 75%;
               background-color: ${themeColors.accent.primary};
               border-radius: 50%;
-              border: 3px solid ${themeColors.bg.primary};
+              opacity: 0.2;
+              animation: locationPulse 2s infinite 0.3s;
+            "></div>
+            <div style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 24px;
+              height: 24px;
+              background-color: ${themeColors.accent.primary};
+              border-radius: 50%;
+              border: 4px solid ${themeColors.bg.primary};
               box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             "></div>
           </div>
@@ -515,12 +542,12 @@ const PopupContent = ({ place, isHighlighted }) => {
 const [showGuide, setShowGuide] = useState(false);
 
 return (
-  <div className="rounded-lg overflow-hidden border border-[var(--border-primary)] map-container">
+  <div className="rounded-lg overflow-hidden border border-[var(--border-primary)] map-container flex flex-col h-[calc(100vh-80px)]">
     <MapContainer 
       ref={mapRef}
       center={defaultPosition} 
       zoom={13} 
-      style={{ height: '500px', width: '100%' }}
+      style={{ height: 'calc(100vh - 160px)', width: '100%' }}
       className="" // Remove theme class from initial render
       zoomControl={false}
     >
