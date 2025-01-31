@@ -70,7 +70,6 @@ const HeaderActions = memo(({
 
   return (
     <div className="flex items-center gap-1">
-      {showThemeToggle && <ThemeToggle />}
       
       <button
         onClick={() => setShowFavorites(true)}
@@ -80,6 +79,8 @@ const HeaderActions = memo(({
       >
         <Star size={20} />
       </button>
+
+      {showThemeToggle && <ThemeToggle />}
       
       {showHowItWorks && (
         <button onClick={onShowHowItWorks} className="p-2 rounded-full hover:bg-[var(--bg-secondary)] 
