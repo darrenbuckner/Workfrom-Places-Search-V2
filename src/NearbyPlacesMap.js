@@ -542,12 +542,12 @@ const PopupContent = ({ place, isHighlighted }) => {
 const [showGuide, setShowGuide] = useState(false);
 
 return (
-  <div className="rounded-lg overflow-hidden border border-[var(--border-primary)] map-container flex flex-col h-[calc(100vh-80px)]">
+  <div className="rounded-lg overflow-hidden border border-[var(--border-primary)] map-container flex flex-col h-[calc(100vh-260px)]">
     <MapContainer 
       ref={mapRef}
       center={defaultPosition} 
       zoom={13} 
-      style={{ height: 'calc(100vh - 160px)', width: '100%' }}
+      style={{ height: 'calc(100vh - 260px)', width: '100%' }}
       className="" // Remove theme class from initial render
       zoomControl={false}
     >

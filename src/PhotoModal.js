@@ -258,7 +258,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[var(--modal-backdrop)] backdrop-blur-xl" />
       
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-[var(--bg-primary)] rounded-lg overflow-hidden
+      <div className="relative w-full max-w-6xl max-h-[90vh] bg-[var(--bg-primary)] rounded-lg overflow-hidden
         border border-[var(--border-primary)] shadow-[var(--shadow-lg)]">
         
         {/* Header */}
