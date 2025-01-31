@@ -56,7 +56,7 @@ const ViewToggle = memo(({ mode, onChange }) => (
         }
       `}
     >
-      <Zap size={18} className="sm:size-4" />
+      <Sparkles size={18} className="sm:size-4" />
       <span className="hidden sm:inline">Vibe</span>
     </button>
 

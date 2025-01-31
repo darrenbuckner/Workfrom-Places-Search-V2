@@ -378,7 +378,7 @@ const QuickMatchView = ({ places, onViewDetails, radius, analyzedPlaces, isAnaly
           <span className="text-[var(--text-secondary)]">
             {selectedWorkStyle === 'top_rated' 
               ? 'Highest rated workspaces nearby'
-              : `Best matches for ${selectedWorkStyle} work`}
+              : `Best matches for ${selectedWorkStyle} vibe`}
           </span>
         </div>
 
