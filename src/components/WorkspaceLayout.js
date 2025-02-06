@@ -242,7 +242,7 @@ const WorkspaceLayout = ({
   setRadius,
   onRetryWithLargerRadius
 }) => {
-  const [viewMode, setViewMode] = useState('map');
+  const [viewMode, setViewMode] = useState('insights');
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
@@ -253,10 +253,11 @@ const WorkspaceLayout = ({
     clearAnalysis 
   } = useWorkspaceAnalysis();
 
-  // Reset view mode when location changes
-  // useEffect(() => {
-  //   setViewMode('insights');
-  // }, [location]);
+  useEffect(() => {
+    if (location) {
+      setViewMode('insights');
+    }
+  }, [location]);
 
   const handleViewDetails = useCallback((place) => {
     onPhotoClick(place);
