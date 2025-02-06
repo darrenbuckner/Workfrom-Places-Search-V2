@@ -29,22 +29,6 @@ const LayoutWrapper = memo(({ children }) => (
 const ViewToggle = memo(({ mode, onChange }) => (
   <div className="flex items-center gap-3 sm:gap-2">
     <button
-      onClick={() => onChange('map')}
-      className={`
-        inline-flex items-center gap-2 px-4 py-2 sm:px-3 sm:py-1.5 text-sm font-medium rounded-md
-        transition-colors min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0
-        justify-center
-        ${mode === 'map'
-          ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
-          : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:text-[var(--text-primary)]'
-        }
-      `}
-    >
-      <MapPin size={18} className="sm:size-4" />
-      <span className="hidden sm:inline">Map</span>
-    </button>
-
-    <button
       onClick={() => onChange('insights')}
       className={`
         inline-flex items-center gap-2 px-4 py-2 sm:px-3 sm:py-1.5 text-sm font-medium rounded-md
@@ -58,6 +42,22 @@ const ViewToggle = memo(({ mode, onChange }) => (
     >
       <Sparkles size={18} className="sm:size-4" />
       <span className="hidden sm:inline">Vibe</span>
+    </button>
+
+    <button
+      onClick={() => onChange('map')}
+      className={`
+        inline-flex items-center gap-2 px-4 py-2 sm:px-3 sm:py-1.5 text-sm font-medium rounded-md
+        transition-colors min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0
+        justify-center
+        ${mode === 'map'
+          ? 'bg-[var(--accent-primary)] text-[var(--button-text)]'
+          : 'bg-[var(--bg-tertiary)] text-[var(--text-primary)] hover:text-[var(--text-primary)]'
+        }
+      `}
+    >
+      <MapPin size={18} className="sm:size-4" />
+      <span className="hidden sm:inline">Map</span>
     </button>
 
     <button
