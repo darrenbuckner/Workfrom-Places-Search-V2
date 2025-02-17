@@ -371,7 +371,7 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                           </h3>
                           {selectedPlace?.os && (
                             <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                              Shared by Workfrom member {selectedPlace.os}
+                              Shared by {selectedPlace.os}
                             </p>
                           )}
                         </div>
