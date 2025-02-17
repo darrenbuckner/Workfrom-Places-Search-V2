@@ -5,7 +5,7 @@ import { MapPin } from 'lucide-react';
 const UnifiedLoadingState = ({ searchPhase, locationName }) => {
   const message = searchPhase === SearchPhases.LOCATING
     ? "Finding your location..."
-    : `Searching for workspaces near ${locationName || 'you'}`;
+    : `Searching for workspaces nearby...`;
 
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center">
