@@ -89,15 +89,36 @@ const ContentArea = ({
   isAnalyzing,
   analyzePlaces 
 }) => {
+  // Filter places based on radius (convert radius to meters)
+  const filteredPlaces = places?.filter(place => {
+    // Convert radius from miles to meters (1 mile = 1609.34 meters)
+    const radiusInMeters = radius * 1609.34;
+    
+    // Calculate distance using the Haversine formula
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = location.latitude * Math.PI/180;
+    const φ2 = place.latitude * Math.PI/180;
+    const Δφ = (place.latitude - location.latitude) * Math.PI/180;
+    const Δλ = (place.longitude - location.longitude) * Math.PI/180;
+
+    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ/2) * Math.sin(Δλ/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c; // Distance in meters
+
+    return distance <= radiusInMeters;
+  }) || [];
+
   // Add validation check
-  const hasRequiredData = places?.length > 0 && location?.latitude && location?.longitude;
+  const hasRequiredData = filteredPlaces?.length > 0 && location?.latitude && location?.longitude;
 
   switch(viewMode) {
     case 'map':
       return (
         <div className="rounded-lg overflow-hidden border border-[var(--border-primary)]">
           <NearbyPlacesMap
-            places={places}
+            places={filteredPlaces}
             userLocation={location}
             onPhotoClick={handleViewDetails}
             highlightedPlace={selectedPlace}
@@ -121,7 +142,7 @@ const ContentArea = ({
       }
       return (
         <WorkspaceGuide 
-          places={places}
+          places={filteredPlaces}
           location={location}
           onViewDetails={handleViewDetails}
         />
@@ -129,7 +150,7 @@ const ContentArea = ({
     default:
       return (
         <QuickMatchView
-          places={places}
+          places={filteredPlaces}
           onViewDetails={handleViewDetails}
           radius={radius}
           analyzedPlaces={analysis}
