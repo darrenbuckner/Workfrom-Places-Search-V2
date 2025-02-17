@@ -326,8 +326,6 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
             {/* Content Section */}
             <div className="relative flex-1 md:w-2/5 border-l border-[var(--border-primary)] overflow-y-auto">
               <div className="p-4 space-y-4">
-                <LocationSection place={selectedPlace} />
-
                 <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
                   <div className="p-4">
                     <div className="flex items-center justify-between mb-4">
@@ -354,6 +352,8 @@ const PhotoModal = ({ selectedPlace, fullImg, isPhotoLoading, setShowPhotoModal 
                 {selectedPlace.password && (
                   <WifiCredentials password={selectedPlace.password} />
                 )}
+
+                <LocationSection place={selectedPlace} />
 
                 {sanitizedDescription && (
                   <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)]">
