@@ -130,6 +130,15 @@ const metersToMiles = (meters) => {
   return (meters * 0.000621371).toFixed(1);
 };
 
+const AlertIcon = ({ error }) => {
+  const Icon = error.icon || AlertCircle;
+  return (
+    <div className="flex-shrink-0 mt-0.5">
+      <Icon size={20} className="text-[var(--text-warning)]" />
+    </div>
+  );
+};
+
 const ErrorMessage = ({ 
   error,
   onRetry,
