@@ -134,6 +134,7 @@ const ErrorMessage = ({
   error,
   onRetry,
   onRetryWithLargerRadius,
+  onRetryWithMaxRadius,
   radius,
   setRadius,
   locationName
@@ -176,23 +177,47 @@ const ErrorMessage = ({
   }
 
   return (
-    <div className="flex items-start gap-3 p-4 rounded-lg border border-[var(--border-warning)] bg-[var(--bg-warning)]">
-      <AlertTriangle className="w-5 h-5 text-[var(--text-warning)] flex-shrink-0 mt-0.5" />
-      <div>
-        <h3 className="font-medium text-[var(--text-warning)]">
-          {error?.title || 'Error'}
-        </h3>
-        <p className="mt-1 text-sm text-[var(--text-warning)]/90">
-          {error?.message || 'An unexpected error occurred'}
-        </p>
-        {onRetry && (
-          <button
-            onClick={onRetry}
-            className="mt-3 text-sm font-medium text-[var(--text-warning)] hover:text-[var(--text-warning)]/80"
-          >
-            Try again
-          </button>
-        )}
+    <div className="rounded-lg border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4">
+      <div className="flex items-start gap-3">
+        <AlertIcon error={config} />
+        <div className="flex-1">
+          <h3 className="font-medium text-[var(--text-primary)]">
+            {config.title || 'Error'}
+          </h3>
+          <p className="mt-1 text-sm text-[var(--text-secondary)]">
+            {config.message}
+          </p>
+          <div className="mt-3 flex gap-3">
+            {config.canRetryWithMaxRadius && (
+              <button
+                onClick={onRetryWithMaxRadius}
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium
+                  rounded-md bg-[var(--accent-primary)] text-[var(--button-text)]
+                  hover:bg-[var(--accent-primary-hover)] transition-colors"
+              >
+                Try with 5-mile radius
+              </button>
+            )}
+            {config.canRetryWithLargerRadius && (
+              <button
+                onClick={onRetryWithLargerRadius}
+                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium
+                  rounded-md bg-[var(--bg-tertiary)] text-[var(--text-primary)]
+                  hover:bg-[var(--bg-tertiary-hover)] transition-colors"
+              >
+                Try larger radius
+              </button>
+            )}
+            <button
+              onClick={onRetry}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium
+                rounded-md bg-[var(--bg-tertiary)] text-[var(--text-primary)]
+                hover:bg-[var(--bg-tertiary-hover)] transition-colors"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

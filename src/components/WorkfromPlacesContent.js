@@ -66,6 +66,14 @@ const WorkfromPlacesContent = () => {
             variant: 'error'
           });
       }
+    } else if (error.name === 'APIError' && error.type === 'RADIUS_TOO_LARGE') {
+      setSearchError({
+        code: 'RADIUS_TOO_LARGE',
+        title: 'Search Radius Too Large',
+        message: 'The maximum search radius is 5 miles. Would you like to try again with a 5-mile radius?',
+        variant: 'warning',
+        canRetryWithMaxRadius: true
+      });
     } else if (error.type === 'NO_RESULTS') {
       setSearchError({
         code: 'NO_RESULTS',
@@ -83,6 +91,11 @@ const WorkfromPlacesContent = () => {
     const newRadius = Math.min(radius * 2, 25); // Double radius up to max 25 miles
     setRadius(newRadius);
     performSearch(); // Retry search with new radius
+  };
+
+  const handleRetryWithMaxRadius = () => {
+    setRadius(5); // Set to maximum allowed radius
+    performSearch(); // Retry search
   };
 
   const performSearch = async () => {
@@ -126,6 +139,7 @@ const WorkfromPlacesContent = () => {
         radius={radius}
         setRadius={setRadius}
         onRetryWithLargerRadius={handleRetryWithLargerRadius}
+        onRetryWithMaxRadius={handleRetryWithMaxRadius}
       />
       
       {showPhotoModal && (
