@@ -2,6 +2,8 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 import API_CONFIG from '../config';
 import { calculateWorkabilityScore } from '../WorkabilityScore';
 
+const MAX_RADIUS_MILES = 5; // Maximum allowed radius in miles
+
 const mapNoiseLevel = (noise) => {
   if (!noise) return 'Unknown';
   if (typeof noise === 'string') {
@@ -48,10 +50,18 @@ export const usePlaces = () => {
       // Store search parameters for potential retry
       searchStateRef.current.lastSearchParams = { searchLocation, radius };
       
-      // Ensure radius is a number
+      // Ensure radius is a number and within limits
       const radiusValue = Number(radius);
       if (isNaN(radiusValue) || radiusValue <= 0) {
         throw new Error('Invalid radius value');
+      }
+      if (radiusValue > MAX_RADIUS_MILES) {
+        throw new APIError(
+          400,
+          'RADIUS_TOO_LARGE',
+          `Search radius cannot exceed ${MAX_RADIUS_MILES} miles. Please try a smaller radius.`,
+          false
+        );
       }
 
       const response = await fetch(
@@ -119,7 +129,7 @@ export const usePlaces = () => {
     const lastParams = searchStateRef.current.lastSearchParams;
     if (!lastParams) return null;
 
-    const newRadius = Math.min(lastParams.radius * 2, 25); // Cap at 25 miles
+    const newRadius = Math.min(lastParams.radius * 2, MAX_RADIUS_MILES); // Cap at MAX_RADIUS_MILES
     if (newRadius === lastParams.radius) return null;
 
     try {
