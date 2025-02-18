@@ -17,8 +17,7 @@ const RadiusSelect = ({
   const radiusPresets = [
     { value: 0.5, label: '0.5 miles', description: 'Walking', icon: Navigation },
     { value: 2, label: '2 miles', description: 'Biking', icon: Navigation },
-    { value: 5, label: '5 miles', description: 'Short Drive', icon: Navigation },
-    { value: 10, label: '10 miles', description: 'Driving', icon: Navigation }
+    { value: 5, label: '5 miles', description: 'Driving', icon: Navigation }
   ];
 
   useEffect(() => {
@@ -76,6 +75,12 @@ const RadiusSelect = ({
       default:
         break;
     }
+  };
+
+  const handleRadiusChange = (value) => {
+    const validRadius = Math.min(value, 5);
+    onRadiusChange(validRadius);
+    setShowMenu(false);
   };
 
   const baseButtonStyles = variant === 'primary'
@@ -138,10 +143,7 @@ const RadiusSelect = ({
                 ref={el => itemRefs.current[index] = el}
                 role="option"
                 aria-selected={value === radius}
-                onClick={() => {
-                  onRadiusChange(value);
-                  setShowMenu(false);
-                }}
+                onClick={() => handleRadiusChange(value)}
                 onKeyDown={handleKeyDown}
                 onMouseEnter={() => setFocusedIndex(index)}
                 className={`
